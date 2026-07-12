@@ -1,0 +1,42 @@
+# --- Firmware / OS images: NEVER committed ---
+# Distributed via GitHub Releases + Internet Archive, verified by firmware/SHA256SUMS.
+# See firmware/README.md for download links and checksums.
+*.img
+*.img.gz
+*.img.xz
+*.img.zst
+*.zip
+*.7z
+*.bin
+*.crdownload
+*.part
+*.tmp
+
+# --- macOS ---
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+
+# --- Editors / IDEs ---
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo
+*~
+
+# --- Secrets / credentials ---
+.env
+.env.*
+*.key
+*.pem
+id_rsa*
+id_ed25519*
+*.ppk
+
+# --- Logs / scratch ---
+*.log
+/scratch/

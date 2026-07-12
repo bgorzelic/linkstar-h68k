@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" font-family="'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d1117"/>
+      <stop offset="1" stop-color="#161b22"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#39c5cf"/>
+      <stop offset="1" stop-color="#58a6ff"/>
+    </linearGradient>
+    <linearGradient id="pcb" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0e2a22"/>
+      <stop offset="1" stop-color="#0a1f19"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="8" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- backdrop -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <g stroke="#21262d" stroke-width="1">
+    <path d="M0 158 H1200 M0 470 H1200"/>
+  </g>
+
+  <!-- ============ header ============ -->
+  <g>
+    <rect x="64" y="52" width="12" height="72" rx="3" fill="url(#accent)"/>
+    <text x="92" y="98" fill="#e6edf3" font-size="52" font-weight="700">LinkStar H68K</text>
+    <text x="94" y="134" fill="#8b949e" font-size="21">Rockchip RK3568 &#183; 2.5GbE edge router &amp; mini-PC &#183; the missing manual + toolkit</text>
+  </g>
+  <!-- top-right chips -->
+  <g font-size="14" font-weight="600" text-anchor="middle">
+    <g>
+      <rect x="878" y="60" width="96" height="30" rx="15" fill="#161b22" stroke="#3fb950"/>
+      <text x="926" y="80" fill="#3fb950">Ubuntu 20.04</text>
+    </g>
+    <g>
+      <rect x="982" y="60" width="86" height="30" rx="15" fill="#161b22" stroke="#f0883e"/>
+      <text x="1025" y="80" fill="#f0883e">OpenWRT</text>
+    </g>
+    <g>
+      <rect x="1076" y="60" width="60" height="30" rx="15" fill="#161b22" stroke="#58a6ff"/>
+      <text x="1106" y="80" fill="#58a6ff">MIT</text>
+    </g>
+  </g>
+
+  <!-- ============ device illustration ============ -->
+  <g transform="translate(760,196)">
+    <!-- metal case -->
+    <rect x="0" y="0" width="376" height="236" rx="16" fill="#1b2230" stroke="#30363d" stroke-width="2"/>
+    <rect x="0" y="0" width="376" height="14" rx="16" fill="#232b3a"/>
+    <!-- PCB -->
+    <rect x="26" y="34" width="324" height="176" rx="8" fill="url(#pcb)" stroke="#123b30"/>
+    <!-- SoC -->
+    <rect x="150" y="86" width="92" height="80" rx="6" fill="#0d1117" stroke="url(#accent)" stroke-width="2" filter="url(#glow)"/>
+    <text x="196" y="120" fill="#e6edf3" font-size="18" font-weight="700" text-anchor="middle">RK3568</text>
+    <text x="196" y="142" fill="#39c5cf" font-size="12" text-anchor="middle">quad A55</text>
+    <!-- RAM + eMMC -->
+    <rect x="46" y="70" width="78" height="34" rx="4" fill="#161b22" stroke="#bc8cff"/>
+    <text x="85" y="92" fill="#bc8cff" font-size="12" text-anchor="middle">LPDDR4</text>
+    <rect x="46" y="120" width="78" height="34" rx="4" fill="#161b22" stroke="#d29922"/>
+    <text x="85" y="142" fill="#d29922" font-size="12" text-anchor="middle">eMMC</text>
+    <!-- microSD -->
+    <rect x="266" y="70" width="60" height="30" rx="3" fill="#161b22" stroke="#8b949e"/>
+    <text x="296" y="90" fill="#8b949e" font-size="11" text-anchor="middle">microSD</text>
+    <!-- Wi-Fi antenna -->
+    <g stroke="#3fb950" stroke-width="2" fill="none">
+      <path d="M286 150 q18 -14 36 0" opacity="0.5"/>
+      <path d="M292 156 q12 -9 24 0" opacity="0.8"/>
+      <line x1="304" y1="120" x2="304" y2="158"/>
+    </g>
+    <text x="304" y="178" fill="#3fb950" font-size="11" text-anchor="middle">Wi-Fi</text>
+    <!-- rear ports strip -->
+    <g>
+      <rect x="26" y="218" width="46" height="14" rx="2" fill="#0d1117" stroke="#58a6ff"/>
+      <rect x="80" y="218" width="46" height="14" rx="2" fill="#0d1117" stroke="#58a6ff"/>
+      <text x="76" y="230" fill="#58a6ff" font-size="12" font-weight="700" text-anchor="middle" transform="translate(0,0)"></text>
+      <rect x="150" y="218" width="34" height="14" rx="2" fill="#0d1117" stroke="#30363d"/>
+      <rect x="192" y="218" width="34" height="14" rx="2" fill="#0d1117" stroke="#30363d"/>
+      <rect x="300" y="218" width="50" height="14" rx="2" fill="#0d1117" stroke="#30363d"/>
+    </g>
+    <text x="76" y="253" fill="#58a6ff" font-size="13" font-weight="600" text-anchor="middle">2x 2.5GbE</text>
+    <text x="209" y="253" fill="#8b949e" font-size="12" text-anchor="middle">USB</text>
+    <text x="325" y="253" fill="#8b949e" font-size="12" text-anchor="middle">HDMI</text>
+  </g>
+
+  <!-- ============ spec cards ============ -->
+  <g font-family="'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+    <!-- card template repeated -->
+    <g transform="translate(64,196)">
+      <rect width="316" height="58" rx="10" fill="#161b22" stroke="#30363d"/>
+      <text x="18" y="26" fill="#8b949e" font-size="13" font-weight="600">CPU</text>
+      <text x="18" y="46" fill="#e6edf3" font-size="17" font-weight="700">4&#215; Cortex-A55 @ up to 2.0 GHz</text>
+    </g>
+    <g transform="translate(64,264)">
+      <rect width="316" height="58" rx="10" fill="#161b22" stroke="#30363d"/>
+      <text x="18" y="26" fill="#8b949e" font-size="13" font-weight="600">GPU / NPU</text>
+      <text x="18" y="46" fill="#e6edf3" font-size="17" font-weight="700">Mali-G52 &#183; 0.8-TOPS NPU</text>
+    </g>
+    <g transform="translate(64,332)">
+      <rect width="316" height="58" rx="10" fill="#161b22" stroke="#30363d"/>
+      <text x="18" y="26" fill="#8b949e" font-size="13" font-weight="600">MEMORY</text>
+      <text x="18" y="46" fill="#e6edf3" font-size="17" font-weight="700">LPDDR4 (2 / 4 / 8 GB)</text>
+    </g>
+    <g transform="translate(64,400)">
+      <rect width="316" height="58" rx="10" fill="#161b22" stroke="#30363d"/>
+      <text x="18" y="26" fill="#8b949e" font-size="13" font-weight="600">STORAGE</text>
+      <text x="18" y="46" fill="#e6edf3" font-size="17" font-weight="700">~32 GB eMMC + microSD</text>
+    </g>
+  </g>
+
+  <!-- ============ feature ribbon ============ -->
+  <g transform="translate(0,506)" font-size="16" font-weight="600" text-anchor="middle">
+    <g>
+      <rect x="64" y="0" width="252" height="44" rx="22" fill="#0d2818" stroke="#238636"/>
+      <text x="190" y="28" fill="#3fb950">Flash from a Mac &#8212; no maskrom</text>
+    </g>
+    <g>
+      <rect x="336" y="0" width="196" height="44" rx="22" fill="#0d1f33" stroke="#1f6feb"/>
+      <text x="434" y="28" fill="#58a6ff">Secure-by-default scripts</text>
+    </g>
+    <g>
+      <rect x="552" y="0" width="214" height="44" rx="22" fill="#2b1d33" stroke="#8957e5"/>
+      <text x="659" y="28" fill="#bc8cff">Boot &amp; RKFW internals, documented</text>
+    </g>
+    <g>
+      <rect x="786" y="0" width="200" height="44" rx="22" fill="#33230d" stroke="#bb8009"/>
+      <text x="886" y="28" fill="#e3b341">Checksummed firmware archive</text>
+    </g>
+    <g>
+      <rect x="1006" y="0" width="130" height="44" rx="22" fill="#161b22" stroke="#30363d"/>
+      <text x="1071" y="28" fill="#e6edf3">Open source</text>
+    </g>
+  </g>
+</svg>
