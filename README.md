@@ -153,4 +153,7 @@ be labeled as such.
 - Scripts & original docs: **MIT** (docs also **CC BY 4.0**) — see [`LICENSE`](./LICENSE).
 - Hardware, stock firmware, and release notes are **© Seeed Studio / Rockchip** and
   their respective owners; mirrored here with attribution for preservation only.
+- **Credits & references** — this project builds on the community's work (Seeed,
+  HINLINK, Rockchip, the Armbian/OpenWRT communities, and more). See
+  [`CREDITS.md`](./CREDITS.md).
 - Maintained by Brian Gorzelic / AI Aerial Solutions and contributors.
