@@ -11,7 +11,7 @@ Facts are tagged: **[VERIFIED]** = observed on a live unit in this project ·
 ## At a glance
 
 | | | Source |
-|---|---|---|
+| --- | --- | --- |
 | **SoC** | Rockchip RK3568, 4× Cortex-A55 (`nproc` = 4) | [VERIFIED] |
 | **GPU / NPU** | Mali-G52 2EE GPU · 0.8-TOPS NPU | [SPEC] |
 | **RAM** | LPDDR4/4x — unit measured ~3.8 GiB (≈4 GB); board offered in 2/4/8 GB | [VERIFIED] 4 GB · [SPEC] others |

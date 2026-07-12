@@ -32,7 +32,7 @@ there is the black-screen bug (see below).
 (little-endian, packed):
 
 | field | offset | this image |
-|-------|--------|-----------|
+| ------- | -------- | ----------- |
 | magic | 0x00 | `RKFW` |
 | chip | 0x15 | `0x33353638` → "3568" |
 | loader_offset | 0x19 | 102 |
@@ -56,7 +56,7 @@ offsets by chaining partitions (each real start = previous real end, bumping by
 ### Partition layout (from parameter.txt, 512-byte sectors)
 
 | partition | start sector | image |
-|-----------|--------------|-------|
+| ----------- | -------------- | ------- |
 | uboot | 0x4000 (16384) | uboot.img |
 | misc | 0x6000 (24576) | misc.img |
 | boot | 0x8000 (32768) | boot.img |
@@ -77,6 +77,7 @@ SD/eMMC wants a different, `RKNS`-tagged **rksd** image. Writing the raw
 `LDR `-format file to sector 64 = black screen.
 
 `build-idbloader.sh` fixes this:
+
 1. `rkdeveloptool unpack MiniLoaderAll.bin` → yields `FlashData` (this unit's
    exact DDR init) and `FlashBoot` (the miniloader).
 2. `mkimage -n rk3568 -T rksd -d FlashData idbloader.img` then

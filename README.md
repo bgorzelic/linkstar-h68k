@@ -51,7 +51,7 @@ a few forum posts, and some dead download links. This repo fixes that.
 ## Hardware at a glance
 
 | | |
-|---|---|
+| --- | --- |
 | **SoC** | Rockchip RK3568 — 4× Cortex-A55, Mali-G52 GPU, 0.8-TOPS NPU |
 | **RAM** | LPDDR4/4x (unit verified: ~4 GB) |
 | **Storage** | ~32 GB eMMC + microSD (boots from either) |
@@ -62,7 +62,7 @@ Full breakdown, sourced and verified: **[`docs/hardware.md`](./docs/hardware.md)
 
 ## Repository layout
 
-```
+```text
 linkstar-h68k/
 ├── docs/                            # the guide — start at docs/README.md
 │   ├── flash-ubuntu-sd-from-mac.md  # ⭐ flash Ubuntu to SD from a Mac (no maskrom)

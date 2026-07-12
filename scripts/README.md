@@ -3,20 +3,20 @@
 Idempotent Bash tooling for the LinkStar H68K. All scripts are `shellcheck`-clean,
 use `set -euo pipefail`, and support `--dry-run` where they change a device.
 
-### Flash a fresh Ubuntu SD (from your Mac/Linux — no maskrom, no Windows)
+## Flash a fresh Ubuntu SD (from your Mac/Linux — no maskrom, no Windows)
 
 | Script | Runs on | Purpose |
-|--------|---------|---------|
+| -------- | --------- | --------- |
 | `unpack-rkfw.sh` | workstation | Extract partition images from the vendor RKFW `.img` (handles the 32-bit >4 GB offset overflow that breaks `afptool`). |
 | `build-idbloader.sh` | workstation | Rebuild the sector-64 loader as an **`RKNS` rksd** image — the fix for the black-screen boot. |
 | `build-sd-image.sh` | workstation | Write a bootable Ubuntu SD (GPT + loader + partitions at their exact offsets). **Destructive.** |
 
 See **[`../docs/flash-ubuntu-sd-from-mac.md`](../docs/flash-ubuntu-sd-from-mac.md)** for the full walkthrough and **[`../docs/how-it-works.md`](../docs/how-it-works.md)** for the RK3568 internals.
 
-### Set up, secure & maintain a running device
+## Set up, secure & maintain a running device
 
 | Script | Runs on | Purpose |
-|--------|---------|---------|
+| -------- | --------- | --------- |
 | `discover.sh` | workstation | Find the H68K on the LAN (probes SSH with `-Pn`, auto-detects the subnet CIDR — it's often a /22). |
 | `fix-networking.sh` | the device (root) or offline `ROOT=` | Resolve "no DHCP" by standardizing on systemd-networkd (masks the conflicting NetworkManager/ifupdown stacks). |
 | `expand-rootfs.sh` | the device (root) | Grow the root filesystem to fill the card/eMMC (partition grow + online `resize2fs`). |

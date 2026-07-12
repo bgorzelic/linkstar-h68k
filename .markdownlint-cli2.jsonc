@@ -1,0 +1,17 @@
+{
+  // Config for markdownlint-cli2 (used by CI and editors).
+  "config": {
+    "default": true,
+    "MD013": false,   // line length — prose wraps naturally
+    "MD033": false,   // inline HTML — used for centered <img> banners
+    "MD041": false,   // first line need not be a top-level heading
+    "MD024": { "siblings_only": true },
+    "MD038": false,   // the RKFW magic `LDR ` legitimately has a trailing space
+    "MD060": false    // don't enforce aligned table-pipe padding (compact tables are fine)
+  },
+  "ignores": [
+    "**/node_modules/**",
+    // Vendor release note is preserved verbatim — don't lint vendor formatting.
+    "docs/os-images/ubuntu-20.04-vendor-release-note.md"
+  ]
+}

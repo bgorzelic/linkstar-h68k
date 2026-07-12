@@ -57,16 +57,18 @@ sudo ./scripts/fix-networking.sh         # standardizes on systemd-networkd
 > **First-boot apt trap:** `unattended-upgrades` runs on first boot and can hang
 > on the Ubuntu ESM check while holding the dpkg lock, so manual `apt` fails with
 > `Could not get lock`. Mask the auto-updaters before updating:
+>
 > ```bash
 > sudo systemctl mask unattended-upgrades apt-daily.{service,timer} apt-daily-upgrade.{service,timer}
 > ```
+>
 > then `sudo apt-get update && sudo apt-get -y full-upgrade`. The vendor kernel
 > lives in `boot.img` (not an apt package), so a full upgrade won't touch it.
 
 ## Troubleshooting
 
 | Symptom | Cause | Fix |
-|---------|-------|-----|
+| --------- | ------- | ----- |
 | Black screen, no boot | Wrong loader at sector 64 | Rebuild with `build-idbloader.sh` (magic must be `RKNS`); re-run step 2–4 |
 | Boots but no IP | Three network stacks conflict | `fix-networking.sh` |
 | Only ~6 GB free | rootfs not expanded | `expand-rootfs.sh` / `resize2fs` |

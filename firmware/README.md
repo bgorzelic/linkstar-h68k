@@ -24,7 +24,7 @@ On Linux: `sha256sum -c SHA256SUMS`.
 ## Image catalogue
 
 | Image | Purpose | Size | SHA256 |
-|-------|---------|------|--------|
+| ------- | --------- | ------ | -------- |
 | `ubuntu20.04-v0.0.1-update(linkstar-linkstar-root--root).img` | Stock **Ubuntu 20.04** (LXQt) OS image, v0.0.1 (2023-02-06) — raw `.img` | 6.64 GiB | `9e780950…5b1c24fe` |
 | `ubuntu20.04-v0.0.1-update(linkstar-linkstar-root--root).zip` | Same Ubuntu image, zipped for download | 2.59 GiB | `7fc9da2d…e1f097ff` |
 | `LinkStar-H68K-EraseFlash.img` | **Erase/blank** image — wipes eMMC to a clean state before reflashing | 1.60 GiB | `63f4218b…9810f984` |

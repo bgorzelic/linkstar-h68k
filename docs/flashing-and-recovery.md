@@ -57,6 +57,8 @@ rkdeveloptool rd                        # reboot
 > [hardware.md](hardware.md) *(being finalized against the Seeed wiki)*. Until then,
 > follow Seeed's official RKDevTool instructions for the maskrom step.
 
+<!-- -->
+
 > [!IMPORTANT]
 > For **eMMC** flashing the loader is `MiniLoaderAll.bin` in its native `LDR ` format.
 > That is the opposite of the SD path, where sector 64 needs the rebuilt **`RKNS`**
@@ -77,6 +79,6 @@ sudo scripts/first-setup.sh --hostname h68k-01 --update
 ## Which loader goes where — quick reference
 
 | Target | Loader at sector 64 | Format | Built by |
-|--------|--------------------|--------|----------|
+| -------- | -------------------- | -------- | ---------- |
 | **microSD boot** | rebuilt idbloader | **`RKNS`** (rksd) | `scripts/build-idbloader.sh` |
 | **eMMC via maskrom** | `MiniLoaderAll.bin` | **`LDR `** (download) | vendor / RKFW |

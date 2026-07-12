@@ -41,7 +41,7 @@ flowchart LR
 The stock image is wide open on the LAN. `scripts/harden.sh` remediates the first three.
 
 | Issue | Detail | Fix |
-|-------|--------|-----|
+| ------- | -------- | ----- |
 | **Unauthenticated ADB** | `adbd` listens on `0.0.0.0:5555` — network ADB is a root shell to anyone on the LAN | `harden.sh` disables adbd |
 | **Cleartext FTP** | `vsftpd` enabled on `:21` | `harden.sh` disables it (use SFTP over SSH) |
 | **No firewall** | `iptables` all-ACCEPT, no rules | `harden.sh` installs `ufw`, default-deny inbound + allow SSH |
