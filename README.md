@@ -156,4 +156,4 @@ be labeled as such.
 - **Credits & references** — this project builds on the community's work (Seeed,
   HINLINK, Rockchip, the Armbian/OpenWRT communities, and more). See
   [`CREDITS.md`](./CREDITS.md).
-- Maintained by Brian Gorzelic / AI Aerial Solutions and contributors.
+- Maintained by Brian Gorzelic and contributors.
