@@ -17,6 +17,9 @@ either verified on real hardware or is clearly marked as unverified.
   RKFW/RKAF container format, the idbloader black-screen fix, networking.
 - **[Known issues & fixes](known-issues.md)** — the release driver bugs + the stock
   image's insecure defaults, with remediations.
+- **[First boot](first-boot.md)** — default credentials and what the stock image does
+  on first boot (+ the fast path).
+- **[Hardening](hardening.md)** — locking the box down (companion to `scripts/harden.sh`).
 - **[OS images](os-images/)** — image matrix + the archived vendor release note.
 - **[Firmware downloads & checksums](../firmware/README.md)**
 
@@ -27,11 +30,9 @@ either verified on real hardware or is clearly marked as unverified.
 
 ## Planned
 
-Being written; some depend on sourcing specs against the Seeed wiki:
+Being written:
 
-- `hardening.md` — locking the box down (companion to `scripts/harden.sh`)
-- `networking.md` — interface mapping and the /22 discovery quirk
-- `storage.md` — eMMC vs microSD boot, expanding the rootfs
-- `first-boot.md` — default credentials and first-boot behavior
+- `networking.md` — deeper interface mapping and the /22 discovery quirk
+- `storage.md` — eMMC vs microSD boot, moving root, expanding the rootfs
 
 Contributions welcome — see [`../CONTRIBUTING.md`](../CONTRIBUTING.md).

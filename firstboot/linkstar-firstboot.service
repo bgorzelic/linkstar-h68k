@@ -1,0 +1,13 @@
+[Unit]
+Description=LinkStar H68K first-boot baseline (secure defaults, runs once)
+After=network-online.target local-fs.target
+Wants=network-online.target
+ConditionPathExists=/opt/linkstar-h68k/firstboot/run.sh
+
+[Service]
+Type=oneshot
+ExecStart=/opt/linkstar-h68k/firstboot/run.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
