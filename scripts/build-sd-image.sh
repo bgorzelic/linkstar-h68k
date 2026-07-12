@@ -24,11 +24,33 @@ PARTS="$1"; IDB="$2"; DEV="$3"
 [ -f "$IDB" ]   || die "no such idbloader: $IDB"
 require_cmd dd
 
-# Fixed layout from the H68K Ubuntu parameter.txt (name start_sector image).
-# Empty image => GPT entry only (e.g. backup). rootfs grows to fill the card.
-ROOTFS_GUID="614e0000-0000-4b53-8000-1d28000054a9"
-# name start end/0 image
-LAYOUT="
+# Partition layout. Derived from the image's own parameter.txt when present
+# (so this works for any RK3568 RKFW image — a newer Ubuntu, another OS — not
+# just this one); falls back to the known H68K Ubuntu values otherwise.
+# Format per line: name start_sector end_sector(0=grow) image(-=none).
+if [ -f "$PARTS/parameter.txt" ]; then
+  log "deriving layout from $PARTS/parameter.txt"
+  eval "$(python3 - "$PARTS/parameter.txt" <<'PY'
+import re, os, sys
+txt = open(sys.argv[1], errors="ignore").read()
+cmd = re.search(r'mtdparts=[^:]+:(\S+)', txt)
+uuid = re.search(r'uuid:\w+=([0-9a-fA-F-]+)', txt)
+parts = os.path.dirname(sys.argv[1])
+rows = []
+for m in re.finditer(r'(0x[0-9a-fA-F]+|-)@0x([0-9a-fA-F]+)\(([^):]+)(?::grow)?\)', cmd.group(1)):
+    size, off, name = m.groups()
+    start = int(off, 16)
+    end = 0 if size == "-" else start + int(size, 16) - 1
+    img = f"{name}.img" if os.path.exists(os.path.join(parts, f"{name}.img")) else "-"
+    rows.append(f"{name} {start} {end} {img}")
+print("ROOTFS_GUID=" + (uuid.group(1) if uuid else "614e0000-0000-4b53-8000-1d28000054a9"))
+print("LAYOUT=$'\\n" + "\\n".join(rows) + "\\n'")
+PY
+)"
+else
+  warn "no parameter.txt in parts dir — using built-in H68K Ubuntu layout"
+  ROOTFS_GUID="614e0000-0000-4b53-8000-1d28000054a9"
+  LAYOUT="
 uboot     16384    24575    uboot.img
 misc      24576    32767    misc.img
 boot      32768    98303    boot.img
@@ -38,6 +60,7 @@ oem       229376   491519   oem.img
 userdata  491520   2588671  userdata.img
 rootfs    2588672  0        rootfs.img
 "
+fi
 
 os="$(host_os)"
 if [ "$os" = macos ]; then
