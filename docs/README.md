@@ -9,6 +9,8 @@ either verified on real hardware or is clearly marked as unverified.
   recommended way to (re)install: no maskrom, no Windows. ⭐
 - **[Flashing & recovery overview](flashing-and-recovery.md)** — all the paths,
   including maskrom/eMMC recovery when SD boot isn't enough.
+- **[Flash to eMMC over USB (Windows & Linux/macOS)](flash-emmc-windows.md)** — the
+  thorough maskrom/RKDevTool guide for permanent internal installs & factory restore.
 
 ## Reference
 

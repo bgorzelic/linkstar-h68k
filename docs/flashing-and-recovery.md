@@ -30,6 +30,11 @@ and recoverable (just remove the card).
 Use this when the eMMC image itself is broken, you want to restore the factory
 state, or you're deliberately reflashing internal storage.
 
+> [!TIP]
+> For the **thorough step-by-step** — Windows RKDevTool, driver install, EraseFlash,
+> the two flashing modes, `rkdeveloptool`, and a full troubleshooting table — see
+> **[flash-emmc-windows.md](flash-emmc-windows.md)**. The summary below is the quick version.
+
 You'll need:
 
 - The **EraseFlash** image and the **bootloader** (`H68K-Boot-Loader_*.bin`) — see
