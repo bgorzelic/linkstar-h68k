@@ -24,6 +24,9 @@ either verified on real hardware or is clearly marked as unverified.
 - **[First boot](first-boot.md)** — default credentials and what the stock image does
   on first boot (+ the fast path).
 - **[Hardening](hardening.md)** — locking the box down (companion to `scripts/harden.sh`).
+- **[Networking](networking.md)** — the four ports + chipsets, the /22 discovery quirk,
+  DHCP/static config, and router port mapping.
+- **[Storage](storage.md)** — eMMC vs microSD boot, expanding the rootfs, SD backups.
 - **[OS images](os-images/)** — image matrix + the archived vendor release note.
 - **[Firmware downloads & checksums](../firmware/README.md)**
 
@@ -31,12 +34,5 @@ either verified on real hardware or is clearly marked as unverified.
 
 - **[Releasing (reproducible builds)](releasing.md)** — the pinned, one-command
   release process, versioning, and how to add new OS tracks.
-
-## Planned
-
-Being written:
-
-- `networking.md` — deeper interface mapping and the /22 discovery quirk
-- `storage.md` — eMMC vs microSD boot, moving root, expanding the rootfs
 
 Contributions welcome — see [`../CONTRIBUTING.md`](../CONTRIBUTING.md).
