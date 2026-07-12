@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" font-family="'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <defs>
+    <linearGradient id="raAccent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#bc8cff"/><stop offset="1" stop-color="#58a6ff"/>
+    </linearGradient>
+    <marker id="raArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="600" rx="18" fill="#0d1117"/>
+  <rect x="1" y="1" width="1198" height="598" rx="18" fill="none" stroke="#21262d"/>
+
+  <!-- header -->
+  <rect x="60" y="40" width="10" height="40" rx="3" fill="url(#raAccent)"/>
+  <text x="84" y="62" fill="#e6edf3" font-size="27" font-weight="700">Inside the vendor RKFW image</text>
+  <text x="84" y="86" fill="#8b949e" font-size="15">The ".img" is a container, not a disk image — <tspan fill="#f0883e">dd</tspan>-ing it produces an unbootable card</text>
+
+  <!-- ===== Section A: container bar ===== -->
+  <text x="60" y="126" fill="#8b949e" font-size="13" font-weight="600" letter-spacing="1">CONTAINER LAYOUT</text>
+  <g>
+    <rect x="60"  y="138" width="80"  height="50" rx="6" fill="#21262d" stroke="#30363d"/>
+    <text x="100" y="162" fill="#e6edf3" font-size="13" font-weight="700" text-anchor="middle">RKFW</text>
+    <text x="100" y="179" fill="#8b949e" font-size="11" text-anchor="middle">header</text>
+
+    <rect x="146" y="138" width="240" height="50" rx="6" fill="#161b22" stroke="#58a6ff"/>
+    <text x="266" y="160" fill="#58a6ff" font-size="13" font-weight="700" text-anchor="middle">LDR loader (MiniLoaderAll)</text>
+    <text x="266" y="179" fill="#8b949e" font-size="11" text-anchor="middle">offset 102 · maskrom download loader</text>
+
+    <rect x="392" y="138" width="748" height="50" rx="6" fill="#161b22" stroke="#bc8cff"/>
+    <text x="766" y="160" fill="#bc8cff" font-size="13" font-weight="700" text-anchor="middle">RKAF payload</text>
+    <text x="766" y="179" fill="#8b949e" font-size="11" text-anchor="middle">offset 436,774 · all partitions + parameter.txt</text>
+  </g>
+
+  <!-- bracket from RKAF down to partitions -->
+  <path d="M392 194 L392 206 L1140 206 L1140 194" fill="none" stroke="#30363d"/>
+  <line x1="766" y1="206" x2="766" y2="218" stroke="#30363d"/>
+
+  <!-- partition row -->
+  <g font-size="11" text-anchor="middle">
+    <rect x="60"  y="222" width="120" height="44" rx="5" fill="#161b22" stroke="#30363d"/><text x="120" y="242" fill="#c9d1d9">parameter.txt</text><text x="120" y="258" fill="#8b949e">layout source</text>
+    <rect x="186" y="222" width="120" height="44" rx="5" fill="#161b22" stroke="#30363d"/><text x="246" y="242" fill="#c9d1d9">uboot / misc</text><text x="246" y="258" fill="#8b949e">16384 / 24576</text>
+    <rect x="312" y="222" width="120" height="44" rx="5" fill="#161b22" stroke="#30363d"/><text x="372" y="242" fill="#c9d1d9">boot (kernel)</text><text x="372" y="258" fill="#8b949e">sector 32768</text>
+    <rect x="438" y="222" width="120" height="44" rx="5" fill="#161b22" stroke="#30363d"/><text x="498" y="242" fill="#c9d1d9">recovery / oem</text><text x="498" y="258" fill="#8b949e">98304 / 229376</text>
+    <rect x="564" y="222" width="120" height="44" rx="5" fill="#161b22" stroke="#30363d"/><text x="624" y="242" fill="#c9d1d9">userdata</text><text x="624" y="258" fill="#8b949e">sector 491520</text>
+    <rect x="690" y="222" width="450" height="44" rx="5" fill="#1b2a17" stroke="#3fb950"/><text x="915" y="242" fill="#3fb950" font-weight="700">rootfs — grows to fill the card</text><text x="915" y="258" fill="#8b949e">sector 2,588,672 · PARTUUID 614e…54a9</text>
+  </g>
+
+  <!-- ===== Section B: the two fixes ===== -->
+  <!-- Panel 1: overflow -->
+  <g>
+    <rect x="60" y="300" width="520" height="264" rx="12" fill="#161b22" stroke="#30363d"/>
+    <rect x="60" y="300" width="520" height="40" rx="12" fill="#1d1a12"/>
+    <rect x="60" y="322" width="520" height="18" fill="#1d1a12"/>
+    <text x="82" y="326" fill="#f0883e" font-size="15" font-weight="700">① The 32-bit overflow (why afptool fails)</text>
+    <text x="82" y="368" fill="#c9d1d9" font-size="13">RKAF stores each partition's <tspan fill="#e6edf3" font-weight="700">pos/size as uint32</tspan>. The payload is</text>
+    <text x="82" y="388" fill="#c9d1d9" font-size="13">~6.6 GB, so rootfs / oem / userdata offsets <tspan fill="#f0883e" font-weight="700">wrap past 4 GB</tspan> —</text>
+    <text x="82" y="408" fill="#c9d1d9" font-size="13">afptool's CRC + <tspan font-family="monospace">pos+size &gt; length</tspan> guard reject the rootfs.</text>
+    <rect x="82" y="428" width="476" height="60" rx="8" fill="#0d1117" stroke="#30363d"/>
+    <text x="100" y="452" fill="#8b949e" font-size="12">unpack-rkfw.sh reconstructs true 64-bit offsets (EOF-anchored):</text>
+    <text x="100" y="474" fill="#3fb950" font-size="13" font-family="monospace">2,757,115,904 + 2³² = 7,052,083,200 ✓</text>
+    <text x="82" y="516" fill="#8b949e" font-size="12">Pure python3 — no afptool, sidesteps the CRC bug entirely.</text>
+    <text x="82" y="540" fill="#8b949e" font-size="12">Layout is read from parameter.txt, so it generalizes to any image.</text>
+  </g>
+
+  <!-- Panel 2: idbloader rebuild -->
+  <g>
+    <rect x="600" y="300" width="540" height="264" rx="12" fill="#161b22" stroke="#30363d"/>
+    <rect x="600" y="300" width="540" height="40" rx="12" fill="#0d2818"/>
+    <rect x="600" y="322" width="540" height="18" fill="#0d2818"/>
+    <text x="622" y="326" fill="#3fb950" font-size="15" font-weight="700">② The idbloader rebuild (RKNS)</text>
+
+    <g text-anchor="middle" font-size="12">
+      <rect x="622" y="360" width="150" height="46" rx="6" fill="#0d1117" stroke="#58a6ff"/>
+      <text x="697" y="380" fill="#58a6ff" font-weight="700">MiniLoaderAll</text><text x="697" y="397" fill="#8b949e">magic LDR (download)</text>
+
+      <rect x="622" y="430" width="150" height="46" rx="6" fill="#0d1117" stroke="#30363d"/>
+      <text x="697" y="450" fill="#c9d1d9">FlashData</text><text x="697" y="467" fill="#8b949e">this board's DDR init</text>
+
+      <rect x="622" y="490" width="150" height="46" rx="6" fill="#0d1117" stroke="#30363d"/>
+      <text x="697" y="510" fill="#c9d1d9">FlashBoot</text><text x="697" y="527" fill="#8b949e">miniloader / SPL</text>
+
+      <rect x="968" y="430" width="150" height="46" rx="6" fill="#0d2818" stroke="#3fb950" stroke-width="2"/>
+      <text x="1043" y="450" fill="#3fb950" font-weight="700">idbloader</text><text x="1043" y="467" fill="#8b949e">magic RKNS (rksd)</text>
+    </g>
+    <g stroke="#8b949e" stroke-width="1.5" fill="none" marker-end="url(#raArrow)">
+      <path d="M697 406 L697 428"/>
+      <path d="M772 453 C 860 453, 880 453, 966 453"/>
+      <path d="M772 513 C 900 513, 940 470, 966 462"/>
+    </g>
+    <text x="790" y="500" fill="#8b949e" font-size="11">mkimage -T rksd</text>
+    <text x="622" y="556" fill="#8b949e" font-size="12">Written to <tspan fill="#e6edf3" font-weight="700">sector 64</tspan> — the format the bootROM expects.</text>
+  </g>
+</svg>

@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 440" font-family="'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <defs>
+    <linearGradient id="bcAccent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#39c5cf"/><stop offset="1" stop-color="#58a6ff"/>
+    </linearGradient>
+    <marker id="bcArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#8b949e"/>
+    </marker>
+    <filter id="bcGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="440" rx="18" fill="#0d1117"/>
+  <rect x="1" y="1" width="1198" height="438" rx="18" fill="none" stroke="#21262d"/>
+
+  <!-- header -->
+  <rect x="60" y="44" width="10" height="40" rx="3" fill="url(#bcAccent)"/>
+  <text x="84" y="66" fill="#e6edf3" font-size="27" font-weight="700">RK3568 boot chain</text>
+  <text x="84" y="90" fill="#8b949e" font-size="15">microSD is checked before eMMC — a valid idbloader + layout boots with no maskrom, no Windows</text>
+
+  <!-- stage cards -->
+  <g>
+    <!-- 0 bootROM -->
+    <g transform="translate(60,140)">
+      <rect width="180" height="150" rx="12" fill="#161b22" stroke="#30363d"/>
+      <circle cx="30" cy="34" r="16" fill="#21262d" stroke="#8b949e"/><text x="30" y="39" fill="#c9d1d9" font-size="15" font-weight="700" text-anchor="middle">0</text>
+      <text x="20" y="82" fill="#e6edf3" font-size="18" font-weight="700">bootROM</text>
+      <text x="20" y="106" fill="#8b949e" font-size="13">on-die, immutable</text>
+      <text x="20" y="126" fill="#8b949e" font-size="13">reads sector 64</text>
+    </g>
+    <!-- 1 idbloader (highlighted) -->
+    <g transform="translate(285,140)">
+      <rect width="180" height="150" rx="12" fill="#0d2818" stroke="#3fb950" stroke-width="2" filter="url(#bcGlow)"/>
+      <circle cx="30" cy="34" r="16" fill="#0f3d22" stroke="#3fb950"/><text x="30" y="39" fill="#3fb950" font-size="15" font-weight="700" text-anchor="middle">1</text>
+      <text x="20" y="82" fill="#e6edf3" font-size="18" font-weight="700">idbloader</text>
+      <text x="20" y="106" fill="#3fb950" font-size="13" font-weight="600">magic RKNS · sector 64</text>
+      <text x="20" y="126" fill="#8b949e" font-size="13">DDR init + SPL</text>
+    </g>
+    <!-- 2 U-Boot -->
+    <g transform="translate(510,140)">
+      <rect width="180" height="150" rx="12" fill="#161b22" stroke="#30363d"/>
+      <circle cx="30" cy="34" r="16" fill="#21262d" stroke="#58a6ff"/><text x="30" y="39" fill="#58a6ff" font-size="15" font-weight="700" text-anchor="middle">2</text>
+      <text x="20" y="82" fill="#e6edf3" font-size="18" font-weight="700">U-Boot</text>
+      <text x="20" y="106" fill="#8b949e" font-size="13">uboot partition</text>
+      <text x="20" y="126" fill="#8b949e" font-size="13">@ sector 16384</text>
+    </g>
+    <!-- 3 Kernel -->
+    <g transform="translate(735,140)">
+      <rect width="180" height="150" rx="12" fill="#161b22" stroke="#30363d"/>
+      <circle cx="30" cy="34" r="16" fill="#21262d" stroke="#bc8cff"/><text x="30" y="39" fill="#bc8cff" font-size="15" font-weight="700" text-anchor="middle">3</text>
+      <text x="20" y="82" fill="#e6edf3" font-size="18" font-weight="700">Kernel 4.19</text>
+      <text x="20" y="106" fill="#8b949e" font-size="13">boot partition</text>
+      <text x="20" y="126" fill="#8b949e" font-size="13">vendor BSP</text>
+    </g>
+    <!-- 4 rootfs -->
+    <g transform="translate(960,140)">
+      <rect width="180" height="150" rx="12" fill="#161b22" stroke="#30363d"/>
+      <circle cx="30" cy="34" r="16" fill="#21262d" stroke="#f0883e"/><text x="30" y="39" fill="#f0883e" font-size="15" font-weight="700" text-anchor="middle">4</text>
+      <text x="20" y="82" fill="#e6edf3" font-size="18" font-weight="700">rootfs</text>
+      <text x="20" y="106" fill="#8b949e" font-size="13">mmcblk1p8</text>
+      <text x="20" y="126" fill="#8b949e" font-size="13">Ubuntu / LXQt</text>
+    </g>
+  </g>
+
+  <!-- arrows -->
+  <g stroke="#8b949e" stroke-width="2" fill="none" marker-end="url(#bcArrow)">
+    <line x1="243" y1="215" x2="281" y2="215"/>
+    <line x1="468" y1="215" x2="506" y2="215"/>
+    <line x1="693" y1="215" x2="731" y2="215"/>
+    <line x1="918" y1="215" x2="956" y2="215"/>
+  </g>
+
+  <!-- callout under idbloader -->
+  <g>
+    <line x1="375" y1="290" x2="375" y2="330" stroke="#3fb950" stroke-width="2" stroke-dasharray="3 3"/>
+    <rect x="150" y="330" width="470" height="64" rx="10" fill="#0d2818" stroke="#238636"/>
+    <text x="172" y="358" fill="#3fb950" font-size="14" font-weight="700">This is the black-screen fix</text>
+    <text x="172" y="380" fill="#c9d1d9" font-size="13">Rebuilt by build-idbloader.sh. Writing the LDR-format loader here = black screen.</text>
+  </g>
+
+  <!-- note -->
+  <g>
+    <rect x="650" y="330" width="490" height="64" rx="10" fill="#161b22" stroke="#30363d"/>
+    <text x="672" y="358" fill="#58a6ff" font-size="14" font-weight="700">Why SD boot works</text>
+    <text x="672" y="380" fill="#c9d1d9" font-size="13">bootROM tries microSD first; the 32 GB eMMC is left untouched as fallback.</text>
+  </g>
+</svg>

@@ -11,22 +11,18 @@ an **idbloader** (DDR init + a first-stage loader), which loads U-Boot from the
 Put a valid idbloader + the right partition layout on an SD and it boots — no
 maskrom, no Windows.
 
-```mermaid
-flowchart LR
-  ROM["RK3568 bootROM<br/>checks SD before eMMC"]
-  IDB["idbloader @ sector 64<br/>magic RKNS · DDR init"]
-  UB["U-Boot<br/>uboot partition"]
-  K["Kernel<br/>boot partition"]
-  RF["rootfs<br/>mmcblk1p8"]
-  ROM --> IDB --> UB --> K --> RF
-  classDef fix fill:#0d2818,stroke:#3fb950,color:#e6edf3;
-  class IDB fix;
-```
+<p align="center">
+  <img src="../assets/diagrams/boot-chain.svg" alt="RK3568 boot chain: the bootROM reads the RKNS idbloader at sector 64, which loads U-Boot, then the kernel, then rootfs. Writing the wrong loader format at sector 64 causes the black-screen bug." width="100%">
+</p>
 
-The green box is the piece this project rebuilds — writing the wrong loader format
-there is the black-screen bug (see below).
+The highlighted stage is the piece this project rebuilds — writing the wrong loader
+format at sector 64 is the black-screen bug (see below).
 
 ## The vendor image is an RKFW container
+
+<p align="center">
+  <img src="../assets/diagrams/rkfw-anatomy.svg" alt="Anatomy of the RKFW container: an RKFW header, the LDR-format MiniLoaderAll download loader, and the RKAF payload holding parameter.txt plus all partitions; with the 32-bit offset overflow fix and the RKNS idbloader rebuild explained." width="100%">
+</p>
 
 `ubuntu20.04-...-update(...).img` is not a disk image. Header magic is `RKFW`
 (little-endian, packed):
