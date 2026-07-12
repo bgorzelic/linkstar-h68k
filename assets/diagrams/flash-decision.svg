@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 500" font-family="'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <rect width="1200" height="500" rx="18" fill="#0d1117"/>
+  <rect x="1" y="1" width="1198" height="498" rx="18" fill="none" stroke="#21262d"/>
+
+  <rect x="60" y="40" width="10" height="40" rx="3" fill="#58a6ff"/>
+  <text x="84" y="62" fill="#e6edf3" font-size="27" font-weight="700">Which flashing path?</text>
+  <text x="84" y="86" fill="#8b949e" font-size="15">three ways to put an OS on the H68K — pick by what you're doing</text>
+
+  <!-- ===== card 1: SD vendor Ubuntu (green) ===== -->
+  <g>
+    <rect x="60" y="120" width="340" height="330" rx="12" fill="#161b22" stroke="#3fb950"/>
+    <rect x="60" y="120" width="340" height="46" rx="12" fill="#0d2818"/><rect x="60" y="146" width="340" height="20" fill="#0d2818"/>
+    <text x="82" y="149" fill="#3fb950" font-size="17" font-weight="700">microSD · vendor Ubuntu</text>
+    <text x="82" y="196" fill="#8b949e" font-size="12" font-weight="600" letter-spacing="1">BEST FOR</text>
+    <text x="82" y="216" fill="#c9d1d9" font-size="14">Running/trying the stock Ubuntu</text>
+    <text x="82" y="250" fill="#8b949e" font-size="12" font-weight="600" letter-spacing="1">TOOLS</text>
+    <text x="82" y="270" fill="#c9d1d9" font-size="14">Mac/Linux + this repo's scripts</text>
+    <text x="82" y="290" fill="#c9d1d9" font-size="14">No maskrom · no Windows</text>
+    <text x="82" y="324" fill="#8b949e" font-size="12" font-weight="600" letter-spacing="1">DIFFICULTY</text>
+    <circle cx="90" cy="344" r="7" fill="#3fb950"/><circle cx="112" cy="344" r="7" fill="#3fb950"/><circle cx="134" cy="344" r="7" fill="none" stroke="#30363d"/>
+    <text x="82" y="392" fill="#8b949e" font-size="12" font-weight="600" letter-spacing="1">REVERSIBLE</text>
+    <text x="82" y="412" fill="#c9d1d9" font-size="14">Pull the card</text>
+    <text x="82" y="438" fill="#8b949e" font-size="12">RKFW unpack → RKNS idbloader (scripted)</text>
+  </g>
+
+  <!-- ===== card 2: SD OpenWRT/Armbian (blue) ===== -->
+  <g>
+    <rect x="430" y="120" width="340" height="330" rx="12" fill="#161b22" stroke="#58a6ff"/>
+    <rect x="430" y="120" width="340" height="46" rx="12" fill="#0d1f33"/><rect x="430" y="146" width="340" height="20" fill="#0d1f33"/>
+    <text x="452" y="149" fill="#58a6ff" font-size="17" font-weight="700">microSD · OpenWRT / Armbian</text>
+    <text x="452" y="196" fill="#8b949e" font-size="12" font-weight="600" letter-spacing="1">BEST FOR</text>
+    <text x="452" y="216" fill="#c9d1d9" font-size="14">Routing, NAS, fixing driver bugs</text>
+    <text x="452" y="250" fill="#8b949e" font-size="12" font-weight="600" letter-spacing="1">TOOLS</text>
+    <text x="452" y="270" fill="#c9d1d9" font-size="14">balenaEtcher or dd</text>
+    <text x="452" y="290" fill="#c9d1d9" font-size="14">Raw disk image — simplest path</text>
+    <text x="452" y="324" fill="#8b949e" font-size="12" font-weight="600" letter-spacing="1">DIFFICULTY</text>
+    <circle cx="460" cy="344" r="7" fill="#58a6ff"/><circle cx="482" cy="344" r="7" fill="none" stroke="#30363d"/><circle cx="504" cy="344" r="7" fill="none" stroke="#30363d"/>
+    <text x="452" y="392" fill="#8b949e" font-size="12" font-weight="600" letter-spacing="1">REVERSIBLE</text>
+    <text x="452" y="412" fill="#c9d1d9" font-size="14">Pull the card</text>
+    <text x="452" y="438" fill="#3fb950" font-size="12">Armbian mainline fixes Wi-Fi / 2.5 G / LED</text>
+  </g>
+
+  <!-- ===== card 3: eMMC USB (orange) ===== -->
+  <g>
+    <rect x="800" y="120" width="340" height="330" rx="12" fill="#161b22" stroke="#f0883e"/>
+    <rect x="800" y="120" width="340" height="46" rx="12" fill="#2b1c0d"/><rect x="800" y="146" width="340" height="20" fill="#2b1c0d"/>
+    <text x="822" y="149" fill="#f0883e" font-size="17" font-weight="700">eMMC over USB · any OS</text>
+    <text x="822" y="196" fill="#8b949e" font-size="12" font-weight="600" letter-spacing="1">BEST FOR</text>
+    <text x="822" y="216" fill="#c9d1d9" font-size="14">Permanent install, factory restore</text>
+    <text x="822" y="250" fill="#8b949e" font-size="12" font-weight="600" letter-spacing="1">TOOLS</text>
+    <text x="822" y="270" fill="#c9d1d9" font-size="14">RKDevTool (Win) / rkdeveloptool</text>
+    <text x="822" y="290" fill="#c9d1d9" font-size="14">Needs maskrom (keyhole + USB-C)</text>
+    <text x="822" y="324" fill="#8b949e" font-size="12" font-weight="600" letter-spacing="1">DIFFICULTY</text>
+    <circle cx="830" cy="344" r="7" fill="#f0883e"/><circle cx="852" cy="344" r="7" fill="#f0883e"/><circle cx="874" cy="344" r="7" fill="#f0883e"/>
+    <text x="822" y="392" fill="#8b949e" font-size="12" font-weight="600" letter-spacing="1">REVERSIBLE</text>
+    <text x="822" y="412" fill="#c9d1d9" font-size="14">Reflash to undo (no card to pull)</text>
+    <text x="822" y="438" fill="#8b949e" font-size="12">Uses the LDR loader, not RKNS</text>
+  </g>
+</svg>

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" font-family="'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <defs>
+    <linearGradient id="slAccent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#3fb950"/><stop offset="1" stop-color="#39c5cf"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="380" rx="18" fill="#0d1117"/>
+  <rect x="1" y="1" width="1198" height="378" rx="18" fill="none" stroke="#21262d"/>
+
+  <rect x="60" y="40" width="10" height="40" rx="3" fill="url(#slAccent)"/>
+  <text x="84" y="62" fill="#e6edf3" font-size="27" font-weight="700">SD card layout</text>
+  <text x="84" y="86" fill="#8b949e" font-size="15">what <tspan fill="#c9d1d9" font-family="monospace">build-sd-image.sh</tspan> writes · offsets in 512-byte sectors · not to scale</text>
+
+  <!-- blocks -->
+  <g font-size="13" text-anchor="middle">
+    <rect x="60"  y="150" width="70"  height="70" rx="6" fill="#161b22" stroke="#30363d"/><text x="95"  y="190" fill="#8b949e">GPT</text>
+    <rect x="134" y="150" width="130" height="70" rx="6" fill="#0d2818" stroke="#3fb950" stroke-width="2"/><text x="199" y="185" fill="#3fb950" font-weight="700">idbloader</text><text x="199" y="203" fill="#8b949e" font-size="11">RKNS</text>
+    <rect x="268" y="150" width="110" height="70" rx="6" fill="#161b22" stroke="#58a6ff"/><text x="323" y="190" fill="#c9d1d9">uboot</text>
+    <rect x="382" y="150" width="110" height="70" rx="6" fill="#161b22" stroke="#bc8cff"/><text x="437" y="185" fill="#c9d1d9">boot</text><text x="437" y="203" fill="#8b949e" font-size="11">kernel</text>
+    <rect x="496" y="150" width="120" height="70" rx="6" fill="#161b22" stroke="#30363d"/><text x="556" y="190" fill="#c9d1d9">recovery</text>
+    <rect x="620" y="150" width="110" height="70" rx="6" fill="#161b22" stroke="#30363d"/><text x="675" y="190" fill="#c9d1d9">oem</text>
+    <rect x="734" y="150" width="120" height="70" rx="6" fill="#161b22" stroke="#30363d"/><text x="794" y="190" fill="#c9d1d9">userdata</text>
+    <rect x="858" y="150" width="222" height="70" rx="6" fill="#1b2a17" stroke="#3fb950" stroke-width="2"/><text x="969" y="185" fill="#3fb950" font-weight="700">rootfs</text><text x="969" y="203" fill="#8b949e" font-size="11">grows to fill the card →</text>
+  </g>
+
+  <!-- sector labels -->
+  <g font-size="11" fill="#8b949e" text-anchor="middle">
+    <text x="95"  y="238">LBA 0</text>
+    <text x="199" y="238">64</text>
+    <text x="323" y="238">16384</text>
+    <text x="437" y="238">32768</text>
+    <text x="556" y="238">98304</text>
+    <text x="675" y="238">229376</text>
+    <text x="794" y="238">491520</text>
+    <text x="969" y="238">2,588,672</text>
+  </g>
+
+  <!-- callouts -->
+  <g>
+    <rect x="60" y="278" width="500" height="72" rx="10" fill="#0d2818" stroke="#238636"/>
+    <text x="82" y="304" fill="#3fb950" font-size="14" font-weight="700">Sector 64 — the idbloader</text>
+    <text x="82" y="326" fill="#c9d1d9" font-size="13">Must be the RKNS-format loader. This is the one spot that</text>
+    <text x="82" y="344" fill="#c9d1d9" font-size="13">makes SD boot work (or black-screen if wrong).</text>
+
+    <rect x="580" y="278" width="560" height="72" rx="10" fill="#161b22" stroke="#30363d"/>
+    <text x="602" y="304" fill="#3fb950" font-size="14" font-weight="700">rootfs grows on first boot</text>
+    <text x="602" y="326" fill="#c9d1d9" font-size="13">The image ships ~6.6 GB; <tspan font-family="monospace">resize2fs</tspan> (or expand-rootfs.sh)</text>
+    <text x="602" y="344" fill="#c9d1d9" font-size="13">expands it to fill whatever card you used.</text>
+  </g>
+</svg>

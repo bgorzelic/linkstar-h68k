@@ -11,6 +11,8 @@ either verified on real hardware or is clearly marked as unverified.
   including maskrom/eMMC recovery when SD boot isn't enough.
 - **[Flash to eMMC over USB (Windows & Linux/macOS)](flash-emmc-windows.md)** — the
   thorough maskrom/RKDevTool guide for permanent internal installs & factory restore.
+- **[Running other operating systems](alternative-os.md)** — OpenWRT, Armbian, Debian,
+  Android; the simpler raw-image route (and the real fix for the vendor driver bugs).
 
 ## Reference
 

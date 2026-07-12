@@ -65,6 +65,10 @@ offsets by chaining partitions (each real start = previous real end, bumping by
 rootfs PARTUUID must be `614e0000-0000-4b53-8000-1d28000054a9` (U-Boot/kernel
 find root by it). `build-sd-image.sh` sets it explicitly.
 
+<p align="center">
+  <img src="../assets/diagrams/sd-layout.svg" alt="SD card layout: GPT, the RKNS idbloader at sector 64, then uboot, boot, recovery, oem, userdata, and rootfs (which grows to fill the card on first boot). Offsets in 512-byte sectors, not to scale." width="100%">
+</p>
+
 ## The black-screen bug: idbloader format
 
 `MiniLoaderAll.bin` (magic `LDR `) is the loader for **maskrom download mode**
