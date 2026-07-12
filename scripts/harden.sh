@@ -70,7 +70,11 @@ write_file() {
   fi
 }
 
-port_listening() { ss -tlnH "( sport = :$1 )" 2>/dev/null | grep -q .; }
+# Robust helpers. Avoid `producer | grep -q` here: under `set -o pipefail`, grep
+# closing the pipe on first match sends SIGPIPE to the producer, which then exits
+# 141 and makes the whole pipeline "fail" even though there WAS a match.
+port_listening() { [ -n "$(ss -tlnH "( sport = :$1 )" 2>/dev/null)" ]; }
+unit_exists()    { systemctl cat "$1" >/dev/null 2>&1; }
 
 # ---------------------------------------------------------------------------
 # 1. adbd — unauthenticated network root shell on :5555
@@ -78,7 +82,7 @@ port_listening() { ss -tlnH "( sport = :$1 )" 2>/dev/null | grep -q .; }
 if [[ "$SKIP_ADB" == "0" ]]; then
   log "disabling adbd (network ADB on :5555)…"
   [[ -x /etc/init.d/adbd.sh ]] && run /etc/init.d/adbd.sh stop || true
-  if command -v systemctl >/dev/null 2>&1 && systemctl list-unit-files 2>/dev/null | grep -q '^adbd'; then
+  if command -v systemctl >/dev/null 2>&1 && unit_exists adbd; then
     run systemctl disable --now adbd 2>/dev/null || true
     run systemctl mask adbd 2>/dev/null || true
   fi
@@ -98,7 +102,7 @@ fi
 # ---------------------------------------------------------------------------
 if [[ "$SKIP_FTP" == "0" ]]; then
   log "disabling vsftpd (cleartext FTP on :21)…"
-  if systemctl list-unit-files 2>/dev/null | grep -q '^vsftpd'; then
+  if unit_exists vsftpd; then
     run systemctl disable --now vsftpd 2>/dev/null || true
     ok "vsftpd disabled (use SFTP over SSH instead)"
   else
