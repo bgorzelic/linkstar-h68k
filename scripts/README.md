@@ -24,6 +24,15 @@ See **[`../docs/flash-ubuntu-sd-from-mac.md`](../docs/flash-ubuntu-sd-from-mac.m
 | `first-setup.sh` | the device (root) | Hostname, timezone/NTP, updates, admin user. |
 | `lib/common.sh` | — | Shared logging / dry-run / helpers (sourced by all of the above). |
 
+## Cut a release (reproducible)
+
+| Script | Runs on | Purpose |
+| -------- | --------- | --------- |
+| `bootstrap-tools.sh` | workstation | Fetch + build the Rockchip toolchain (`rkdeveloptool`, `rkbin`) at pinned commits. |
+| `build-release.sh` | workstation | One command: unpack → rebuild idbloader → (optional) flash → emit `SHA256SUMS` + manifest. |
+
+Full runbook (versioning, publishing, adding OS tracks): **[`../docs/releasing.md`](../docs/releasing.md)**.
+
 ## Typical flow
 
 ```bash

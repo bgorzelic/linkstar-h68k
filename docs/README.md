@@ -12,17 +12,23 @@ either verified on real hardware or is clearly marked as unverified.
 
 ## Reference
 
+- **[Hardware](hardware.md)** — SoC, RAM, NICs, LEDs, ports, with real photos + infographic.
 - **[How SD boot works (RK3568 internals)](how-it-works.md)** — boot chain, the
   RKFW/RKAF container format, the idbloader black-screen fix, networking.
+- **[Known issues & fixes](known-issues.md)** — the release driver bugs + the stock
+  image's insecure defaults, with remediations.
 - **[OS images](os-images/)** — image matrix + the archived vendor release note.
 - **[Firmware downloads & checksums](../firmware/README.md)**
 
-## Planned (tracked in the project roadmap)
+## Building & releasing
 
-These are being written; some depend on sourcing specs against the Seeed wiki:
+- **[Releasing (reproducible builds)](releasing.md)** — the pinned, one-command
+  release process, versioning, and how to add new OS tracks.
 
-- `hardware.md` — SoC, RAM, NICs, LEDs, ports, GPIO breakdown
-- `known-issues.md` — the release driver bugs (Wi-Fi / 2.5 G NICs / LED) + insecure defaults, with fixes
+## Planned
+
+Being written; some depend on sourcing specs against the Seeed wiki:
+
 - `hardening.md` — locking the box down (companion to `scripts/harden.sh`)
 - `networking.md` — interface mapping and the /22 discovery quirk
 - `storage.md` — eMMC vs microSD boot, expanding the rootfs
