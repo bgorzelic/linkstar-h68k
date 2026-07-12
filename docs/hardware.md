@@ -4,6 +4,13 @@
   <img src="../assets/h68k-infographic.svg" alt="LinkStar H68K hardware overview" width="100%">
 </p>
 
+<p align="center">
+  <img src="../assets/photos/h68k-overview.jpg" alt="LinkStar H68K device" width="49%">
+  <img src="../assets/photos/h68k-hardware-overview.jpg" alt="LinkStar H68K ports and hardware layout" width="49%">
+</p>
+
+<sub>Device photos © Seeed Studio, reused under CC BY-SA 4.0 — see [`../assets/photos/CREDITS.md`](../assets/photos/CREDITS.md).</sub>
+
 Facts are tagged: **[VERIFIED]** = observed on a live unit in this project ·
 **[SPEC]** = RK3568 platform spec, being confirmed against the Seeed wiki ·
 **[VENDOR]** = from the official release note.
@@ -46,6 +53,18 @@ flowchart LR
   NIC2 -.->|driver bug: may not link| LAN
   WIFI -.->|driver bug: may not come up| LAN
 ```
+
+## Front panel & power
+
+<p align="center">
+  <img src="../assets/photos/h68k-indicators.jpg" alt="LinkStar H68K front-panel LED indicators" width="49%">
+  <img src="../assets/photos/h68k-power.jpg" alt="LinkStar H68K power button and input" width="49%">
+</p>
+
+The front-panel **LEDs** are the component with a known driver bug in the stock
+image — see [known-issues.md](known-issues.md).
+
+<sub>Photos © Seeed Studio, CC BY-SA 4.0 — [credits](../assets/photos/CREDITS.md).</sub>
 
 ## Storage & boot order
 

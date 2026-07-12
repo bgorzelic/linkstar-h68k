@@ -34,6 +34,12 @@ available.
 It's a great little box. Its documentation, however, is scattered across a wiki,
 a few forum posts, and some dead download links. This repo fixes that.
 
+<p align="center">
+  <img src="./assets/photos/h68k-overview.jpg" alt="LinkStar H68K device" width="55%">
+</p>
+
+<sub align="center">Device photo © Seeed Studio, reused under CC BY-SA 4.0 — see [`assets/photos/CREDITS.md`](./assets/photos/CREDITS.md).</sub>
+
 ## Why this repo exists
 
 - 💽 **Flash it from a Mac — no maskrom, no Windows.** The vendor only documents
