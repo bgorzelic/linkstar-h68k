@@ -114,26 +114,26 @@
   </g>
 
   <!-- ============ feature ribbon ============ -->
-  <g transform="translate(0,506)" font-size="16" font-weight="600" text-anchor="middle">
+  <g transform="translate(0,506)" font-size="14" font-weight="600" text-anchor="middle">
     <g>
-      <rect x="64" y="0" width="252" height="44" rx="22" fill="#0d2818" stroke="#238636"/>
-      <text x="190" y="28" fill="#3fb950">Flash from a Mac &#8212; no maskrom</text>
+      <rect x="60" y="0" width="176" height="44" rx="22" fill="#0d2818" stroke="#238636"/>
+      <text x="148" y="28" fill="#3fb950">Flash from a Mac</text>
     </g>
     <g>
-      <rect x="336" y="0" width="196" height="44" rx="22" fill="#0d1f33" stroke="#1f6feb"/>
-      <text x="434" y="28" fill="#58a6ff">Secure-by-default scripts</text>
+      <rect x="252" y="0" width="176" height="44" rx="22" fill="#0d1f33" stroke="#1f6feb"/>
+      <text x="340" y="28" fill="#58a6ff">Secure by default</text>
     </g>
     <g>
-      <rect x="552" y="0" width="214" height="44" rx="22" fill="#2b1d33" stroke="#8957e5"/>
-      <text x="659" y="28" fill="#bc8cff">Boot &amp; RKFW internals, documented</text>
+      <rect x="444" y="0" width="204" height="44" rx="22" fill="#2b1d33" stroke="#8957e5"/>
+      <text x="546" y="28" fill="#bc8cff">Internals documented</text>
     </g>
     <g>
-      <rect x="786" y="0" width="200" height="44" rx="22" fill="#33230d" stroke="#bb8009"/>
-      <text x="886" y="28" fill="#e3b341">Checksummed firmware archive</text>
+      <rect x="664" y="0" width="212" height="44" rx="22" fill="#33230d" stroke="#bb8009"/>
+      <text x="770" y="28" fill="#e3b341">Checksummed firmware</text>
     </g>
     <g>
-      <rect x="1006" y="0" width="130" height="44" rx="22" fill="#161b22" stroke="#30363d"/>
-      <text x="1071" y="28" fill="#e6edf3">Open source</text>
+      <rect x="892" y="0" width="132" height="44" rx="22" fill="#161b22" stroke="#30363d"/>
+      <text x="958" y="28" fill="#e6edf3">Open source</text>
     </g>
   </g>
 </svg>
