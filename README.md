@@ -26,10 +26,10 @@ firmware.
 ## What is the LinkStar H68K?
 
 A fanless **Rockchip RK3568** mini-computer / soft-router: quad-core Cortex-A55,
-Mali-G52 GPU, a 0.8-TOPS NPU, onboard eMMC + microSD, and — its headline feature
-— **two 2.5 GbE ports** (Realtek RTL8125B) plus Wi-Fi. It ships from the factory
-with an Android-lineage Ubuntu 20.04 (LXQt) image, and an OpenWRT image is also
-available.
+Mali-G52 GPU, a 0.8-TOPS NPU, onboard eMMC + microSD, and — its headline feature —
+**four Ethernet ports** (2× 2.5 GbE + 2× 1 GbE) plus optional Wi-Fi 6. It ships from
+the factory with an Android-lineage Ubuntu 20.04 (LXQt) image, and an OpenWRT image
+is also available.
 
 It's a great little box. Its documentation, however, is scattered across a wiki,
 a few forum posts, and some dead download links. This repo fixes that.
@@ -61,7 +61,7 @@ a few forum posts, and some dead download links. This repo fixes that.
 | **SoC** | Rockchip RK3568 — 4× Cortex-A55, Mali-G52 GPU, 0.8-TOPS NPU |
 | **RAM** | LPDDR4/4x (unit verified: ~4 GB) |
 | **Storage** | ~32 GB eMMC + microSD (boots from either) |
-| **Network** | 2× 2.5 GbE (Realtek RTL8125B) + Wi-Fi (MediaTek MT7921 / "M7921E") |
+| **Network** | 2× 2.5 GbE (RTL8125B) + 2× 1 GbE (RTL8211F) + optional Wi-Fi 6 (MT7921) |
 | **OS (stock)** | Ubuntu 20.04.5 LTS (Lubuntu / LXQt), kernel 4.19 vendor BSP |
 
 Full breakdown, sourced and verified: **[`docs/hardware.md`](./docs/hardware.md)**.

@@ -34,28 +34,42 @@ You'll need:
 
 - The **EraseFlash** image and the **bootloader** (`H68K-Boot-Loader_*.bin`) — see
   [`../firmware/README.md`](../firmware/README.md) for downloads + checksums.
-- A USB-A↔USB-C (or the vendor-specified) cable between the board and your computer.
-- One of:
-  - **RKDevTool** (Windows) — the vendor GUI flasher, or
-  - **`rkdeveloptool`** (Linux/macOS) — the CLI equivalent. Building it natively on
-    macOS is covered in [how-it-works.md](how-it-works.md#building-the-tools).
+- The **USB-C** port on the H68K connected to your computer (use USB-C, *not* a
+  Type-A port).
+- **RKDevTool v2.84** + **Rockchip DriverAssistant v5.1.1** (Windows — the documented
+  vendor path), or **`rkdeveloptool`** (Linux/macOS — build notes in
+  [how-it-works.md](how-it-works.md#building-the-tools)).
 
-Outline of the CLI flow (`rkdeveloptool`, device in maskrom/loader mode):
+### Enter maskrom mode
 
-```bash
-rkdeveloptool ld                       # confirm the device is in Maskrom/Loader mode
-rkdeveloptool db  MiniLoaderAll.bin     # push the download-mode loader (the LDR-format one)
-rkdeveloptool ef                        # erase flash   (or write LinkStar-H68K-EraseFlash.img)
-rkdeveloptool wl 0 <image>              # write image(s) at their offsets
-rkdeveloptool rd                        # reboot
-```
+Hold the recessed **"Update keyhole"** button with a SIM-eject pin, connect the
+**USB-C** cable to your PC while still holding, then release. The tool should report
+**"Found One MASKROM Device."**
+
+### Windows (RKDevTool) — documented vendor path
+
+1. Install the driver with `DriverInstall.exe` (Rockchip DriverAssistant).
+2. Open `RKDevTool.exe`; enter maskrom mode (above).
+3. If the eMMC is in a bad state, click **EraseFlash** first (wipes eMMC via
+   `LinkStar-H68K-EraseFlash.img`).
+4. Set **Boot** = `H68K-Boot-Loader_*.bin`, **System** = your target `.img`
+   (Ubuntu / OpenWRT / Android).
+5. Click **Run** → wait for **"Download image OK."**
+
+### Linux / macOS (rkdeveloptool)
 
 > [!NOTE]
-> Entering **maskrom mode** (holding the recessed maskrom/recovery button while
-> applying power, or shorting the documented test point) is board-specific. The
-> exact button/procedure for the H68K is documented in
-> [hardware.md](hardware.md) *(being finalized against the Seeed wiki)*. Until then,
-> follow Seeed's official RKDevTool instructions for the maskrom step.
+> Seeed documents only the Windows GUI. The commands below are the **standard RK3568
+> maskrom pattern** (community-verified, not H68K-specific docs) — treat exact args
+> as unverified.
+
+```bash
+rkdeveloptool ld                          # confirm Maskrom/Loader mode
+rkdeveloptool db  H68K-Boot-Loader_*.bin  # load the bootloader into SRAM
+rkdeveloptool ef                          # (optional) erase flash
+rkdeveloptool wl 0 <system>.img           # write the OS image
+rkdeveloptool rd                          # reboot
+```
 
 <!-- -->
 

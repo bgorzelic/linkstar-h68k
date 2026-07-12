@@ -52,23 +52,32 @@ for i in range(num_parts):
     _nand, pos, _naddr, _pad, size = struct.unpack_from("<IIIII", rk, o+92)
     raw.append([name, fname, pos, size])
 
-# Reconstruct 64-bit offsets: RKAF stores pos/size as uint32, so partitions past
-# 4 GB wrap. Partitions are packed sequentially, so chain them: each real start
-# is the previous real end; bump by 2**32 until monotonic, same for sizes.
+# Reconstruct 64-bit offsets. RKAF stores pos/size as uint32, so a partition
+# larger than 4 GB (the rootfs) has BOTH its size and every following partition's
+# start wrapped mod 2**32 — and no purely-32-bit scheme can recover that (the lost
+# high bits are simply not in the table). We recover them using the file's real
+# size as an anchor:
+#   1. delta-reconstruct minimal starts (each start's low 32 bits match `pos`);
+#   2. take exact stored sizes;
+#   3. the shortfall between the minimal end and the real payload end is a whole
+#      number of 2**32 blocks — assign it to the largest partition (the rootfs)
+#      and shift everything after it.
 WRAP = 1 << 32
-parts, cursor = [], 0
-for name, fname, pos, size in raw:
-    if fname in ("RESERVED", "SELF") or size == 0:
-        continue
-    real_pos = pos
-    while real_pos < cursor:              # unwrap start
-        real_pos += WRAP
-    real_size = size
-    # unwrap size: extend until it reaches at least the next partition / EOF sanity
-    while real_pos + real_size < cursor:
-        real_size += WRAP
-    parts.append((name, fname, image_offset + real_pos, real_size))
-    cursor = real_pos + real_size
+data = [(n, f, p, s) for n, f, p, s in raw if f not in ("RESERVED", "SELF") and s > 0]
+starts, acc = [], 0
+for _n, _f, pos, _s in data:
+    acc += (pos - (acc & 0xFFFFFFFF)) & 0xFFFFFFFF   # advance to next low-32 match
+    starts.append(acc)
+sizes = [s for _n, _f, _p, s in data]
+payload = os.path.getsize(img) - image_offset
+deficit = ((payload - (starts[-1] + sizes[-1])) // WRAP) * WRAP
+if deficit > 0:
+    w = max(range(len(sizes)), key=lambda i: sizes[i])   # the rootfs
+    sizes[w] += deficit
+    for i in range(w + 1, len(starts)):
+        starts[i] += deficit
+parts = [(data[i][0], data[i][1], image_offset + starts[i], sizes[i])
+         for i in range(len(data))]
 
 CHUNK = 8 << 20
 with open(img, "rb") as src:

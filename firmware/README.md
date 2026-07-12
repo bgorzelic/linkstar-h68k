@@ -35,17 +35,24 @@ Full checksums are in [`SHA256SUMS`](./SHA256SUMS).
 
 ## Where to download
 
-<!-- TODO(links): fill exact official URLs from the research pass, then add
-     Internet Archive + GitHub Release mirror URLs alongside each. -->
+**Official host — SourceForge project [`linkstar-h68k-os`](https://sourceforge.net/projects/linkstar-h68k-os/files/)**
+(linked from the Seeed wiki). Prefer the official source when reachable:
 
-- **Official source:** Seeed Studio LinkStar H68K wiki / getting-started page
-  (`https://wiki.seeedstudio.com/` — LinkStar H68K). Always prefer the official
-  source when it is reachable.
-- **Preservation mirrors:** to be published to the Internet Archive
-  (`archive.org/details/linkstar-h68k-firmware`, TBD) and attached to the matching
-  GitHub Release for files under GitHub's 2 GB asset limit (EraseFlash, OpenWRT,
-  bootloader). The two large Ubuntu files (6.64 GiB / 2.59 GiB) exceed the Release
-  limit and live on the Internet Archive.
+| Image | Folder on SourceForge |
+|-------|-----------------------|
+| Ubuntu 20.04 (`.zip`) | [`/Ubuntu 20.04/`](https://sourceforge.net/projects/linkstar-h68k-os/files/Ubuntu%2020.04/) |
+| OpenWRT (`.img`) | [`/Openwrt/`](https://sourceforge.net/projects/linkstar-h68k-os/files/Openwrt/) |
+| Bootloader (`.bin`) | [`/Openwrt/`](https://sourceforge.net/projects/linkstar-h68k-os/files/Openwrt/) |
+| EraseFlash (`.img`) | [`/Erase-tool/`](https://sourceforge.net/projects/linkstar-h68k-os/files/) |
+| Android, flash tools | `/Android/`, `/Flash-to-eMMC-tool/`, `/Flash-to-TF-card-tool/` |
+
+Vendor Windows flashing bundle uses **RKDevTool v2.84** + **Rockchip DriverAssistant
+v5.1.1** (in `/Flash-to-eMMC-tool/`).
+
+- **Preservation mirrors (planned):** the Internet Archive (all images, incl. the
+  >2 GB Ubuntu files GitHub can't hold) + the matching GitHub Release for the sub-2 GB
+  images (EraseFlash, OpenWRT, bootloader). Always verify any copy against the
+  `SHA256SUMS` above.
 
 ## Flashing
 

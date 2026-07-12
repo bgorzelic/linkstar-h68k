@@ -35,22 +35,21 @@ log "unpacking MiniLoaderAll.bin (DDR init + miniloader)"
 [ -f "$work/FlashData" ] && [ -f "$work/FlashBoot" ] \
   || die "unpack did not produce FlashData/FlashBoot — wrong rkdeveloptool?"
 
-# mkimage: prefer a native binary, else use the rkbin one under docker on macOS.
-run_mkimage() {
-  if [ -n "${MKIMAGE:-}" ]; then
-    "$MKIMAGE" "$@"
-  elif [ "$(host_os)" = linux ] && command -v mkimage >/dev/null 2>&1; then
-    mkimage "$@"
-  else
-    require_cmd docker
-    [ -n "${RKBIN:-}" ] || die "set RKBIN=/path/to/rkbin (has tools/mkimage) or MKIMAGE=/path"
-    docker run --rm --platform linux/amd64 -v "$RKBIN:/rkbin" -v "$work:/work" \
-      -w /work ubuntu:22.04 /rkbin/tools/mkimage "$@"
-  fi
-}
-
+# mkimage: prefer a native binary, else use the rkbin one under docker. The
+# docker case MUST use container-relative paths (-w /work), not host paths —
+# only $work is mounted inside the container, so "$work/FlashData" would not
+# resolve there and mkimage would read nothing (SPL-too-large / garbage output).
 log "repacking as RKNS rksd idbloader"
-run_mkimage -n rk3568 -T rksd -d "$work/FlashData" "$work/idbloader.img" >/dev/null
+if [ -n "${MKIMAGE:-}" ]; then
+  "$MKIMAGE" -n rk3568 -T rksd -d "$work/FlashData" "$work/idbloader.img" >/dev/null
+elif [ "$(host_os)" = linux ] && command -v mkimage >/dev/null 2>&1; then
+  mkimage -n rk3568 -T rksd -d "$work/FlashData" "$work/idbloader.img" >/dev/null
+else
+  require_cmd docker
+  [ -n "${RKBIN:-}" ] || die "set RKBIN=/path/to/rkbin (has tools/mkimage) or MKIMAGE=/path"
+  docker run --rm --platform linux/amd64 -v "$RKBIN:/rkbin" -v "$work:/work" -w /work \
+    ubuntu:22.04 /rkbin/tools/mkimage -n rk3568 -T rksd -d FlashData idbloader.img >/dev/null
+fi
 cat "$work/FlashBoot" >>"$work/idbloader.img"
 
 magic="$(head -c 4 "$work/idbloader.img" | od -An -tx1 | tr -d ' ')"

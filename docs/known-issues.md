@@ -9,11 +9,22 @@ official release note; fixes are scripted where possible.
 The Seeed `ubuntu20.04-v0.0.1` release note (2023-02-06) lists these as known at
 launch. See [os-images/ubuntu-20.04-vendor-release-note.md](os-images/ubuntu-20.04-vendor-release-note.md).
 
-| # | Component | Symptom | Status / workaround |
-|---|-----------|---------|---------------------|
-| 1 | **MT7921 / "M7921E" Wi-Fi** | Wi-Fi may not come up | Vendor driver issue. Wired is reliable; a newer kernel/`linux-firmware` may help. *(collecting community fixes — PRs welcome)* |
-| 2 | **RTL8125B 2.5 GbE (`eth2`, `eth3`)** | The two 2.5 G ports may not link | Known vendor bug; `eth0`/`eth1` work. Often improved by an up-to-date `r8125` driver. |
-| 3 | **Front-panel LED** | LED not controllable | Cosmetic; no functional impact. |
+| # | Component | Symptom | Fix / status |
+|---|-----------|---------|--------------|
+| 1 | **MT7921 / "M7921E" Wi-Fi** | Wi-Fi may not come up | Silicon is fine — mainline `mt7921e` supports it; the vendor blob was the problem. A newer kernel fixes it. |
+| 2 | **RTL8125B 2.5 GbE (`eth2`, `eth3`)** | The 2.5 G ports may not link | Works with mainline `r8125`/`r8169`; the vendor 4.19 BSP lacked a working driver. `eth0`/`eth1` (1 G) are unaffected. |
+| 3 | **Front-panel LED** | LEDs not controllable | Community device trees (`rk3568-opc-h68k`) add the GPIO LED nodes the vendor image omits. |
+
+**The reliable fix for all three: run a community image with mainline RK3568 drivers** —
+e.g. [amazingfate/armbian-h68k-images](https://github.com/amazingfate/armbian-h68k-images)
+or [ophub](https://github.com/ophub/amlogic-s9xxx-armbian) (both ship an
+`rk3568-opc-h68k` target). A newer kernel fixes Wi-Fi, 2.5 G, and the LED at once.
+
+> [!WARNING]
+> Caveat on *some* community kernels: the 1 G ports (RTL8211F PHY) can fail with
+> `phy_poll_reset failed: -110 / Cannot attach to PHY` on certain ophub Armbian
+> builds (open, no posted fix). A community image can trade the 2.5 G bug for a 1 G
+> one — test all four ports after switching.
 
 ## "No DHCP" out of the box
 
@@ -46,7 +57,7 @@ The stock image is wide open on the LAN. `scripts/harden.sh` remediates the firs
 | **Cleartext FTP** | `vsftpd` enabled on `:21` | `harden.sh` disables it (use SFTP over SSH) |
 | **No firewall** | `iptables` all-ACCEPT, no rules | `harden.sh` installs `ufw`, default-deny inbound + allow SSH |
 | **Shared SSH host keys** | Host keys are **baked into the image** (Oct 2022) — every flashed unit shares them, enabling MITM | Regenerate on first boot: `sudo rm /etc/ssh/ssh_host_* && sudo dpkg-reconfigure openssh-server` |
-| **Default passwords** | `root` and `linkstar` use vendor defaults (same salt across units) | Change them; move to SSH key auth (`harden.sh --pubkey-file …`) |
+| **Default passwords** | Ubuntu: `linkstar`/`linkstar` and `root`/`root`; OpenWRT: `root`/`password` — shared across every unit | Change them; move to SSH key auth (`harden.sh --pubkey-file …`) |
 | **SSH password auth on** | `PasswordAuthentication` defaults to yes | `harden.sh` disables it *once a key is installed* |
 
 ## First-boot `apt` lock trap
