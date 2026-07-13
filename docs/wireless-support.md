@@ -91,7 +91,7 @@ Full analysis + the one condition that would change this: Addendum §C.
 
 ---
 
-# Addendum (2026-07-13) — 6 GHz deep-dive, regulatory blocker & ImmortalWrt verdict
+## Addendum (2026-07-13) — 6 GHz deep-dive, regulatory blocker & ImmortalWrt verdict
 
 Supersedes the two "Correction" pointers above. Every claim here is empirically checked (kernel driver
 history, upstream regdb behavior, and direct ImmortalWrt profile-manifest reads).
