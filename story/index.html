@@ -289,13 +289,13 @@
     <div class="k">by the numbers</div>
     <h2>What ~22 hours produced</h2>
     <div class="stats">
-      <div class="stat"><div class="n">54</div><div class="l">commits</div></div>
-      <div class="stat"><div class="n">100</div><div class="l">files</div></div>
-      <div class="stat"><div class="n">10,621</div><div class="l">lines</div></div>
-      <div class="stat"><div class="n">33</div><div class="l">scripts</div></div>
+      <div class="stat"><div class="n">55+</div><div class="l">commits</div></div>
+      <div class="stat"><div class="n">103</div><div class="l">files</div></div>
+      <div class="stat"><div class="n">11k</div><div class="l">lines</div></div>
+      <div class="stat"><div class="n">25</div><div class="l">docs</div></div>
+      <div class="stat"><div class="n">5</div><div class="l">web UIs</div></div>
       <div class="stat"><div class="n">4</div><div class="l">build variants</div></div>
-      <div class="stat"><div class="n">4</div><div class="l">web UIs</div></div>
-      <div class="stat"><div class="n">6</div><div class="l">diagrams</div></div>
+      <div class="stat"><div class="n">6</div><div class="l">on-device tools</div></div>
       <div class="stat"><div class="n">100%</div><div class="l">CI green</div></div>
     </div>
     <p style="margin-top:20px">Tokens consumed: <span class="fill">[ FILL FROM DASHBOARD ]</span> ·
@@ -337,6 +337,26 @@
       <div class="rd"><span class="st next">next</span><h4>NanoPi (pocket boards)</h4><p>The tiny NanoPi R-class boards — SpookyWrt in the smallest, cheapest form factor for travel routers &amp; sensors.</p></div>
       <div class="rd"><span class="st next">next</span><h4>Wi-Fi client profiling</h4><p>WLAN-Pi-class analysis — see exactly what every device negotiates. Lands in the pro + audit editions.</p></div>
       <div class="rd"><span class="st next">explore</span><h4>Pre-baked images + mirror</h4><p>Download-and-flash release images, mirrored to the Internet Archive so they never rot.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="k">still shipping · living log</div>
+    <h2>Build log</h2>
+    <p>This teardown is a <strong>living document</strong> — updated as we build. Newest first.</p>
+    <div class="tl">
+      <div class="ev"><div class="h">The control layer — <code>spooky</code>, an on-device operator</div>
+        <div class="b">One command to run and troubleshoot the box over SSH or serial: status, network, Wi-Fi, diagnostics (that check every gotcha we hit), services, capture, VPN — plus a diagnostic-bundle collector. The single front door to everything below.</div></div>
+      <div class="ev"><div class="h">VPN, done right — <code>spooky-vpn</code></div>
+        <div class="b">Import <em>any</em> provider (WireGuard <em>or</em> OpenVPN — Nord/Mullvad/Proton/PIA/Express) into a masqueraded zone with a one-command kill-switch. The peer-section trap and a base64-key bug — both fixed so no one re-hits them.</div></div>
+      <div class="ev"><div class="h">A router with a brain — <code>spooky-agent</code></div>
+        <div class="b">A lightweight LLM agent that lives on the box (the <code>ai</code> build variant): read-only tools that inspect real device state, so you can just ask it what's wrong. No cloud round-trip to see your own router.</div></div>
+      <div class="ev"><div class="h">It has a face now — dashboard, configurator &amp; a branded LuCI theme</div>
+        <div class="b">A ubus-powered live dashboard, a build-your-image configurator, and a SpookyJuice repaint of the OpenWrt admin UI. The box finally looks like the platform it became.</div></div>
+      <div class="ev"><div class="h">Hardened by adversaries — the 3-agent security audit</div>
+        <div class="b">Three AI reviewers with hostile lenses found 3 critical + 4 high issues under a green build. All remediated — including rewriting docs that over-promised a guarantee we couldn't keep.</div></div>
+      <div class="ev"><div class="h">Four editions, one core</div>
+        <div class="b">A shared base with per-edition package sets — a friendly appliance build, a prosumer flagship, a separate authorized-audit image, and a builder/dev edition. <span class="beg-only">Coming soon.</span><span class="adv-only">In design.</span></div></div>
     </div>
   </section>
 
