@@ -4,7 +4,7 @@
   <img src="./assets/h68k-infographic.svg" alt="LinkStar H68K — Rockchip RK3568 edge router & mini-PC: quad Cortex-A55, Mali-G52 + 0.8-TOPS NPU, LPDDR4, ~32 GB eMMC + microSD, 2× 2.5GbE, Wi-Fi. Flash from a Mac with no maskrom; secure-by-default scripts; checksummed firmware archive." width="100%">
 </p>
 
-[![Live showcase](https://img.shields.io/badge/showcase-live-b15bff.svg)](https://bgorzelic.github.io/linkstar-h68k/)
+[![Live site](https://img.shields.io/badge/site-what%20is%20this%3F-3df0c0.svg)](https://bgorzelic.github.io/linkstar-h68k/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Docs: CC BY 4.0](https://img.shields.io/badge/Docs-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
