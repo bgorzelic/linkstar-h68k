@@ -110,9 +110,47 @@
   @media (max-width:600px){ .top{flex-wrap:wrap; gap:10px} .host{border-left:none; padding-left:0} .badge{margin-left:0} }
   @media (max-width:520px){ .card .bd{overflow-x:auto} th:nth-child(4),td:nth-child(4){display:none} }
   @media (prefers-reduced-motion:reduce){ .ghost .eye,.badge.live::before{animation:none} *{transition:none!important} }
+
+  /* ---- Basic / Advanced console mode ---- */
+  .modesw{display:flex;gap:4px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:4px}
+  .modesw button{font-family:var(--mono);font-size:11px;color:var(--muted);background:none;border:0;border-radius:7px;padding:6px 11px;cursor:pointer;letter-spacing:.03em;transition:.15s}
+  .modesw button[aria-pressed="true"]{background:linear-gradient(120deg,var(--spectral),var(--violet));color:var(--ink);font-weight:600}
+  .modesw button:focus-visible{outline:2px solid var(--spectral);outline-offset:2px}
+  .basic-only{display:none} body.mode-basic .basic-only{display:block} body.mode-basic .adv-only{display:none}
+
+  /* Basic: health traffic-light */
+  .hero{display:flex;align-items:center;gap:18px;background:linear-gradient(180deg,var(--panel),var(--ink2));border:1px solid var(--line);border-radius:18px;padding:22px 24px;margin:16px 0}
+  .hero .lamp{width:52px;height:52px;border-radius:50%;flex:0 0 auto;background:var(--c,var(--good));box-shadow:0 0 22px var(--c,var(--good));position:relative}
+  .hero .lamp::after{content:"";position:absolute;inset:0;border-radius:50%;background:var(--c,var(--good));animation:pulse 2.4s infinite}
+  .hero.ok{--c:var(--good)} .hero.wr{--c:var(--amber)} .hero.bd{--c:var(--rose)}
+  .hero .htxt .hl{font-family:var(--disp);font-weight:600;font-size:21px;line-height:1.2}
+  .hero .htxt .hs{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.5}
+
+  /* Basic: ask-your-router box */
+  .ask{background:linear-gradient(180deg,var(--panel),var(--ink2));border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:16px}
+  .ask .al{font-family:var(--disp);font-weight:600;font-size:15px}
+  .ask .ai{display:flex;gap:9px;margin-top:12px}
+  .ask input{flex:1;font-family:var(--mono);font-size:13px;color:var(--text);background:var(--ink2);border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+  .ask input:focus{outline:none;border-color:var(--spectral)}
+  .ask .go{font-family:var(--mono);font-size:13px;color:var(--ink);font-weight:600;background:linear-gradient(120deg,var(--spectral),var(--violet));border:0;border-radius:11px;padding:0 18px;cursor:pointer}
+  .ask .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:11px}
+  .ask .chip{font-family:var(--mono);font-size:11.5px;color:var(--muted);background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:6px 12px;cursor:pointer;transition:.15s}
+  .ask .chip:hover{border-color:var(--spectral);color:var(--text)}
+  .ask .ans{margin-top:13px;font-size:13px;line-height:1.6;color:var(--text);background:var(--ink2);border:1px solid var(--line);border-left:3px solid var(--spectral);border-radius:10px;padding:12px 14px;display:none}
+  .ask .ans.show{display:block}
+
+  /* Basic: plain-language cards */
+  .plain{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .pc{background:linear-gradient(180deg,var(--panel),var(--ink2));border:1px solid var(--line);border-radius:16px;padding:17px 18px}
+  .pc .pt{font-size:11px;color:var(--faint);letter-spacing:.12em;text-transform:uppercase}
+  .pc .pv{font-family:var(--disp);font-weight:600;font-size:19px;margin-top:9px;line-height:1.15}
+  .pc .ps{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5}
+  .pc .prow{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .pc .pa{font-size:12px;color:var(--spectral);white-space:nowrap}
+  @media (max-width:600px){ .plain{grid-template-columns:1fr} }
 </style>
 </head>
-<body>
+<body class="mode-adv">
 <div class="app" role="main">
 
   <div class="top">
@@ -122,14 +160,55 @@
     </svg>
     <div class="brand disp"><b>SpookyWrt</b></div>
     <div class="host">host <b id="t-host">spookywrt</b> · up <b id="t-up">—</b></div>
+    <div class="modesw" id="modesw" role="group" aria-label="console mode">
+      <button id="mode-basic" aria-pressed="false" title="Plain-language view — everything explained, no jargon">Basic</button>
+      <button id="mode-adv" aria-pressed="true" title="Full instrument cluster — gauges, telemetry, operating modes">Advanced</button>
+    </div>
     <span class="badge demo" id="t-badge">demo</span>
     <a class="tbtn" id="t-luci" href="#" target="_blank" rel="noopener">Full LuCI ↗</a>
     <button class="tbtn danger" id="t-reboot">Reboot</button>
   </div>
 
-  <div class="strip" id="strip"></div>
+  <div class="basic-only" id="basicView">
+    <div class="hero ok" id="hero">
+      <div class="lamp"></div>
+      <div class="htxt">
+        <div class="hl" id="hero-hl">Everything looks healthy</div>
+        <div class="hs" id="hero-hs">Your internet is online, Wi-Fi is on, and the box is running cool.</div>
+      </div>
+    </div>
 
-  <div class="row">
+    <div class="ask">
+      <div class="al">👻&nbsp; Ask your router</div>
+      <div class="ai">
+        <input id="ask-in" type="text" placeholder="Ask in plain English… e.g. is my Wi-Fi on?" aria-label="Ask your router">
+        <button class="go" id="ask-go">Ask</button>
+      </div>
+      <div class="chips" id="ask-chips">
+        <button class="chip" data-q="Is my internet working?">Is my internet working?</button>
+        <button class="chip" data-q="Is my Wi-Fi on?">Is my Wi-Fi on?</button>
+        <button class="chip" data-q="Any problems?">Any problems?</button>
+        <button class="chip" data-q="How many devices are connected?">How many devices?</button>
+      </div>
+      <div class="ans" id="ask-ans"></div>
+    </div>
+
+    <div class="plain" id="plain">
+      <div class="pc"><div class="pt">Internet</div><div class="pv" id="pc-net">—</div><div class="ps" id="pc-net-s">—</div></div>
+      <div class="pc"><div class="pt">Wi-Fi</div><div class="pv" id="pc-wifi">—</div>
+        <div class="prow"><div class="ps" id="pc-wifi-s">—</div><a class="pa" id="pc-wifi-a" href="#" target="_blank" rel="noopener">Change ↗</a></div></div>
+      <div class="pc"><div class="pt">Guests</div>
+        <div class="prow" style="margin-top:9px"><div><div class="pv" id="pc-guest" style="margin-top:0">Off</div><div class="ps">a separate Wi-Fi for visitors</div></div>
+          <div class="sw" id="sw-b-guest" role="switch" aria-checked="false" tabindex="0" aria-label="Guest network"></div></div></div>
+      <div class="pc"><div class="pt">Privacy</div>
+        <div class="prow" style="margin-top:9px"><div><div class="pv" id="pc-ad" style="margin-top:0">On</div><div class="ps">block ads &amp; trackers, network-wide</div></div>
+          <div class="sw" id="sw-b-ad" role="switch" aria-checked="true" tabindex="0" aria-label="Ad-block DNS"></div></div></div>
+    </div>
+  </div>
+
+  <div class="strip adv-only" id="strip"></div>
+
+  <div class="row adv-only">
     <div class="card">
       <div class="hd"><span class="t">Instrument cluster</span><span class="x" id="c-clock">—</span></div>
       <div class="bd">
@@ -154,7 +233,7 @@
     </div>
   </div>
 
-  <div class="card clients">
+  <div class="card clients adv-only">
     <div class="hd"><span class="t">Connected clients</span><span class="x" id="cl-count">0 devices</span></div>
     <div class="bd" style="padding:0">
       <table><thead><tr><th>Host</th><th>Address</th><th>Link</th><th>Lease</th></tr></thead><tbody id="clients"></tbody></table>
@@ -175,7 +254,8 @@
   "use strict";
   var el=function(id){return document.getElementById(id);};
   var MODES=["Router","AP","Travel","Guardian"];
-  var state={live:false, mode:0, wifi:true, guest:false, ad:true,
+  var MODEKEY='spooky-console-mode';
+  var state={live:false, mode:0, cmode:'advanced', wifi:true, guest:false, ad:true,
     up:0, cpu:12, mem:41, temp:47, rx:0, tx:0, ssid:"SpookyWrt-H68K", lan:"192.168.1.1", wan:"—", net:true,
     hist:[]};
 
@@ -269,12 +349,69 @@
   }
   function esc(s){return String(s).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
 
-  function renderAll(){ renderStrip(); renderCluster(); renderSpark(); renderClients(); }
+  function renderAll(){ renderStrip(); renderCluster(); renderSpark(); renderClients(); renderBasic(); }
 
-  // ---------- toggles ----------
-  function bindSwitch(id,key,onToggle){
-    var s=el(id);
-    function flip(){var v=s.getAttribute('aria-checked')!=='true'; s.setAttribute('aria-checked',v?'true':'false'); state[key]=v; if(onToggle)onToggle(v); renderStrip();}
+  // ---------- console mode (Basic / Advanced) ----------
+  function applyMode(m){
+    state.cmode = (m==='basic') ? 'basic' : 'advanced';
+    document.body.className = 'mode-' + (state.cmode==='basic' ? 'basic' : 'adv');
+    var b=el('mode-basic'), a=el('mode-adv');
+    if(b) b.setAttribute('aria-pressed', state.cmode==='basic'?'true':'false');
+    if(a) a.setAttribute('aria-pressed', state.cmode==='advanced'?'true':'false');
+    try{ localStorage.setItem(MODEKEY, state.cmode); }catch(e){}
+    renderBasic();
+  }
+  function renderBasic(){
+    var bad=!state.net, warn=(state.cpu>88||state.temp>68||!state.wifi);
+    var h=el('hero');
+    if(h){
+      h.className='hero '+(bad?'bd':(warn?'wr':'ok'));
+      el('hero-hl').textContent = bad?'Your internet is down'
+        : (warn?'Online — a couple of things to check':'Everything looks healthy');
+      el('hero-hs').textContent = bad?'The box can’t reach the internet. Check the cable from your modem into the blue WAN port.'
+        : (warn ? (!state.wifi?'Wi-Fi is currently turned off — flip the Wi-Fi card to turn it back on.'
+                              :'The box is running a little warm or busy, but you’re online.')
+                : 'Your internet is online, Wi-Fi is on, and the box is running cool.');
+    }
+    if(!el('plain')) return;
+    el('pc-net').textContent   = state.net?'Online':'Offline';
+    el('pc-net-s').textContent = state.net?'you can reach the internet':'no route to the internet right now';
+    el('pc-wifi').textContent   = state.wifi?state.ssid:'Off';
+    el('pc-wifi-s').textContent = state.wifi?'the network your devices join':'the wireless radio is off';
+    el('pc-wifi-a').href = 'http://'+state.lan+'/cgi-bin/luci/admin/network/wireless';
+    el('pc-guest').textContent = state.guest?'On':'Off';
+    el('pc-ad').textContent    = state.ad?'On':'Off';
+    syncSwitches();
+  }
+  function answer(q){
+    var s=(q||'').toLowerCase();
+    if(/internet|online|connect|down|working|web/.test(s))
+      return state.net?'✓ Yes — your internet is online and the gateway is reachable.'
+                      :'✗ No — the box can’t reach the internet. Check the cable from your modem into the WAN port.';
+    if(/wi-?fi|wireless|ssid|network name/.test(s))
+      return state.wifi?('✓ Wi-Fi is on. Your network is named “'+state.ssid+'”.')
+                       :'Wi-Fi is currently off. Flip the Wi-Fi card on to turn it back on.';
+    if(/device|client|connect|how many|phone|laptop/.test(s))
+      return 'You have '+CLIENTS.length+' devices connected — '+countWifi()+' on Wi-Fi, '+(CLIENTS.length-countWifi())+' wired.';
+    if(/problem|wrong|issue|slow|broke|help|fix/.test(s)){
+      var p=[]; if(!state.net)p.push('the internet is down'); if(!state.wifi)p.push('Wi-Fi is off');
+      if(state.temp>68)p.push('the box is running warm'); if(state.cpu>88)p.push('the box is busy');
+      return p.length?('A couple of things to check: '+p.join(', ')+'.')
+                     :'✓ Nothing looks wrong — internet is up, Wi-Fi is on, and the box is healthy.';
+    }
+    return 'For anything deeper, open the on-device assistant: SSH into the box, type “spooky”, and choose Chat — it can read logs and settings for you.';
+  }
+  function ask(q){ if(!q) return; var a=el('ask-ans'); a.textContent=answer(q); a.classList.add('show'); }
+
+  // ---------- toggles (shared between Basic + Advanced switches) ----------
+  function syncSwitches(){
+    [['sw-wifi','wifi'],['sw-guest','guest'],['sw-ad','ad'],['sw-b-guest','guest'],['sw-b-ad','ad']]
+      .forEach(function(p){var e=el(p[0]); if(e) e.setAttribute('aria-checked', state[p[1]]?'true':'false');});
+  }
+  function setToggle(key,val){ state[key]=val; syncSwitches(); renderStrip(); renderBasic(); }
+  function bindSwitch(id,key){
+    var s=el(id); if(!s) return;
+    function flip(){ setToggle(key, !state[key]); }
     s.onclick=flip;
     s.onkeydown=function(e){if(e.key===' '||e.key==='Enter'){e.preventDefault();flip();}};
   }
@@ -291,7 +428,24 @@
     else { el('demobar').innerHTML='<b>Demo mode.</b> Reboot is disabled here. On a device this opens LuCI’s authenticated reboot page.'; }
   };
   bindSwitch('sw-wifi','wifi'); bindSwitch('sw-guest','guest'); bindSwitch('sw-ad','ad');
+  bindSwitch('sw-b-guest','guest'); bindSwitch('sw-b-ad','ad');
   renderModes();
+
+  // console-mode switch + ask-your-router box
+  el('mode-basic').onclick=function(){ applyMode('basic'); };
+  el('mode-adv').onclick=function(){ applyMode('advanced'); };
+  el('ask-go').onclick=function(){ ask(el('ask-in').value); };
+  el('ask-in').addEventListener('keydown',function(e){ if(e.key==='Enter') ask(el('ask-in').value); });
+  Array.prototype.forEach.call(document.querySelectorAll('#ask-chips .chip'),function(c){
+    c.onclick=function(){ el('ask-in').value=c.dataset.q; ask(c.dataset.q); };
+  });
+  // default mode: user's saved choice > device-provisioned (/www/spooky/console-mode) > advanced
+  (function(){ var saved=null; try{saved=localStorage.getItem(MODEKEY);}catch(e){}
+    if(saved){ applyMode(saved); return; }
+    fetch('console-mode').then(function(r){return r.ok?r.text():'';})
+      .then(function(t){ applyMode((t||'').trim().toLowerCase()==='basic'?'basic':'advanced'); })
+      .catch(function(){ applyMode('advanced'); });
+  })();
 
   tryLive().then(function(isLive){
     if(isLive){ el('t-badge').className='badge live'; el('t-badge').textContent='live'; el('demobar').style.display='none'; }

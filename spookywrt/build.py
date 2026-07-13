@@ -157,9 +157,10 @@ def build_overlay(ed):
     add_file("usr/bin/spooky-agent", 0o755, "spooky-agent")        # agent is core
     add_file("etc/spooky-agent.conf.example", 0o644, "spooky-agent.conf.example")
     add_file("www/luci-static/spooky/cascade.css", 0o644, "luci-theme-spooky/cascade.css")
-    # edition markers — read by the console + `spooky status`
+    # edition markers — read by `spooky status` (etc) and the dashboard over HTTP (www)
     add_bytes("etc/spookywrt/edition", 0o644, (ed["ghost"] + "\n").encode())
     add_bytes("etc/spookywrt/console-mode", 0o644, (ed["mode"] + "\n").encode())
+    add_bytes("www/spooky/console-mode", 0o644, (ed["mode"] + "\n").encode())
 
     # 2) run-scripts, extracted to /tmp/spk/run and sourced in glob (numeric) order
     add_file("tmp/spk/run/10-first-boot.sh", 0o755, "first-boot-full.sh")   # ends `exit 0`

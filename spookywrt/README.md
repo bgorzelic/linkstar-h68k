@@ -63,6 +63,13 @@ single-page WebUI that runs *on the box* alongside LuCI. Live status, an instrum
 gauges (CPU / memory / temp / throughput), quick toggles (Wi-Fi, guest, AdGuard), an
 operating-mode switcher, and the client list — all driven by **ubus over HTTP**, no build step.
 
+It has a **Basic / Advanced** switch in the top bar. **Basic** is the plain-language face — a
+health traffic-light, an *"ask your router"* box, and jargon-free Internet / Wi-Fi / Guests /
+Privacy cards; **Advanced** is the full instrument cluster above. The default per edition is
+provisioned on first boot (`/etc/spookywrt/console-mode` → `basic` on Casper, `advanced`
+elsewhere) and the dashboard reads `/www/spooky/console-mode`; your own choice is remembered
+per-browser. Both faces call the same backend.
+
 **Preview it** (demo data): <https://bgorzelic.github.io/linkstar-h68k/spookywrt/webui/>
 
 **Install on a device:**
