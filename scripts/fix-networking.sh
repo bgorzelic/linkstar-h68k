@@ -4,8 +4,10 @@
 #
 # The image enables THREE network stacks at once (netplan/systemd-networkd,
 # NetworkManager, and ifupdown), which race for eth0/eth1 and often leave the
-# box with no address. This standardizes on systemd-networkd, masks
-# NetworkManager, and sets DHCP on all four ports.
+# box with no address. This standardizes on systemd-networkd, masks NetworkManager,
+# sets DHCP on all four ports (plus a name-independent fallback so a newer-Ubuntu
+# interface rename can't break it), and repairs DNS if /etc/resolv.conf is a dangling
+# symlink (the vendor image ships without systemd-resolved).
 #
 # Run on the device with sudo, or against an offline rootfs with ROOT=/mnt/root.
 # Idempotent.
@@ -46,6 +48,31 @@ network:
     eth3: { dhcp4: true, dhcp6: false, optional: true }
 YAML
 chmod 600 "$ROOT/etc/netplan/config.yaml"
+
+log "writing a name-independent DHCP fallback (survives interface renames on newer Ubuntu)"
+mkdir -p "$ROOT/etc/systemd/network"
+cat >"$ROOT/etc/systemd/network/05-dhcp-all.network" <<'NET'
+# Belt-and-suspenders: DHCP any wired port (eth* / en*) regardless of its name, so a
+# kernel/udev rename on a newer Ubuntu can't leave the box without an address.
+[Match]
+Name=eth* en*
+Type=ether
+
+[Network]
+DHCP=yes
+
+[DHCPv4]
+RouteMetric=100
+NET
+
+# The vendor image ships without systemd-resolved, so /etc/resolv.conf can be a dangling
+# symlink → an IP but no name resolution. Give it a real resolver if it's broken.
+resolv="$ROOT/etc/resolv.conf"
+if [ ! -s "$resolv" ]; then
+  warn "resolv.conf is missing/empty/dangling — writing a static resolver (1.1.1.1, 8.8.8.8)"
+  rm -f "$resolv"
+  printf 'nameserver 1.1.1.1\nnameserver 8.8.8.8\n' > "$resolv"
+fi
 
 if [ -z "$ROOT" ]; then
   log "applying now"

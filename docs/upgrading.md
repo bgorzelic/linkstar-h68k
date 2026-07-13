@@ -17,6 +17,7 @@ running rootfs, so do it deliberately.
 df -h /                                   # need several GB free (each step downloads ~1.5 GB)
 dpkg -l | grep -c '^ii  linux-image'      # MUST be 0 — the kernel is in boot.img, so apt won't touch it
 [ -f /var/run/reboot-required ] && echo "reboot first!"   # do-release-upgrade refuses if a reboot is pending
+date -u                                   # NO RTC — a drifted clock makes apt reject repo metadata; fix it first
 ```
 
 Then:

@@ -47,6 +47,22 @@ flowchart LR
   class after ok;
 ```
 
+## No DNS — `systemd-resolved` isn't installed
+
+The vendor image never installed `systemd-resolved`, yet `/etc/resolv.conf` can be a
+symlink to its (missing) stub — so the box gets an IP but **can't resolve names**, and
+`apt`/`curl` fail on lookups.
+
+**Fix** (also handled by `scripts/fix-networking.sh`):
+
+```bash
+# quick static resolver
+sudo rm -f /etc/resolv.conf
+printf 'nameserver 1.1.1.1\nnameserver 8.8.8.8\n' | sudo tee /etc/resolv.conf
+# or install the real resolver
+sudo apt install -y systemd-resolved && sudo systemctl enable --now systemd-resolved
+```
+
 ## Insecure defaults (verified on a live unit)
 
 The stock image is wide open on the LAN. `scripts/harden.sh` remediates the first three.
@@ -82,6 +98,21 @@ Then update with `sudo apt-get -y -o Dpkg::Options::=--force-confold full-upgrad
 > The vendor **kernel lives in the `boot.img` partition, not an apt `linux-image`
 > package**, so a full `apt` upgrade does **not** replace it — the upgrade is safe
 > and won't break the board's specific 4.19 BSP kernel.
+
+## No RTC — clock drift breaks `apt`
+
+The H68K has **no battery-backed RTC**, so a powered-off unit loses track of time. On boot
+the clock can be days or weeks behind — and then `apt update` rejects the repo metadata
+with **"Release file is not valid yet"** (the signatures aren't valid until their real
+date). This bites hardest after the box has been off for a while.
+
+**Fix:**
+
+```bash
+sudo date -u -s '2026-07-12 18:00:00'   # set it manually (UTC), then apt works
+sudo timedatectl set-ntp true           # better: NTP corrects it each boot (needs DNS first)
+sudo apt install -y fake-hwclock         # persist a sane time across reboots
+```
 
 ## Ubuntu 20.04 is past standard support
 

@@ -13,6 +13,10 @@ tags (`<track>/vX.Y`); see [docs/releasing.md](docs/releasing.md).
   `<track>[-<flavor>]-<osversion>` tag scheme (see `flavors/README.md`).
 - **`docs/upgrading.md`** — in-place distro-upgrade guide (20.04 → 22.04 → 24.04) with
   the real gotchas and rollback.
+- **24.04 field fixes** — `fix-networking.sh` now adds a name-independent DHCP fallback
+  (survives interface renames) and repairs DNS when the image's `resolv.conf` is a
+  dangling symlink; docs cover the no-RTC clock-drift and missing-`systemd-resolved`
+  gotchas that break `apt`.
 
 ### In progress
 

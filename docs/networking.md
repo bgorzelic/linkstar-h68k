@@ -81,6 +81,17 @@ Under the OpenWRT image the default roles are `eth0` = **WAN**, the remaining po
 **LAN**, with the LuCI admin UI at `192.168.100.1`. See
 [alternative-os.md](alternative-os.md).
 
+## On Ubuntu 24.04
+
+- **Interface names** stay `eth0`–`eth3` on this board (the `rk_gmac-dwmac` driver names
+  them; verified they are *not* renamed to `enP*`). Even so, `fix-networking.sh` installs a
+  **name-independent** DHCP fallback so a rename couldn't break networking.
+- **Boot with the cable already connected** to a 1 G port → your router, so the link is up
+  during early boot and DHCP completes. Verify with `ip -br addr show eth0` — **not** `iw`,
+  which only shows Wi-Fi.
+- **DNS**: the image ships no `systemd-resolved`, so you can end up with an IP but no name
+  resolution. `fix-networking.sh` repairs it — details in [known-issues.md](known-issues.md).
+
 ## Throughput notes
 
 - The 2.5 G ports reach ~2.35 Gbps and the 1 G ports ~940 Mbps **once the drivers work**
