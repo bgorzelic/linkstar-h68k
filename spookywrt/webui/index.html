@@ -107,6 +107,8 @@
   footer{text-align:center;color:var(--faint);font-size:11px;padding:30px 0 0;margin-top:26px;border-top:1px solid var(--line)}
 
   @media (max-width:820px){ .row{grid-template-columns:1fr} .cluster{grid-template-columns:1fr 1fr} }
+  @media (max-width:600px){ .top{flex-wrap:wrap; gap:10px} .host{border-left:none; padding-left:0} .badge{margin-left:0} }
+  @media (max-width:520px){ .card .bd{overflow-x:auto} th:nth-child(4),td:nth-child(4){display:none} }
   @media (prefers-reduced-motion:reduce){ .ghost .eye,.badge.live::before{animation:none} *{transition:none!important} }
 </style>
 </head>
@@ -145,7 +147,7 @@
           <div class="toggle"><div class="tl" id="sw-wifi-lbl">Wi-Fi AP <small>SpookyWrt-H68K · MT7921</small></div><div class="sw" id="sw-wifi" role="switch" aria-checked="true" aria-labelledby="sw-wifi-lbl" tabindex="0"></div></div>
           <div class="toggle"><div class="tl" id="sw-guest-lbl">Guest network <small>isolated VLAN</small></div><div class="sw" id="sw-guest" role="switch" aria-checked="false" aria-labelledby="sw-guest-lbl" tabindex="0"></div></div>
           <div class="toggle"><div class="tl" id="sw-ad-lbl">AdGuard DNS <small>network-wide ad-block</small></div><div class="sw" id="sw-ad" role="switch" aria-checked="true" aria-labelledby="sw-ad-lbl" tabindex="0"></div></div>
-          <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:6px 0 -2px">operating mode</div>
+          <div class="x" style="margin:6px 0 -2px">operating mode</div>
           <div class="modes" id="modes" role="group" aria-label="operating mode"></div>
         </div>
       </div>

@@ -162,7 +162,8 @@
   footer a{color:var(--muted)}
 
   .hidden{display:none !important}
-  @media (max-width:900px){ .split{grid-template-columns:1fr} .console{position:static} .tabs{order:3; margin:0} .bar{flex-wrap:wrap} }
+  @media (max-width:900px){ .split{grid-template-columns:1fr} .console{position:static} .tabs{order:3; margin:0} .bar{flex-wrap:wrap} .row2{grid-template-columns:1fr} .tab{font-size:11px; padding:9px 10px} }
+  @media (max-width:480px){ .tabs{width:100%} }
   @media (prefers-reduced-motion:reduce){ .ghost .eye,.console .top .live::before{animation:none} *{transition:none!important} }
 </style>
 </head>
@@ -196,7 +197,7 @@
     </div>
     <div class="split">
       <div class="card">
-        <div class="hd"><span class="t">Configuration</span><span class="k" id="b-summary">—</span></div>
+        <div class="hd"><span class="t">Configuration</span><span class="k" id="b-summary" aria-live="polite">—</span></div>
         <div class="bd">
           <div class="sec"><span class="k">1 · device</span><span class="ln"></span></div>
           <div class="opts" id="b-devices"></div>
@@ -212,7 +213,7 @@
           <div class="field" id="b-wifi-wrap"><label for="b-ssid">Wi-Fi network name (SSID)</label><input id="b-ssid" value="SpookyWrt-H68K" spellcheck="false"><div class="hint">Password is randomly generated per-device on first boot and saved to <code>/etc/spooky-initial-wifi.txt</code> — never a shipped default.</div></div>
         </div>
       </div>
-      <div class="console" aria-label="live build output">
+      <div class="console" role="region" aria-label="live build output">
         <div class="top"><span class="d" style="background:#ff5c72"></span><span class="d" style="background:#ffb454"></span><span class="d" style="background:#3df0c0"></span><span class="ttl" id="b-ttl">~/spookywrt</span><span class="live">live</span></div>
         <div class="cbd" id="b-console"></div>
       </div>
@@ -251,7 +252,7 @@
           <div class="opts" id="s-sec"></div>
         </div>
       </div>
-      <div class="console" aria-label="setup plan">
+      <div class="console" role="region" aria-label="setup plan">
         <div class="top"><span class="d" style="background:#ff5c72"></span><span class="d" style="background:#ffb454"></span><span class="d" style="background:#3df0c0"></span><span class="ttl">root@SpookyWrt</span><span class="live">plan</span></div>
         <div class="cbd" id="s-console"></div>
       </div>
@@ -423,7 +424,7 @@
     el('b-console').querySelectorAll('.mini').forEach(function(m){m.onclick=function(){
       var t=m.dataset.copy==='build'?buildCmd:flash;
       if(navigator.clipboard) navigator.clipboard.writeText(t);
-      var o=m.textContent; m.textContent='copied'; setTimeout(function(){m.textContent=o;},1100);
+      var o=m.textContent; m.textContent='copied'; m.setAttribute('aria-label','copied to clipboard'); setTimeout(function(){m.textContent=o; m.setAttribute('aria-label','copy to clipboard');},1100);
     };});
     el('b-dl').onclick=function(){download('first-boot.sh',firstBootScript());};
     el('b-dljson').onclick=function(){download('recipe.json',buildJson);};
