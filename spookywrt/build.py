@@ -63,7 +63,9 @@ WIFI_FLAVOR_EXTRA = [
 # --- vpn variant (OPT-IN, --profile vpn) — the heavier VPN engines on top of the base
 # Tailscale + pbr (split-tunnel). Build-verified on SNAPSHOT.
 VPN_EXTRA = ["openvpn-openssl", "zerotier"]
-PROFILES = ("flagship", "wifi-audit", "vpn")
+# --- ai variant (OPT-IN, --profile ai) — spooky-agent needs python3 (~10 MB) ---
+AI_EXTRA = ["python3-light", "python3-urllib"]
+PROFILES = ("flagship", "wifi-audit", "vpn", "ai")
 
 def build_packages(variant):
     """Return the package list for a build variant. Default flagship stays lean."""
@@ -75,6 +77,8 @@ def build_packages(variant):
         pkgs += ["-wpad-basic-mbedtls", "wpad-mbedtls"]
     elif variant == "vpn":
         pkgs += VPN_EXTRA
+    elif variant == "ai":
+        pkgs += AI_EXTRA
     # de-dup while preserving order
     seen, out = set(), []
     for p in pkgs:
@@ -121,6 +125,17 @@ def main():
             defaults += (f"\n\n# ---- install /usr/bin/{tool} ----\n"
                          f"cat > /usr/bin/{tool} <<'{d}'\n{tp.read_text()}\n{d}\n"
                          f"chmod 0755 /usr/bin/{tool}\n")
+    # AI variant: install spooky-agent + its config template (needs python3, so ai-only)
+    if variant == "ai":
+        agent = Path(__file__).parent / "spooky-agent"
+        aconf = Path(__file__).parent / "spooky-agent.conf.example"
+        if agent.exists():
+            defaults += ("\n\n# ---- install /usr/bin/spooky-agent ----\n"
+                         f"cat > /usr/bin/spooky-agent <<'SPOOKYAGENT'\n{agent.read_text()}\nSPOOKYAGENT\n"
+                         "chmod 0755 /usr/bin/spooky-agent\n")
+        if aconf.exists():
+            defaults += ("cat > /etc/spooky-agent.conf.example <<'SPOOKYAGENTCONF'\n"
+                         f"{aconf.read_text()}\nSPOOKYAGENTCONF\n")
     # SpookyJuice LuCI theme: inline the cascade CSS into its installer fragment
     theme = Path(__file__).parent / "luci-theme-spooky"
     css, inst = theme / "cascade.css", theme / "install.sh"

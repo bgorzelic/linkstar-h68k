@@ -17,6 +17,8 @@ jobs:
         run: shellcheck --severity=warning scripts/*.sh scripts/lib/*.sh firstboot/*.sh flavors/*.sh
       - name: Lint SpookyWrt scripts (OpenWRT ash — local is supported, so exclude SC3043)
         run: shellcheck -s sh --severity=warning --exclude=SC3043 spookywrt/first-boot.sh spookywrt/first-boot-full.sh spookywrt/spooky-setup spookywrt/spooky spookywrt/spooky-capture spookywrt/spooky-vpn spookywrt/setup-ap.sh spookywrt/wifi-audit/firstboot.sh
+      - name: Python compile-check (build.py + spooky-agent)
+        run: python3 -m py_compile spookywrt/build.py spookywrt/spooky-agent
 
   markdownlint:
     name: markdownlint

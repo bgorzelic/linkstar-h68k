@@ -51,6 +51,7 @@ promptly. No Wi-Fi radio (e.g. a no-Wi-Fi H68K SKU)? Use a LAN cable to `192.168
 | `spooky-setup` | An on-device onboarding wizard (POSIX/ash): Express or Advanced, every network change under a **rollback timer** so you can't lock yourself out. |
 | `spooky-capture` | Dead-simple packet capture (`tcpdump` wrapper) — auto-saves to a USB stick or a RAM ring buffer, prints the retrieval line. |
 | `spooky-vpn` | Import **any** VPN provider (WireGuard *or* OpenVPN — NordLynx/Mullvad/Proton/PIA/Express…) into a firewall zone with a one-command kill-switch. `spooky vpn` delegates to it. |
+| `spooky-agent` | **Lightweight Claude Code for the router** (`--profile ai`) — an LLM agent with 8 read-only tools that inspect real device state. `spooky chat` (REPL) or `spooky ai ask "…"` (one-shot). Pure stdlib. |
 | `setup-ap.sh` | First-boot onboarding: raises the open `SpookyWrt-Setup` Wi-Fi AP so you can configure the box with no cable; self-retires after setup. |
 | `wifi-audit/firstboot.sh` | The `wifi-audit` variant's consent gate + boot-safety (services-off). |
 | `luci-theme-spooky/` | The **SpookyJuice-branded LuCI theme** — repaints the on-device OpenWRT web UI (slime-green on near-black). Installed to `/www/luci-static/spooky/` by first-boot; LuCI points at it automatically. |
@@ -92,8 +93,10 @@ Then flash the downloaded `*-squashfs-sysupgrade.img.gz` to a microSD (`dd`/Etch
 ### Build variants
 
 ```bash
-python3 spookywrt/build.py                        # flagship (default, lean — 42 pkgs)
+python3 spookywrt/build.py                        # flagship (default, lean)
 python3 spookywrt/build.py --profile wifi-audit   # + monitor/injection drivers + audit tools
+python3 spookywrt/build.py --profile vpn          # + OpenVPN + ZeroTier (on top of WG/Tailscale)
+python3 spookywrt/build.py --profile ai           # + python3 + spooky-agent (router LLM)
 ```
 
 The **`wifi-audit`** variant adds a monitor-mode/injection driver zoo (mt76 / ath9k / rt2800),

@@ -122,7 +122,7 @@ menu(){
     status
     printf "  ${RB}1${R} Status   ${RB}2${R} Network   ${RB}3${R} Wi-Fi   ${RB}4${R} Diagnostics\n"
     printf "  ${RB}5${R} Services ${RB}6${R} Capture   ${RB}7${R} VPN     ${RB}8${R} Setup wizard\n"
-    printf "  ${RB}9${R} Diag bundle   ${RB}r${R} Reboot   ${RB}q${R} Quit\n\n"; ask "spooky>"
+    printf "  ${RB}9${R} Diag bundle   ${RB}c${R} Chat (AI)   ${RB}r${R} Reboot   ${RB}q${R} Quit\n\n"; ask "spooky>"
     case "$REPLY" in
       1) status; pause;;
       2) net_menu;; 3) wifi_menu;; 4) diag; pause;; 5) svc_menu;;
@@ -130,6 +130,7 @@ menu(){
       7) vpn_menu;;
       8) command -v spooky-setup >/dev/null && spooky-setup || bad "spooky-setup not installed";;
       9) bundle;;
+      c) command -v spooky-agent >/dev/null && { title; spooky-agent; } || bad "spooky-agent not installed (build with --profile ai)";;
       r) yes "reboot now?" && reboot;;
       q|"") clear 2>/dev/null; exit 0;;
     esac
@@ -140,6 +141,7 @@ menu(){
 case "${1:-}" in
   status) status;; diag) diag; ;; net) net_menu;; wifi) wifi_menu;; services|svc) svc_menu;;
   capture) shift; exec spooky-capture "$@";; setup) exec spooky-setup;;
+  chat|ai) shift; exec spooky-agent "$@";;   # `spooky chat` REPL · `spooky ai ask "…"` one-shot
   vpn) shift; [ $# -gt 0 ] && exec spooky-vpn "$@" || vpn_menu;;   # `spooky vpn wg …` → spooky-vpn; bare → menu
   bundle) bundle;; reboot) reboot;; ""|menu) menu;;
   -h|--help|help) sed -n '2,6p' "$0";;

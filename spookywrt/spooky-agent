@@ -1,0 +1,273 @@
+#!/usr/bin/env python3
+"""spooky-agent — a lightweight Claude Code for your SpookyWrt router.
+
+One brain, two faces: the `spooky chat` CLI and the dashboard both call this.
+  spooky-agent                 interactive chat (REPL)
+  spooky-agent ask "question"  one-shot, prints the answer (for the WebUI / scripts)
+
+Config: /etc/spooky-agent.conf   (api_key, model, base_url — OpenAI-compatible, e.g. OpenRouter)
+Read-only for now: it inspects router state via tools but does not change config (that's the next step,
+and will run behind a confirm + rollback timer). Pure stdlib — no pip deps.
+"""
+import json, os, re, subprocess, sys, urllib.request, urllib.error
+
+CONF = "/etc/spooky-agent.conf"
+
+def load_conf():
+    c = {"base_url": "https://openrouter.ai/api/v1",
+         "model": "anthropic/claude-sonnet-5", "api_key": ""}
+    try:
+        with open(CONF) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    c[k.strip()] = v.strip().strip('"').strip("'")
+    except FileNotFoundError:
+        pass
+    c["api_key"] = os.environ.get("SPOOKY_API_KEY", c["api_key"])
+    return c
+
+def sh(cmd, timeout=20):
+    # shell=True is used ONLY with fixed, literal command strings below — never with
+    # model/user-supplied input. Parameterized tools use run() (no shell) + validation.
+    try:
+        r = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=timeout)
+        return (r.stdout or r.stderr).strip()[:4000] or "(no output)"
+    except Exception as e:
+        return "error: %s" % e
+
+def run(argv, timeout=20):
+    # no shell — argv is a list, so metacharacters can't be interpreted
+    try:
+        r = subprocess.run(argv, capture_output=True, text=True, timeout=timeout)
+        return (r.stdout or r.stderr).strip()[:4000] or "(no output)"
+    except Exception as e:
+        return "error: %s" % e
+
+_SECTION = re.compile(r"^[a-z0-9_.-]+$")   # uci config/section names
+_HOST = re.compile(r"^[a-zA-Z0-9._-]+$")   # hostnames / IPs
+
+def _uci_show(a):
+    sec = a.get("section", "network")
+    if not _SECTION.match(sec):
+        return "invalid section name"
+    return "\n".join(run(["uci", "-q", "show", sec]).splitlines()[:80])
+
+def _logread_grep(a):
+    pat = str(a.get("pattern", "error"))
+    lines = run(["logread"]).splitlines()
+    try:
+        rx = re.compile(pat, re.I)
+        hits = [l for l in lines if rx.search(l)]
+    except re.error:
+        pl = pat.lower()
+        hits = [l for l in lines if pl in l.lower()]
+    return "\n".join(hits[-25:]) or "(no matches)"
+
+def _ping(a):
+    host = a.get("host", "1.1.1.1")
+    if not _HOST.match(host):
+        return "invalid host"
+    return run(["ping", "-c3", "-W2", host])
+
+# --- SpookyJuice search: RAG over the bundled docs + persistent memory ---------
+DOCS_DIR = os.environ.get("SPOOKY_DOCS", "/usr/share/spookywrt/docs")
+MEM_FILE = os.environ.get("SPOOKY_MEMORY", "/etc/spookywrt/memory.md")
+
+def _doc_chunks():
+    chunks = []
+    try:
+        files = [f for f in os.listdir(DOCS_DIR) if f.endswith(".md")]
+    except OSError:
+        return chunks
+    for name in files:
+        try:
+            text = open(os.path.join(DOCS_DIR, name)).read()
+        except OSError:
+            continue
+        head, buf = name, []
+        for line in text.splitlines():
+            if line.startswith("#"):
+                if buf:
+                    chunks.append((name, head, "\n".join(buf)))
+                head, buf = line.lstrip("# ").strip() or name, []
+            buf.append(line)
+        if buf:
+            chunks.append((name, head, "\n".join(buf)))
+    return chunks
+
+def _search_docs(a):
+    q = str(a.get("query", "")).lower()
+    terms = [t for t in re.split(r"\W+", q) if len(t) > 2]
+    if not terms:
+        return "(empty query)"
+    scored = []
+    for name, head, body in _doc_chunks():
+        bl = body.lower()
+        s = sum(bl.count(t) for t in terms) + 3 * sum(t in head.lower() for t in terms)
+        if s:
+            scored.append((s, name, head, body))
+    scored.sort(key=lambda x: x[0], reverse=True)
+    if not scored:
+        return "(no matching docs — knowledge base may be empty at %s)" % DOCS_DIR
+    return "\n\n".join("### %s > %s\n%s" % (n, h, b[:900]) for _, n, h, b in scored[:4])[:4200]
+
+def _remember(a):
+    fact = str(a.get("fact", "")).strip()
+    if not fact:
+        return "(nothing to remember)"
+    try:
+        os.makedirs(os.path.dirname(MEM_FILE), exist_ok=True)
+        with open(MEM_FILE, "a") as f:
+            f.write("- " + fact.replace("\n", " ") + "\n")
+        return "remembered."
+    except OSError as e:
+        return "couldn't save: %s" % e
+
+def _recall(a):
+    try:
+        mem = open(MEM_FILE).read()
+    except OSError:
+        return "(no memory yet)"
+    q = str(a.get("query", "")).lower()
+    terms = [t for t in re.split(r"\W+", q) if len(t) > 2]
+    if not terms:
+        return mem[:2000] or "(memory empty)"
+    hits = [l for l in mem.splitlines() if any(t in l.lower() for t in terms)]
+    return "\n".join(hits) or "(no matching memory)"
+
+# --- read-only router tools ---------------------------------------------------
+TOOLS_IMPL = {
+    "router_status": lambda a: sh(
+        "echo WAN=$(cat /sys/class/net/eth0/operstate 2>/dev/null); "
+        "echo LAN=$(uci -q get network.lan.ipaddr); "
+        "echo internet=$(ping -c1 -W2 1.1.1.1 >/dev/null 2>&1 && echo up || echo down); "
+        "free -m | awk '/Mem/{print \"mem \"$3\"/\"$2\"MB\"}'; uptime | sed 's/.*up/up/'"),
+    "wifi_status":  lambda a: sh("iwinfo 2>/dev/null | grep -E 'ESSID|Channel|Signal|Bit Rate' | head -12"),
+    "list_clients": lambda a: sh("cat /tmp/dhcp.leases 2>/dev/null | awk '{print $4\"  \"$3\"  \"$2}'"),
+    "uci_show":     _uci_show,       # validated + no shell
+    "logread_grep": _logread_grep,   # filtered in-process, no shell
+    "ping_test":    _ping,           # validated + no shell
+    "search_docs":  _search_docs,    # RAG over the SpookyWrt knowledge base
+    "remember":     _remember,       # persistent memory (write)
+    "recall":       _recall,         # persistent memory (read)
+    "vpn_status":   lambda a: sh("spooky-vpn status 2>/dev/null; wg show 2>/dev/null | grep -E 'interface|endpoint|handshake' | head"),
+    "run_diag":     lambda a: sh(
+        "echo dns=$(nslookup openwrt.org >/dev/null 2>&1 && echo ok || echo FAIL); "
+        "echo clock=$(date); echo wifi_aps=$(iwinfo 2>/dev/null | grep -c ESSID); "
+        "echo dnsmasq=$(pgrep -x dnsmasq >/dev/null && echo up || echo DOWN); "
+        "echo firewall_wan=$(uci -q get firewall.@zone[1].input); "
+        "logread 2>/dev/null | grep -iE 'error|fail|denied' | tail -4"),
+}
+
+def tool_schema(name, desc, props=None, req=None):
+    return {"type": "function", "function": {
+        "name": name, "description": desc,
+        "parameters": {"type": "object", "properties": props or {}, "required": req or []}}}
+
+TOOLS = [
+    tool_schema("router_status", "WAN/LAN/internet/memory/uptime snapshot of the router"),
+    tool_schema("wifi_status", "Wi-Fi AP status: SSID, channel, signal, bit rate"),
+    tool_schema("list_clients", "DHCP leases — the devices currently connected"),
+    tool_schema("uci_show", "Read a uci config section (network, wireless, firewall, dhcp, system, openvpn)",
+                {"section": {"type": "string", "description": "config name, e.g. 'wireless'"}}, ["section"]),
+    tool_schema("logread_grep", "Search the recent system log for a pattern",
+                {"pattern": {"type": "string"}}, ["pattern"]),
+    tool_schema("ping_test", "Ping a host from the router to test connectivity",
+                {"host": {"type": "string"}}, ["host"]),
+    tool_schema("vpn_status", "VPN tunnel state + public IP (Nord/WireGuard/Tailscale)"),
+    tool_schema("run_diag", "Run standard health diagnostics (DNS, clock, Wi-Fi, dnsmasq, firewall, errors)"),
+    tool_schema("search_docs", "Search the SpookyWrt knowledge base (setup, VPN providers, wireless/6GHz, "
+                "capture, gotchas) for how-to answers. Use this for 'how do I…' questions.",
+                {"query": {"type": "string"}}, ["query"]),
+    tool_schema("remember", "Save a durable fact about this user/router for future sessions "
+                "(a preference, a decision, a quirk). Use when the user says to remember something.",
+                {"fact": {"type": "string"}}, ["fact"]),
+    tool_schema("recall", "Retrieve saved memory relevant to a topic (or all, if query is empty).",
+                {"query": {"type": "string"}}, []),
+]
+
+SYSTEM = (
+    "You are SpookyJuice Search — the AI assistant built into a Seeed LinkStar H68K router running "
+    "SpookyWrt (OpenWrt). You help the owner understand, diagnose, manage, and learn their router. "
+    "You have three sources of truth, and you USE them rather than guessing:\n"
+    "1. LIVE STATE — call the router tools (router_status, wifi_status, list_clients, vpn_status, run_diag, "
+    "uci_show, logread_grep, ping_test) to read REAL device state before answering anything about it.\n"
+    "2. KNOWLEDGE BASE — call search_docs for any 'how do I…' / setup / concept question (VPN providers, "
+    "wireless & 6GHz, packet capture, the port map, gotchas). Ground how-to answers in what it returns.\n"
+    "3. MEMORY — call recall at the start when context helps; call remember when the user tells you a "
+    "durable preference/decision/quirk so you know it next session.\n"
+    "Be concise and practical: a direct answer plus the key evidence. You can currently only READ device "
+    "state — for config changes, give the exact command and note guided write-actions are coming. "
+    "Router facts: eth0=WAN, eth1+eth2+eth3=LAN bridge at 192.168.1.1, internal MT7921 Wi-Fi (2.4/5GHz, no "
+    "6GHz — 6GHz needs a MT7925 USB adapter), no RTC. Helper tools on the box: spooky-setup, spooky-capture, "
+    "spooky-vpn."
+)
+
+def call_llm(conf, messages):
+    body = {"model": conf["model"], "messages": messages, "tools": TOOLS, "tool_choice": "auto"}
+    req = urllib.request.Request(
+        conf["base_url"].rstrip("/") + "/chat/completions",
+        data=json.dumps(body).encode(),
+        headers={"Content-Type": "application/json",
+                 "Authorization": "Bearer " + conf["api_key"],
+                 "HTTP-Referer": "https://spookywrt.local", "X-Title": "SpookyWrt"},
+        method="POST")
+    with urllib.request.urlopen(req, timeout=90) as r:
+        return json.loads(r.read())["choices"][0]["message"]
+
+def agent_turn(conf, messages, trace=None):
+    for _ in range(8):
+        msg = call_llm(conf, messages)
+        messages.append(msg)
+        tcs = msg.get("tool_calls")
+        if not tcs:
+            return msg.get("content", "(no answer)")
+        for tc in tcs:
+            name = tc["function"]["name"]
+            try:
+                args = json.loads(tc["function"].get("arguments") or "{}")
+            except Exception:
+                args = {}
+            if trace:
+                trace("  ⚙ " + name + ("(" + json.dumps(args) + ")" if args else ""))
+            out = TOOLS_IMPL.get(name, lambda a: "unknown tool")(args)
+            messages.append({"role": "tool", "tool_call_id": tc["id"], "content": out})
+    return "(stopped after 8 tool calls)"
+
+def main():
+    conf = load_conf()
+    if not conf["api_key"]:
+        sys.stderr.write("No API key. Add one to %s:\n  api_key = sk-or-...   (OpenRouter)\n"
+                         "  model   = anthropic/claude-sonnet-5\n" % CONF)
+        sys.exit(1)
+    argv = sys.argv[1:]
+    if argv and argv[0] == "ask":
+        messages = [{"role": "system", "content": SYSTEM},
+                    {"role": "user", "content": " ".join(argv[1:])}]
+        print(agent_turn(conf, messages))
+        return
+    print("\033[35m👻 SpookyWrt Assistant\033[0m — ask about your router (\033[90mquit\033[0m to exit)")
+    messages = [{"role": "system", "content": SYSTEM}]
+    while True:
+        try:
+            q = input("\n\033[35myou›\033[0m ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print()
+            break
+        if not q:
+            continue
+        if q in ("quit", "exit"):
+            break
+        messages.append({"role": "user", "content": q})
+        try:
+            ans = agent_turn(conf, messages, trace=lambda s: sys.stderr.write("\033[90m" + s + "\033[0m\n"))
+        except urllib.error.HTTPError as e:
+            ans = "API error %s: %s" % (e.code, e.read().decode()[:200])
+        except Exception as e:
+            ans = "error: %s" % e
+        print("\033[32mspooky›\033[0m " + ans)
+
+if __name__ == "__main__":
+    main()

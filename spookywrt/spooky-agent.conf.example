@@ -1,0 +1,7 @@
+# /etc/spooky-agent.conf — SpookyJuice Search backend (OpenAI-compatible)
+# Backend is fully swappable ("variable in the future"): point base_url anywhere that speaks the
+# OpenAI /chat/completions API — OpenRouter today; tomorrow a local model, or the SpookyJuice brain.
+api_key  = sk-or-REPLACE-ME              # OpenRouter key (https://openrouter.ai/keys)
+model    = anthropic/claude-sonnet-5     # query /v1/models to see options; model ids move
+base_url = https://openrouter.ai/api/v1
+# knowledge base + memory (RAG): SPOOKY_DOCS=/usr/share/spookywrt/docs  SPOOKY_MEMORY=/etc/spookywrt/memory.md
