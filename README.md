@@ -54,6 +54,12 @@ a few forum posts, and some dead download links. This repo fixes that.
 - 📦 **A firmware archive that won't rot** — official images preserved with
   **SHA256 checksums** so you can always get a verifiable copy.
 
+## The complete workflow
+
+<p align="center">
+  <img src="./assets/diagrams/workflow.svg" alt="The complete LinkStar H68K workflow: vendor firmware → flash → boot + baseline → optional 24.04 upgrade → flavor (desktop/server/casaos) → release, plus the OpenWRT/Armbian shortcut and a gotchas-and-fixes band." width="100%">
+</p>
+
 ## Hardware at a glance
 
 | | |

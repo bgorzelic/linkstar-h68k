@@ -3,6 +3,10 @@
 The complete guide to the Seeed Studio LinkStar H68K (RK3568). Everything here was
 either verified on real hardware or is clearly marked as unverified.
 
+<p align="center">
+  <img src="../assets/diagrams/workflow.svg" alt="The complete LinkStar H68K workflow: vendor firmware → flash (SD no-maskrom or eMMC) → boot + baseline fixes → optional upgrade to 24.04 → flavor (desktop/server/casaos) → release; plus the OpenWRT/Armbian raw-image shortcut and a gotchas-and-fixes band (black screen, DHCP, DNS, clock drift, 2.5G driver, insecure defaults)." width="100%">
+</p>
+
 ## Start here
 
 - **[Flash Ubuntu to an SD from a Mac](flash-ubuntu-sd-from-mac.md)** — the

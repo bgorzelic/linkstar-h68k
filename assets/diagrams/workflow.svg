@@ -1,0 +1,158 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 760" font-family="'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <defs>
+    <linearGradient id="wfHdr" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#39c5cf"/><stop offset=".5" stop-color="#58a6ff"/><stop offset="1" stop-color="#bc8cff"/>
+    </linearGradient>
+    <marker id="wfA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+  <rect width="1400" height="760" rx="18" fill="#0d1117"/>
+  <rect x="1" y="1" width="1398" height="758" rx="18" fill="none" stroke="#21262d"/>
+
+  <!-- header -->
+  <rect x="50" y="36" width="10" height="44" rx="3" fill="url(#wfHdr)"/>
+  <text x="74" y="60" fill="#e6edf3" font-size="26" font-weight="700">LinkStar H68K — the complete workflow</text>
+  <text x="76" y="84" fill="#8b949e" font-size="15">from vendor firmware to a released, hardened, flavored image — every step, script, and gotcha</text>
+
+  <!-- ===== pipeline (6 stages) ===== -->
+  <g font-size="11.5">
+    <!-- 1 -->
+    <g transform="translate(50,120)">
+      <rect width="185" height="200" rx="12" fill="#161b22" stroke="#30363d"/>
+      <circle cx="26" cy="28" r="14" fill="#21262d" stroke="#58a6ff"/><text x="26" y="33" fill="#58a6ff" font-size="13" font-weight="700" text-anchor="middle">1</text>
+      <text x="52" y="33" fill="#e6edf3" font-size="15" font-weight="700">Vendor firmware</text>
+      <text x="18" y="70" fill="#c9d1d9">RKFW: Ubuntu, Android</text>
+      <text x="18" y="92" fill="#c9d1d9">raw img: OpenWRT</text>
+      <text x="18" y="120" fill="#8b949e">download from SourceForge</text>
+      <text x="18" y="140" fill="#3fb950">verify SHA256 ✓</text>
+    </g>
+    <!-- 2 -->
+    <g transform="translate(273,120)">
+      <rect width="185" height="200" rx="12" fill="#0d2818" stroke="#3fb950" stroke-width="2"/>
+      <circle cx="26" cy="28" r="14" fill="#0f3d22" stroke="#3fb950"/><text x="26" y="33" fill="#3fb950" font-size="13" font-weight="700" text-anchor="middle">2</text>
+      <text x="52" y="33" fill="#e6edf3" font-size="15" font-weight="700">Flash</text>
+      <text x="18" y="66" fill="#3fb950" font-weight="700">SD · no maskrom</text>
+      <text x="18" y="88" fill="#c9d1d9">unpack-rkfw →</text>
+      <text x="18" y="108" fill="#c9d1d9">build-idbloader (RKNS) →</text>
+      <text x="18" y="128" fill="#c9d1d9">build-sd-image</text>
+      <text x="18" y="160" fill="#8b949e">or eMMC via maskrom</text>
+      <text x="18" y="178" fill="#8b949e">(RKDevTool / rkdeveloptool)</text>
+    </g>
+    <!-- 3 -->
+    <g transform="translate(496,120)">
+      <rect width="185" height="200" rx="12" fill="#161b22" stroke="#30363d"/>
+      <circle cx="26" cy="28" r="14" fill="#21262d" stroke="#58a6ff"/><text x="26" y="33" fill="#58a6ff" font-size="13" font-weight="700" text-anchor="middle">3</text>
+      <text x="52" y="33" fill="#e6edf3" font-size="15" font-weight="700">Boot + baseline</text>
+      <text x="18" y="64" fill="#3fb950">first-boot overlay automates:</text>
+      <text x="18" y="88" fill="#c9d1d9">fix-networking (DHCP+DNS)</text>
+      <text x="18" y="108" fill="#c9d1d9">harden (adb/ftp/ufw/keys)</text>
+      <text x="18" y="128" fill="#c9d1d9">expand-rootfs</text>
+      <text x="18" y="148" fill="#c9d1d9">set clock · mask updaters</text>
+    </g>
+    <!-- 4 -->
+    <g transform="translate(719,120)">
+      <rect width="185" height="200" rx="12" fill="#161b22" stroke="#30363d"/>
+      <circle cx="26" cy="28" r="14" fill="#21262d" stroke="#bc8cff"/><text x="26" y="33" fill="#bc8cff" font-size="13" font-weight="700" text-anchor="middle">4</text>
+      <text x="52" y="33" fill="#e6edf3" font-size="15" font-weight="700">Upgrade (opt)</text>
+      <text x="18" y="70" fill="#c9d1d9">20.04 → 22.04 → 24.04</text>
+      <text x="18" y="92" fill="#c9d1d9">do-release-upgrade</text>
+      <text x="18" y="120" fill="#8b949e">kernel stays in boot.img</text>
+      <text x="18" y="140" fill="#8b949e">(vendor 4.19, untouched)</text>
+    </g>
+    <!-- 5 -->
+    <g transform="translate(942,120)">
+      <rect width="185" height="200" rx="12" fill="#161b22" stroke="#30363d"/>
+      <circle cx="26" cy="28" r="14" fill="#21262d" stroke="#39c5cf"/><text x="26" y="33" fill="#39c5cf" font-size="13" font-weight="700" text-anchor="middle">5</text>
+      <text x="52" y="33" fill="#e6edf3" font-size="15" font-weight="700">Flavor</text>
+      <text x="18" y="70" fill="#c9d1d9">desktop — LXQt</text>
+      <text x="18" y="92" fill="#c9d1d9">server — headless</text>
+      <text x="18" y="114" fill="#c9d1d9">casaos — home cloud</text>
+      <text x="18" y="146" fill="#8b949e">one base, N variants</text>
+    </g>
+    <!-- 6 -->
+    <g transform="translate(1165,120)">
+      <rect width="185" height="200" rx="12" fill="#161b22" stroke="#30363d"/>
+      <circle cx="26" cy="28" r="14" fill="#21262d" stroke="#e3b341"/><text x="26" y="33" fill="#e3b341" font-size="13" font-weight="700" text-anchor="middle">6</text>
+      <text x="52" y="33" fill="#e6edf3" font-size="15" font-weight="700">Release</text>
+      <text x="18" y="70" fill="#c9d1d9">snapshot the SD</text>
+      <text x="18" y="92" fill="#c9d1d9">.img.xz + SHA256</text>
+      <text x="18" y="114" fill="#c9d1d9">GitHub Release</text>
+      <text x="18" y="146" fill="#8b949e">verify + boot-test first</text>
+    </g>
+  </g>
+  <!-- pipeline arrows -->
+  <g stroke="#8b949e" stroke-width="2" fill="none" marker-end="url(#wfA)">
+    <line x1="235" y1="220" x2="271" y2="220"/>
+    <line x1="458" y1="220" x2="494" y2="220"/>
+    <line x1="681" y1="220" x2="717" y2="220"/>
+    <line x1="904" y1="220" x2="940" y2="220"/>
+    <line x1="1127" y1="220" x2="1163" y2="220"/>
+  </g>
+
+  <!-- ===== alt track ===== -->
+  <g>
+    <path d="M142 320 L142 360" stroke="#f0883e" stroke-width="2" stroke-dasharray="4 3" fill="none" marker-end="url(#wfA)"/>
+    <rect x="50" y="362" width="1300" height="58" rx="10" fill="#161b22" stroke="#f0883e"/>
+    <text x="72" y="388" fill="#f0883e" font-size="14" font-weight="700">Shortcut track — OpenWRT / Armbian</text>
+    <text x="72" y="408" fill="#c9d1d9" font-size="13">They ship <tspan fill="#e6edf3" font-weight="700">raw disk images</tspan> — flash with dd or Etcher straight to SD, no RKFW pipeline. Armbian's mainline kernel fixes the Wi-Fi / 2.5 G / LED driver bugs.</text>
+  </g>
+
+  <!-- ===== gotchas band ===== -->
+  <text x="50" y="466" fill="#8b949e" font-size="13" font-weight="600" letter-spacing="1">GOTCHAS &amp; FIXES</text>
+  <g font-size="11.5">
+    <!-- template: red accent problem, green fix -->
+    <g transform="translate(50,482)">
+      <rect width="205" height="150" rx="10" fill="#161b22" stroke="#30363d"/>
+      <rect width="205" height="6" rx="3" fill="#f85149"/>
+      <text x="16" y="34" fill="#f0f6fc" font-size="13" font-weight="700">Black screen</text>
+      <text x="16" y="62" fill="#8b949e">wrong loader at sector 64</text>
+      <text x="16" y="98" fill="#3fb950" font-weight="700">FIX</text>
+      <text x="16" y="120" fill="#c9d1d9">rebuild RKNS idbloader</text>
+    </g>
+    <g transform="translate(269,482)">
+      <rect width="205" height="150" rx="10" fill="#161b22" stroke="#30363d"/>
+      <rect width="205" height="6" rx="3" fill="#f85149"/>
+      <text x="16" y="34" fill="#f0f6fc" font-size="13" font-weight="700">No DHCP / IP</text>
+      <text x="16" y="62" fill="#8b949e">3 network stacks race</text>
+      <text x="16" y="98" fill="#3fb950" font-weight="700">FIX</text>
+      <text x="16" y="120" fill="#c9d1d9">fix-networking.sh</text>
+    </g>
+    <g transform="translate(488,482)">
+      <rect width="205" height="150" rx="10" fill="#161b22" stroke="#30363d"/>
+      <rect width="205" height="6" rx="3" fill="#f85149"/>
+      <text x="16" y="34" fill="#f0f6fc" font-size="13" font-weight="700">No DNS</text>
+      <text x="16" y="62" fill="#8b949e">no systemd-resolved</text>
+      <text x="16" y="98" fill="#3fb950" font-weight="700">FIX</text>
+      <text x="16" y="120" fill="#c9d1d9">static resolver / repair</text>
+    </g>
+    <g transform="translate(707,482)">
+      <rect width="205" height="150" rx="10" fill="#161b22" stroke="#30363d"/>
+      <rect width="205" height="6" rx="3" fill="#f85149"/>
+      <text x="16" y="34" fill="#f0f6fc" font-size="13" font-weight="700">apt "not valid yet"</text>
+      <text x="16" y="62" fill="#8b949e">clock drift — no RTC</text>
+      <text x="16" y="98" fill="#3fb950" font-weight="700">FIX</text>
+      <text x="16" y="120" fill="#c9d1d9">set time + NTP</text>
+    </g>
+    <g transform="translate(926,482)">
+      <rect width="205" height="150" rx="10" fill="#161b22" stroke="#30363d"/>
+      <rect width="205" height="6" rx="3" fill="#f85149"/>
+      <text x="16" y="34" fill="#f0f6fc" font-size="13" font-weight="700">2.5 G won't link</text>
+      <text x="16" y="62" fill="#8b949e">vendor 4.19 driver bug</text>
+      <text x="16" y="98" fill="#3fb950" font-weight="700">FIX</text>
+      <text x="16" y="120" fill="#c9d1d9">Armbian mainline kernel</text>
+    </g>
+    <g transform="translate(1145,482)">
+      <rect width="205" height="150" rx="10" fill="#161b22" stroke="#30363d"/>
+      <rect width="205" height="6" rx="3" fill="#f85149"/>
+      <text x="16" y="34" fill="#f0f6fc" font-size="13" font-weight="700">Insecure defaults</text>
+      <text x="16" y="62" fill="#8b949e">adb/ftp open · shared keys</text>
+      <text x="16" y="98" fill="#3fb950" font-weight="700">FIX</text>
+      <text x="16" y="120" fill="#c9d1d9">harden.sh + host-key regen</text>
+    </g>
+  </g>
+
+  <!-- footer -->
+  <text x="50" y="700" fill="#8b949e" font-size="12">github.com/bgorzelic/linkstar-h68k · Rockchip RK3568 · unofficial community project</text>
+  <text x="1350" y="700" fill="#8b949e" font-size="12" text-anchor="end">flash → fix → upgrade → flavor → release</text>
+</svg>
