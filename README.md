@@ -23,6 +23,34 @@ firmware.
 
 ---
 
+## Contents
+
+[What is it?](#what-is-the-linkstar-h68k) ·
+[The workflow](#the-complete-workflow) ·
+[Quick start](#quick-start) ·
+[Hardware](#hardware-at-a-glance) ·
+[Docs](#documentation) ·
+[Firmware](#firmware--os-images) ·
+[Roadmap](#roadmap) ·
+[Credits](#license--credits)
+
+## Pick your path
+
+New here? Find yourself in the table and jump straight to the right guide — no need to
+read the whole thing.
+
+| I want to… | Start here |
+|------------|-----------|
+| 🟢 **Just get Ubuntu running** on my H68K | [Flash it from a Mac](./docs/flash-ubuntu-sd-from-mac.md) |
+| 🔒 **Secure a unit I already have** (it ships wide open) | [Hardening](./docs/hardening.md) |
+| 🖥️ **Run a desktop, server, or home cloud** | [Flavors](./flavors/README.md) · [CasaOS](./docs/casaos.md) |
+| 🌐 **Use it as a router / firewall** | [OpenWRT & other Linux](./docs/alternative-os.md) |
+| 💽 **Install to internal storage (Windows/eMMC)** | [eMMC over USB](./docs/flash-emmc-windows.md) |
+| ⬆️ **Upgrade Ubuntu to the latest** | [Upgrading](./docs/upgrading.md) |
+| 🧠 **Understand how it boots** | [How it works](./docs/how-it-works.md) |
+| 🆘 **Fix something that's broken** | [Known issues & fixes](./docs/known-issues.md) |
+| 📦 **Build my own release image** | [Releasing](./docs/releasing.md) |
+
 ## What is the LinkStar H68K?
 
 A fanless **Rockchip RK3568** mini-computer / soft-router: quad-core Cortex-A55,
@@ -76,31 +104,32 @@ Full breakdown, sourced and verified: **[`docs/hardware.md`](./docs/hardware.md)
 
 ```text
 linkstar-h68k/
-├── docs/                            # the guide — start at docs/README.md
-│   ├── flash-ubuntu-sd-from-mac.md  # ⭐ flash Ubuntu to SD from a Mac (no maskrom)
-│   ├── how-it-works.md              # RK3568 boot chain + RKFW / idbloader internals
-│   ├── flashing-and-recovery.md     # all flashing paths + maskrom/eMMC recovery
-│   ├── os-images/                   # image matrix + archived vendor release note
-│   └── (hardware, known-issues, hardening, networking… — in progress)
-├── scripts/                         # idempotent bash tooling (see scripts/README.md)
-│   ├── unpack-rkfw.sh               # RKFW vendor image → partition images
-│   ├── build-idbloader.sh           # → RKNS rksd loader (black-screen fix)
-│   ├── build-sd-image.sh            # write a bootable Ubuntu SD
-│   ├── discover.sh                  # find the device on your subnet (-Pn)
-│   ├── fix-networking.sh            # one sane network stack (systemd-networkd)
-│   ├── expand-rootfs.sh             # grow rootfs to fill the card
-│   ├── harden.sh                    # disable adb/FTP, firewall, SSH keys
-│   ├── first-setup.sh               # hostname, updates, timezone, admin user
-│   └── lib/common.sh                # shared helpers
-└── firmware/                        # download links + SHA256 (NOT the binaries)
-    ├── README.md
-    └── SHA256SUMS
+├── docs/         # the guide (16 docs) — start at docs/README.md
+├── scripts/      # the toolkit — flash, discover, fix-networking, harden, build-release…
+├── flavors/      # desktop / server / casaos release variants
+├── firstboot/    # secure-baseline overlay (runs once on a flashed image)
+├── firmware/     # official download links + SHA256 (no binaries in git)
+└── assets/       # the infographic, diagrams, and device photos
 ```
 
 ## Quick start
 
-**Flash Ubuntu to an SD card** (on your Mac/Linux workstation — full guide in
-[`docs/flash-ubuntu-sd-from-mac.md`](./docs/flash-ubuntu-sd-from-mac.md)):
+> 🟢 **Just want it working?** Follow the friendly step-by-step:
+> **[Flash Ubuntu to an SD from a Mac](./docs/flash-ubuntu-sd-from-mac.md)**. For OpenWRT
+> or Armbian, it's even simpler — flash the image with [balenaEtcher](https://etcher.balena.io/)
+> and boot.
+
+**Already have a unit running?** Find it and lock it down (it ships wide open):
+
+```bash
+scripts/discover.sh                                # find it on your network
+scp -r scripts <you>@<ip>:~/ && ssh <you>@<ip>     # copy the toolkit over, log in
+sudo ~/scripts/fix-networking.sh                   # sane networking + DNS
+sudo ~/scripts/harden.sh --pubkey-file ~/.ssh/authorized_keys   # close ADB/FTP, add a firewall
+```
+
+<details>
+<summary><b>Advanced:</b> build the SD from the raw vendor image yourself</summary>
 
 ```bash
 scripts/unpack-rkfw.sh   ubuntu20.04-...-update.img  ./work/parts
@@ -108,24 +137,9 @@ scripts/build-idbloader.sh  MiniLoaderAll.bin  ./work/idbloader.img
 scripts/build-sd-image.sh   ./work/parts  ./work/idbloader.img  /dev/diskN   # DESTRUCTIVE
 ```
 
-**Find a running unit on your network** (it blocks ping but answers on SSH, so a
-normal ping-sweep misses it):
+</details>
 
-```bash
-scripts/discover.sh            # auto-detects your subnet CIDR (often a /22)
-```
-
-**Secure & set up a running unit** (copy the toolkit over, then run on the device):
-
-```bash
-scp -r scripts <you>@<device-ip>:~/
-ssh <you>@<device-ip>
-sudo ~/scripts/fix-networking.sh
-sudo ~/scripts/expand-rootfs.sh
-sudo ~/scripts/harden.sh --pubkey-file ~/.ssh/authorized_keys
-```
-
-See [`scripts/README.md`](./scripts/README.md) for every flag and a `--dry-run` mode.
+Every script supports `--dry-run` and `--help` — see [`scripts/README.md`](./scripts/README.md).
 
 ## Documentation
 
