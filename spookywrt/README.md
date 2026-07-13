@@ -12,6 +12,22 @@ build.
 > ([source](../webui/index.html)) builds a recipe and generates a first-boot script for you —
 > a click-driven front end to everything below.
 
+## The `spooky` control shell
+
+Once the box is up, **`spooky`** is your one command to run and troubleshoot it — over SSH or
+the serial console. Run it bare for a menu, or as a one-shot:
+
+```sh
+spooky              # interactive menu: status · network · wifi · diag · services · capture · vpn
+spooky status       # health snapshot (WAN/LAN/Wi-Fi/clients/internet)
+spooky diag         # checks the known gotchas: DNS, clock/NTP, Wi-Fi driver, dnsmasq, recent errors
+spooky capture wan  # packet capture on the WAN uplink (→ spooky-capture)
+spooky bundle       # collect a diagnostic tarball for support (+ the scp line to grab it)
+```
+
+It ties together `spooky-setup` (config wizard), `spooky-capture`, and live diagnostics — the
+"single pane of glass" for the device from a terminal. Installed to `/usr/bin/spooky` by first-boot.
+
 ## First-time setup over Wi-Fi (no cable)
 
 A freshly flashed SpookyWrt raises an **open onboarding AP named `SpookyWrt-Setup`** on first
@@ -31,7 +47,9 @@ promptly. No Wi-Fi radio (e.g. a no-Wi-Fi H68K SKU)? Use a LAN cable to `192.168
 | `build.py` | Requests a custom image from the OpenWRT **ASU build server** (package list + first-boot script) and prints the download URL + SHA256. |
 | `first-boot.sh` | The `uci-defaults` first-boot script — branded banner + MOTD, `eth0`=WAN topology, NTP (no RTC), and a deferred Wi-Fi-AP setup. |
 | `first-boot-full.sh` | The flagship variant — also installs the `spooky-setup` wizard onto the device. |
+| `spooky` | The **control shell** — a menu-driven config + troubleshooting TUI for SSH/console. Status, network, Wi-Fi, diagnostics, services, capture, VPN, and a diag bundle in one command. |
 | `spooky-setup` | An on-device onboarding wizard (POSIX/ash): Express or Advanced, every network change under a **rollback timer** so you can't lock yourself out. |
+| `spooky-capture` | Dead-simple packet capture (`tcpdump` wrapper) — auto-saves to a USB stick or a RAM ring buffer, prints the retrieval line. |
 | `setup-ap.sh` | First-boot onboarding: raises the open `SpookyWrt-Setup` Wi-Fi AP so you can configure the box with no cable; self-retires after setup. |
 | `wifi-audit/firstboot.sh` | The `wifi-audit` variant's consent gate + boot-safety (services-off). |
 

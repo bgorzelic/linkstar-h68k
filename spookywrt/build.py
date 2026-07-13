@@ -12,8 +12,12 @@ PACKAGES = [
     "luci", "luci-ssl", "luci-theme-material", "luci-app-attendedsysupgrade",
     # ubus-over-HTTP backend for the SpookyWrt dashboard (spookywrt/webui/)
     "uhttpd-mod-ubus", "rpcd", "rpcd-mod-rrdns",
-    # NICs + Wi-Fi (2.5G, MT7921, BE6500 USB Wi-Fi 7)
-    "kmod-r8125", "kmod-mt7921e", "kmod-mt7925u", "wpad-basic-mbedtls",
+    # NICs + Wi-Fi (2.5G, MT7921 internal, MT7925 USB Wi-Fi 7)
+    # USB Wi-Fi drivers ship WITHOUT firmware blobs — you MUST add the matching
+    # *-firmware package or the adapter fails init ("MCU is not ready"). Live-verified:
+    # kmod-mt7925u is a brick without kmod-mt7925-firmware.
+    "kmod-r8125", "kmod-mt7921e", "kmod-mt7925u", "kmod-mt7925-firmware",
+    "wpad-basic-mbedtls",
     # NAS / storage
     "block-mount", "kmod-usb-storage", "kmod-usb3", "kmod-fs-ext4",
     "kmod-fs-vfat", "kmod-fs-exfat", "kmod-fs-ntfs3",
@@ -25,7 +29,10 @@ PACKAGES = [
     # QoS
     "luci-app-sqm", "sqm-scripts",
     # security / honeypot
-    "banip", "luci-app-banip", "socat", "tcpdump",
+    "banip", "luci-app-banip", "socat", "tcpdump", "tcpdump-mini",
+    # VPN / mesh — Tailscale (off until `tailscale up`) + policy routing (split-tunnel).
+    # WireGuard is already above. openvpn/zerotier are heavier → the `--profile vpn` variant.
+    "tailscale", "pbr", "luci-app-pbr",
     # toolkit
     "htop", "nano", "curl", "mtr", "nmap", "arp-scan", "ethtool",
     "lldpd", "iperf3", "irqbalance", "usbutils", "pciutils",
@@ -53,7 +60,10 @@ WIFI_FLAVOR_EXTRA = [
     "ddns-scripts", "luci-app-ddns", "https-dns-proxy", "luci-app-https-dns-proxy",
     "watchcat", "luci-app-watchcat", "luci-app-statistics",
 ]
-PROFILES = ("flagship", "wifi-audit")
+# --- vpn variant (OPT-IN, --profile vpn) — the heavier VPN engines on top of the base
+# Tailscale + pbr (split-tunnel). Build-verified on SNAPSHOT.
+VPN_EXTRA = ["openvpn-openssl", "zerotier"]
+PROFILES = ("flagship", "wifi-audit", "vpn")
 
 def build_packages(variant):
     """Return the package list for a build variant. Default flagship stays lean."""
@@ -63,6 +73,8 @@ def build_packages(variant):
         # 6 GHz / WPA3-SAE needs the full supplicant; wpad-basic can't do SAE on 6 GHz.
         pkgs = [p for p in pkgs if p != "wpad-basic-mbedtls"]
         pkgs += ["-wpad-basic-mbedtls", "wpad-mbedtls"]
+    elif variant == "vpn":
+        pkgs += VPN_EXTRA
     # de-dup while preserving order
     seen, out = set(), []
     for p in pkgs:
@@ -100,6 +112,15 @@ def main():
     setup_ap = Path(__file__).parent / "setup-ap.sh"
     if setup_ap.exists():
         defaults += "\n\n# ---- SpookyWrt-Setup onboarding AP ----\n" + setup_ap.read_text()
+    # install on-device helper commands into /usr/bin (verbatim, via quoted heredoc so
+    # their $vars expand on the device, not at build time).
+    for tool in ("spooky", "spooky-capture"):
+        tp = Path(__file__).parent / tool
+        if tp.exists():
+            d = "SPOOKYTOOL_" + tool.replace("-", "_")
+            defaults += (f"\n\n# ---- install /usr/bin/{tool} ----\n"
+                         f"cat > /usr/bin/{tool} <<'{d}'\n{tp.read_text()}\n{d}\n"
+                         f"chmod 0755 /usr/bin/{tool}\n")
     if variant == "wifi-audit":
         # append the fail-closed consent gate (spookywrt/wifi-audit/firstboot.sh)
         gate = Path(__file__).parent / "wifi-audit" / "firstboot.sh"

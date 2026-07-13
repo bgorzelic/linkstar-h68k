@@ -1,0 +1,139 @@
+#!/bin/sh
+# spooky — the SpookyWrt control shell. Interactive config + troubleshooting over SSH or
+# the serial console. Run `spooky` for the menu, or `spooky <cmd>` for a one-shot:
+#   spooky status | net | wifi | diag | services | capture | vpn | setup | bundle | reboot
+# POSIX/ash (BusyBox). Read-only where it can be; every change is confirmed.
+set -u
+
+C='\033[35m'; G='\033[32m'; Y='\033[33m'; R='\033[0m'; RB='\033[1m'; D='\033[90m'
+hr(){ printf "${D} ────────────────────────────────────────────────────────────${R}\n"; }
+title(){ clear 2>/dev/null; printf "\n  ${C}${RB}SpookyWrt${R} ${D}control${R}   ${D}%s${R}\n" "$(uci -q get system.@system[0].hostname || echo spookywrt)"; hr; }
+pause(){ printf "\n  ${D}press enter${R} "; read -r _; }
+ok(){ printf "  ${G}✓${R} %s\n" "$1"; }
+bad(){ printf "  ${Y}✗${R} %s\n" "$1"; }
+ask(){ printf "  %s " "$1"; read -r REPLY; }
+yes(){ printf "  ${Y}%s${R} [y/N] " "$1"; read -r a; [ "$a" = y ] || [ "$a" = Y ]; }
+
+status(){
+  title
+  wan=$(ip -4 addr show "$(uci -q get network.wan.device || echo eth0)" 2>/dev/null | awk '/inet /{print $2; exit}')
+  lan=$(ip -4 addr show br-lan 2>/dev/null | awk '/inet /{print $2; exit}')
+  up=$(uptime 2>/dev/null | sed 's/.*up //; s/,  *load.*//')
+  load=$(cut -d' ' -f1-3 /proc/loadavg 2>/dev/null)
+  mem=$(free -m 2>/dev/null | awk '/Mem/{printf "%d/%d MB", $3, $2}')
+  ssid=$(iwinfo 2>/dev/null | awk -F'"' '/ESSID/{print $2; exit}')
+  clients=$(wc -l < /tmp/dhcp.leases 2>/dev/null | tr -d ' ')
+  printf "  ${G}WAN${R}  %-22s ${G}LAN${R}  %s\n" "${wan:-down}" "${lan:-—}"
+  printf "  ${G}Wi-Fi${R} %-20s ${G}Clients${R} %s\n" "${ssid:-off}" "${clients:-0}"
+  printf "  ${G}Load${R} %-21s ${G}Mem${R} %s\n" "${load:-?}" "${mem:-?}"
+  printf "  ${G}Up${R}   %s\n" "${up:-?}"
+  # internet reachability
+  if ping -c1 -W2 1.1.1.1 >/dev/null 2>&1; then ok "internet reachable"; else bad "no internet route"; fi
+  hr
+}
+
+diag(){
+  title; printf "  ${RB}Diagnostics${R} — checking the usual suspects\n\n"
+  # DNS
+  if nslookup openwrt.org >/dev/null 2>&1; then ok "DNS resolves"; else bad "DNS broken — check /etc/resolv.conf (no systemd-resolved on some images)"; fi
+  # clock (no RTC on RK3568 → apk/opkg + TLS break if wrong)
+  yr=$(date +%Y 2>/dev/null); [ "${yr:-0}" -ge 2025 ] 2>/dev/null && ok "clock sane ($(date '+%Y-%m-%d %H:%M'))" || bad "clock wrong ($yr) — no RTC; enable NTP (needs DNS)"
+  # wifi driver
+  [ -e /sys/class/ieee80211/phy0 ] && ok "Wi-Fi PHY present ($(ls /sys/class/ieee80211 2>/dev/null | tr '\n' ' '))" || bad "no Wi-Fi PHY — driver/firmware? (USB Wi-Fi needs its *-firmware pkg)"
+  # dhcp server
+  pgrep -x dnsmasq >/dev/null 2>&1 && ok "DHCP/DNS (dnsmasq) running" || bad "dnsmasq not running — clients won't get IPs"
+  # failed / not-running enabled services
+  printf "\n  ${D}recent errors (logread):${R}\n"; logread 2>/dev/null | grep -iE 'error|fail|denied' | tail -4 | sed 's/^/    /'
+  hr
+}
+
+net_menu(){
+  title; printf "  ${RB}Network${R}\n\n"
+  printf "  1) show interfaces + routes\n  2) show DHCP leases\n  3) restart networking\n  4) fix DNS (static 1.1.1.1/8.8.8.8)\n  b) back\n\n"; ask "choice:"
+  case "$REPLY" in
+    1) title; ip -br addr; echo; ip route; pause;;
+    2) title; cat /tmp/dhcp.leases 2>/dev/null || echo "no leases"; pause;;
+    3) yes "restart networking now?" && { /etc/init.d/network restart; ok "network restarted"; } ; pause;;
+    4) printf 'nameserver 1.1.1.1\nnameserver 8.8.8.8\n' > /etc/resolv.conf; ok "wrote /etc/resolv.conf"; pause;;
+  esac
+}
+
+wifi_menu(){
+  title; printf "  ${RB}Wi-Fi${R}\n\n"; iwinfo 2>/dev/null | grep -E 'ESSID|Mode|Channel|Signal' | sed 's/^/  /'
+  printf "\n  1) full Wi-Fi setup (spooky-setup)\n  2) toggle radio0\n  3) reload Wi-Fi\n  b) back\n\n"; ask "choice:"
+  case "$REPLY" in
+    1) command -v spooky-setup >/dev/null && spooky-setup || bad "spooky-setup not installed"; ;;
+    2) cur=$(uci -q get wireless.radio0.disabled || echo 0); n=$([ "$cur" = 1 ] && echo 0 || echo 1); uci -q set wireless.radio0.disabled="$n"; uci commit wireless; wifi reload; ok "radio0 disabled=$n"; pause;;
+    3) wifi reload; ok "Wi-Fi reloaded"; pause;;
+  esac
+}
+
+svc_menu(){
+  title; printf "  ${RB}Services${R}\n\n"
+  ls /etc/init.d 2>/dev/null | tr '\n' ' ' | fold -s -w60 | sed 's/^/  /'
+  printf "\n\n  enter a service to (re)start/enable, or 'b' back\n"; ask "service:"
+  [ "$REPLY" = b ] && return
+  s="$REPLY"; [ -x "/etc/init.d/$s" ] || { bad "no such service"; pause; return; }
+  printf "  1) restart  2) enable  3) disable  4) status\n"; ask "action:"
+  case "$REPLY" in
+    1) "/etc/init.d/$s" restart 2>&1 | sed 's/^/    /'; ok "$s restarted";;
+    2) "/etc/init.d/$s" enable; ok "$s enabled";;
+    3) "/etc/init.d/$s" disable; ok "$s disabled";;
+    4) "/etc/init.d/$s" status 2>&1 | sed 's/^/    /' || true;;
+  esac; pause
+}
+
+vpn_menu(){
+  title; printf "  ${RB}VPN / mesh${R}\n\n"
+  if command -v tailscale >/dev/null 2>&1; then tailscale status 2>/dev/null | head -3 | sed 's/^/  /' || echo "  tailscale: not up"; fi
+  printf "\n  1) tailscale up (login)   2) tailscale status   3) wireguard (LuCI)   b) back\n\n"; ask "choice:"
+  case "$REPLY" in
+    1) command -v tailscale >/dev/null && tailscale up || bad "tailscale not installed"; pause;;
+    2) command -v tailscale >/dev/null && tailscale status | sed 's/^/  /'; pause;;
+    3) echo "  configure WireGuard in LuCI → Network → Interfaces (proto WireGuard)"; pause;;
+  esac
+}
+
+bundle(){
+  title; printf "  ${RB}Diagnostic bundle${R} — collecting…\n"
+  out="/tmp/spooky-diag-$(date +%s 2>/dev/null || echo now).txt"
+  { echo "== board =="; ubus call system board 2>/dev/null
+    echo "== release =="; cat /etc/openwrt_release 2>/dev/null
+    echo "== net =="; ip -br addr; ip route; cat /tmp/dhcp.leases 2>/dev/null
+    echo "== wifi =="; iwinfo 2>/dev/null; ls /sys/class/ieee80211 2>/dev/null
+    echo "== services =="; ls /etc/init.d 2>/dev/null
+    echo "== dmesg tail =="; dmesg 2>/dev/null | tail -40
+    echo "== logread tail =="; logread 2>/dev/null | tail -60
+  } > "$out" 2>&1
+  ok "wrote $out"
+  echo "  retrieve:  scp root@$(uci -q get network.lan.ipaddr || echo 192.168.1.1):$out ."
+  pause
+}
+
+menu(){
+  while true; do
+    status
+    printf "  ${RB}1${R} Status   ${RB}2${R} Network   ${RB}3${R} Wi-Fi   ${RB}4${R} Diagnostics\n"
+    printf "  ${RB}5${R} Services ${RB}6${R} Capture   ${RB}7${R} VPN     ${RB}8${R} Setup wizard\n"
+    printf "  ${RB}9${R} Diag bundle   ${RB}r${R} Reboot   ${RB}q${R} Quit\n\n"; ask "spooky>"
+    case "$REPLY" in
+      1) status; pause;;
+      2) net_menu;; 3) wifi_menu;; 4) diag; pause;; 5) svc_menu;;
+      6) command -v spooky-capture >/dev/null && { title; spooky-capture; } || bad "spooky-capture not installed";;
+      7) vpn_menu;;
+      8) command -v spooky-setup >/dev/null && spooky-setup || bad "spooky-setup not installed";;
+      9) bundle;;
+      r) yes "reboot now?" && reboot;;
+      q|"") clear 2>/dev/null; exit 0;;
+    esac
+  done
+}
+
+# one-shot subcommands, or the interactive menu
+case "${1:-}" in
+  status) status;; diag) diag; ;; net) net_menu;; wifi) wifi_menu;; services|svc) svc_menu;;
+  capture) shift; exec spooky-capture "$@";; vpn) vpn_menu;; setup) exec spooky-setup;;
+  bundle) bundle;; reboot) reboot;; ""|menu) menu;;
+  -h|--help|help) sed -n '2,6p' "$0";;
+  *) echo "unknown: $1 (try: spooky --help)"; exit 1;;
+esac

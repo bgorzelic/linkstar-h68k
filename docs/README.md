@@ -76,5 +76,7 @@ either verified on real hardware or is clearly marked as unverified.
   port map, and the live-flash gotchas.
 - **[Wireless support](wireless-support.md)** — injection/monitor chipset matrix, the 6 GHz
   reality, and which USB adapters actually work.
+- **[Packet capture & VPN/mesh](capture-and-vpn.md)** — dump traffic to Wireshark, and Tailscale /
+  WireGuard / OpenVPN / ZeroTier + split-tunnel (PBR) setup.
 
 Contributions welcome — see [`../CONTRIBUTING.md`](../CONTRIBUTING.md).

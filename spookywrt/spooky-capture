@@ -1,0 +1,57 @@
+#!/bin/sh
+# spooky-capture — dead-simple packet capture on SpookyWrt.
+#
+#   spooky-capture                 capture the LAN bridge to the best spot, ring-buffered
+#   spooky-capture wan             capture the WAN uplink
+#   spooky-capture eth2            capture a specific interface (or 'any')
+#   spooky-capture -f 'tcp port 443'   add a BPF filter (quote it)
+#   spooky-capture -s 50 -n 4      50 MB files, keep 4 (200 MB ring). Ctrl-C to stop.
+#
+# Where captures land (auto):
+#   • a plugged-in USB stick (persistent — pull it out, open in Wireshark)   ← preferred
+#   • else /tmp (RAM — copy it off before reboot)
+#
+# Live-to-Wireshark (no file, from your Mac):
+#   ssh root@192.168.1.1 "tcpdump -i br-lan -U -s0 -w - not port 22" | wireshark -k -i -
+set -u
+
+IFACE=""; FILTER=""; SIZE=25; KEEP=4
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -f) FILTER="$2"; shift 2;;
+    -s) SIZE="$2"; shift 2;;
+    -n) KEEP="$2"; shift 2;;
+    -h|--help) sed -n '2,20p' "$0"; exit 0;;
+    *) IFACE="$1"; shift;;
+  esac
+done
+
+# resolve a friendly name → real interface
+case "$IFACE" in
+  ""|lan) IFACE=$(uci -q get network.lan.device || echo br-lan);;
+  wan)    IFACE=$(uci -q get network.wan.device || echo eth0);;
+esac
+
+command -v tcpdump >/dev/null 2>&1 || { echo "tcpdump not installed (opkg/apk add tcpdump)"; exit 1; }
+
+# pick a capture directory: first mounted USB stick, else /tmp
+DIR=""
+for m in /mnt/* /mnt/sda* /mnt/usb*; do
+  [ -d "$m" ] && mountpoint -q "$m" 2>/dev/null && { DIR="$m/captures"; break; }
+done
+[ -z "$DIR" ] && DIR="/tmp/captures"
+mkdir -p "$DIR" 2>/dev/null || { echo "can't create $DIR"; exit 1; }
+
+STAMP=$(date +%Y%m%d-%H%M%S 2>/dev/null || echo capture)
+FILE="$DIR/spooky-$STAMP.pcap"
+case "$DIR" in /tmp/*) LOC="RAM (/tmp) — copy it off before reboot";; *) LOC="USB ($DIR) — pull the stick and open in Wireshark";; esac
+
+echo "▚ capturing on ${IFACE}  ${FILTER:+filter: [$FILTER]}"
+echo "  → $FILE  (ring: ${KEEP}×${SIZE}MB)"
+echo "  → storage: $LOC"
+echo "  → retrieve from your Mac:  scp root@192.168.1.1:'$DIR/*.pcap' ."
+echo "  Ctrl-C to stop."
+echo
+
+# -C size(MB) -W keep = ring buffer so it never fills the disk; -U flush; -s0 full frames
+exec tcpdump -i "$IFACE" -s0 -U -w "$FILE" -C "$SIZE" -W "$KEEP" ${FILTER:+$FILTER}
