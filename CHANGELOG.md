@@ -24,6 +24,12 @@ tags (`<track>/vX.Y`); see [docs/releasing.md](docs/releasing.md).
   **Wi-Fi/AP is impossible on the vendor 4.19 kernel** (use the OpenWRT track for AP);
   corrected the 24.04 `eth*`→`end*` interface rename.
 
+- **More flavors + a full OS-track matrix** — added `ai` (RK3568 NPU / RKNN + Ollama local
+  LLMs) and `hacker` (pentest toolkit, authorized-use) Ubuntu flavors, and expanded the
+  release matrix to the whole RK3568 landscape (OpenWRT/ImmortalWrt, Armbian/Debian, Android,
+  LibreELEC, Batocera, OpenMediaVault, DietPi, Home Assistant, Manjaro, Buildroot) — see
+  `docs/releasing.md` + `docs/alternative-os.md`.
+
 ### In progress
 
 - **Ubuntu 24.04 release** (`ubuntu-desktop-24.04` / `ubuntu-server-24.04` / `ubuntu-casaos-24.04`)

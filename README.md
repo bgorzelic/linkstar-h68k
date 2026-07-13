@@ -46,6 +46,8 @@ read the whole thing.
 | 🖥️ **Run a desktop, server, or home cloud** | [Flavors](./flavors/README.md) · [CasaOS](./docs/casaos.md) |
 | 🌐 **Use it as a router / firewall** | [OpenWRT & other Linux](./docs/alternative-os.md) |
 | 🗄️ **Run a NAS / web-managed appliance** | [Cockpit + Samba + firewall](./docs/appliance-cockpit-nas-firewall.md) |
+| 🤖 **Run edge AI / local LLMs** | [AI flavor](./flavors/README.md) (RK3568 NPU + Ollama) |
+| 🕵️ **Build a pentest / security box** | [Hacker flavor](./flavors/README.md) (authorized use) |
 | 💽 **Install to internal storage (Windows/eMMC)** | [eMMC over USB](./docs/flash-emmc-windows.md) |
 | ⬆️ **Upgrade Ubuntu to the latest** | [Upgrading](./docs/upgrading.md) |
 | 🧠 **Understand how it boots** | [How it works](./docs/how-it-works.md) |

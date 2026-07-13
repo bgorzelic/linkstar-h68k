@@ -61,15 +61,29 @@ the tool paths used — attach it to the GitHub Release for provenance.
 Tag as `<track>[-<flavor>]-<osversion>/v<major>.<minor>` so tracks *and* flavors coexist
 (see [`../flavors/README.md`](../flavors/README.md) for the matrix):
 
-| Release | Status | Notes |
-|---------|--------|-------|
-| `ubuntu-desktop-20.04` | **v0.1.0 (current)** | Stock Lubuntu 20.04 (LXQt), hardened |
-| `ubuntu-desktop-24.04` | in progress | In-place upgrade to 24.04 ([upgrading.md](upgrading.md)), then release |
-| `ubuntu-server-24.04` | in progress | Headless flavor ([`flavors/server.sh`](../flavors/server.sh)) |
-| `ubuntu-casaos-24.04` | in progress | CasaOS home-server UI ([`flavors/casaos.sh`](../flavors/casaos.sh)) |
-| `openwrt` | planned | OpenWRT / LuCI (image catalogued) |
-| `android` | planned | Vendor Android → eMMC |
-| *(Armbian / Debian)* | exploratory | Community raw images — [alternative-os.md](alternative-os.md) |
+| Release / track | Type | Status | Notes |
+|-----------------|------|--------|-------|
+| `ubuntu-desktop-20.04` | Ubuntu flavor | **v0.1.0 ✅** | Stock Lubuntu 20.04 (LXQt), hardened |
+| `ubuntu-desktop-24.04` | Ubuntu flavor | in progress | Upgraded to 24.04, LXQt |
+| `ubuntu-server-24.04` | Ubuntu flavor | in progress | Headless ([`flavors/server.sh`](../flavors/server.sh)) |
+| `ubuntu-casaos-24.04` | Ubuntu flavor | in progress | CasaOS home cloud ([`flavors/casaos.sh`](../flavors/casaos.sh)) |
+| `ubuntu-ai-24.04` | Ubuntu flavor | planned | Edge-AI: RK3568 NPU (RKNN) + Python ML ([`flavors/ai.sh`](../flavors/ai.sh)) |
+| `ubuntu-hacker-24.04` | Ubuntu flavor | planned | Pentest / security toolkit ([`flavors/hacker.sh`](../flavors/hacker.sh)) |
+| `openwrt` | OS track | planned | Router / LuCI (vendor image catalogued) |
+| `immortalwrt` | OS track | planned | Router fork — 2.5 G + Wi-Fi work (mainline drivers) |
+| `armbian` | OS track | planned | Mainline-kernel base (Wi-Fi / 2.5 G work) |
+| `debian` | OS track | exploratory | via Armbian |
+| `android` | OS track | planned | Vendor A11 (no Wi-Fi); A13/14 build-from-SDK |
+| `libreelec` | OS track | exploratory | Kodi media center |
+| `batocera` | OS track | exploratory | Retro gaming |
+| `openmediavault` | appliance / Armbian | exploratory | NAS web UI |
+| `dietpi` | appliance / Armbian | exploratory | Minimal server |
+| `home-assistant` | appliance | exploratory | Home automation |
+| `manjaro-arm` | OS track | exploratory | Arch (HDMI caveat) |
+| `buildroot` | OS track | exploratory | Custom / minimal |
+
+Community-track detail: [alternative-os.md](alternative-os.md). Ubuntu flavors are built from
+one base — [`../flavors/README.md`](../flavors/README.md).
 
 ## Adding a new OS track (e.g. Ubuntu-latest, Armbian)
 
