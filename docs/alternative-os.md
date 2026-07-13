@@ -50,6 +50,24 @@ Community Armbian images target `rk3568-opc-h68k` and ship a modern kernel, so t
 - **Flash:** it's a raw sysupgrade image — `dd`/Etcher to SD, or flash to eMMC via RKDevTool.
 - **Access:** LuCI web UI; default mapping `eth0` = WAN, the rest LAN; login `root` / `password`.
 
+### Build a custom OpenWRT image the fast way (Attended Sysupgrade)
+
+Don't wait on the 200 MB Image Builder or a full local toolchain. OpenWrt's
+**[firmware selector](https://firmware-selector.openwrt.org/)** — the Attended-Sysupgrade
+(ASU) build server — compiles a **custom image server-side** with your package list plus an
+optional first-boot script, and you download only the final ~35 MB image:
+
+1. Pick the **H68K / RK3568** profile in the firmware selector.
+2. Add your packages (e.g. `luci`, `hostapd`/`wpad` for the MT7921 **AP**, `kmod-r8125` for
+   the 2.5 G ports, `samba4-server` for NAS).
+3. Optionally attach a first-boot **`uci-defaults`** script (banner/MOTD, Wi-Fi AP, network).
+4. Build → download → flash the image (`dd`/Etcher to SD).
+
+This is how the **SpookyWrt** track ([openwrt-superprompt.md](openwrt-superprompt.md)) is
+built — a custom OpenWrt with the router/NAS/AP trifecta and no local build environment.
+Because it's real OpenWrt, the **MT7921 Wi-Fi and 2.5 G NICs work** (mainline drivers) — the
+capabilities the vendor 4.19 kernel can't give you.
+
 ## Android — media / TV box (and the Wi-Fi reality)
 
 The vendor ships **Android 11** (R22.11.17), flashed to **eMMC** via RKDevTool — see
