@@ -33,6 +33,10 @@ either verified on real hardware or is clearly marked as unverified.
 ## Building & releasing
 
 - **[Releasing (reproducible builds)](releasing.md)** — the pinned, one-command
-  release process, versioning, and how to add new OS tracks.
+  release process, the track/flavor matrix, versioning, and how to add new tracks.
+- **[Upgrading Ubuntu in place](upgrading.md)** — 20.04 → 22.04 → 24.04 safely: the
+  distro-upgrade path, the gotchas, and rollback.
+- **[Flavors & the release matrix](../flavors/README.md)** — desktop / server variants
+  and how a flavored image is built.
 
 Contributions welcome — see [`../CONTRIBUTING.md`](../CONTRIBUTING.md).

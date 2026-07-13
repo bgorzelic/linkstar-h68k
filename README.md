@@ -138,9 +138,11 @@ shasum -a 256 -c firmware/SHA256SUMS
 
 ## Roadmap
 
-- **v0.1.0 — Ubuntu base**: core docs + hardening/setup scripts + Ubuntu image manifest.
-- **v0.2.0 — OpenWRT / LuCI**: OpenWRT track docs + image manifest.
-- Later: NVMe/boot-from-SD guides, kernel/driver notes, automated first-boot image.
+- **v0.1.0 — Ubuntu desktop (20.04)** ✅ — toolkit, docs, first-boot overlay, released.
+- **v0.2.0 — the release matrix**: Ubuntu 24.04 in **desktop** *and* **server** flavors,
+  plus the **OpenWRT** and **Android** tracks. See [`flavors/README.md`](./flavors/README.md)
+  and [`docs/releasing.md`](./docs/releasing.md).
+- Later: pre-baked hardened images mirrored to the Internet Archive; more flavors (NAS, Docker).
 
 ## Contributing
 

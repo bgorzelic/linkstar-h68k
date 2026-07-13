@@ -4,6 +4,21 @@ All notable changes to this project are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/). Firmware-image releases use per-OS-track
 tags (`<track>/vX.Y`); see [docs/releasing.md](docs/releasing.md).
 
+## [Unreleased]
+
+### Added
+
+- **Release matrix / flavors** (`flavors/`) — `desktop` and `server` flavors of the
+  Ubuntu track, a build workflow, and a `<track>[-<flavor>]-<osversion>` tag scheme
+  (see `flavors/README.md`).
+- **`docs/upgrading.md`** — in-place distro-upgrade guide (20.04 → 22.04 → 24.04) with
+  the real gotchas and rollback.
+
+### In progress
+
+- **Ubuntu 24.04 release** (`ubuntu-desktop-24.04` / `ubuntu-server-24.04`) — pending the
+  live in-place upgrade + boot verification, then snapshot → image.
+
 ## [0.1.0] — 2026-07-12
 
 First public release — the LinkStar H68K toolkit + guide (Ubuntu 20.04 track).

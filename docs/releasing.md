@@ -56,14 +56,17 @@ the tool paths used — attach it to the GitHub Release for provenance.
 
 ## Versioning & release tracks
 
-Tag as `<track>/v<major>.<minor>` so multiple OS lines coexist:
+Tag as `<track>[-<flavor>]-<osversion>/v<major>.<minor>` so tracks *and* flavors coexist
+(see [`../flavors/README.md`](../flavors/README.md) for the matrix):
 
-| Track | Status | Notes |
-|-------|--------|-------|
-| `ubuntu-20.04` | **v0.1.0 (current)** | Stock vendor Lubuntu 20.04, hardened |
-| `ubuntu-latest` | planned | Upgrade to the newest supported Ubuntu, then release |
-| `openwrt` | planned | OpenWRT / LuCI track (image already catalogued) |
-| *(other OSes)* | exploratory | Armbian / Debian / etc. — evaluate & add as tracks |
+| Release | Status | Notes |
+|---------|--------|-------|
+| `ubuntu-desktop-20.04` | **v0.1.0 (current)** | Stock Lubuntu 20.04 (LXQt), hardened |
+| `ubuntu-desktop-24.04` | in progress | In-place upgrade to 24.04 ([upgrading.md](upgrading.md)), then release |
+| `ubuntu-server-24.04` | in progress | Headless flavor ([`flavors/server.sh`](../flavors/server.sh)) |
+| `openwrt` | planned | OpenWRT / LuCI (image catalogued) |
+| `android` | planned | Vendor Android → eMMC |
+| *(Armbian / Debian)* | exploratory | Community raw images — [alternative-os.md](alternative-os.md) |
 
 ## Adding a new OS track (e.g. Ubuntu-latest, Armbian)
 
@@ -72,10 +75,9 @@ is the same runbook with different inputs:
 
 1. Obtain the new vendor/base image; add it to `firmware/README.md` + `SHA256SUMS`.
 2. `unpack-rkfw.sh` it and read the embedded `parameter.txt`.
-3. **Check the partition layout.** `build-sd-image.sh` currently hard-codes the
-   Ubuntu-20.04 layout; if the new image's `parameter.txt` differs, update the
-   `LAYOUT` table (or generalize it to parse `parameter.txt`) and set the correct
-   rootfs PARTUUID. This is the one step that isn't yet fully auto-derived.
+3. **Partition layout is auto-derived.** `build-sd-image.sh` reads the layout + rootfs
+   PARTUUID from the image's own `parameter.txt`, so a differing layout is handled
+   automatically. (An in-place `apt` upgrade keeps the same layout — nothing changes.)
 4. `build-release.sh` → flash → **boot a real unit** and verify before tagging.
 5. Carry the fixes forward (host-key regen, networking, harden) via the first-boot
    overlay so every track is secure-by-default.
