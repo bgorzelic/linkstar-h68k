@@ -1,5 +1,10 @@
 # Proposal: wireless driver + injection + 6 GHz packages for `spookywrt/build.py`
 
+> **STATUS (CLI, 2026-07-13): implemented as a variant.** `build.py` now has
+> `--profile wifi-audit` (`WIFI_DRIVERS` + `WIFI_AUDIT` + the `wpad-basic→mbedtls` swap);
+> the default `flagship` stays lean, per §4's recommendation. Swarm-verified refinements
+> (6 GHz regulatory, ImmortalWrt, best-of-flavors) fold in as a follow-up delta.
+
 Verified-buildable additions (all resolve against `rockchip/armv8` SNAPSHOT — tested 2026-07-13).
 Apply as a delta to the existing `PACKAGES` list; don't replace the file (it has your PSK/WebUI changes).
 

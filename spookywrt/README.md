@@ -54,6 +54,19 @@ python3 spookywrt/build.py        # prints the image URL + SHA256 when done
 ```
 
 Then flash the downloaded `*-squashfs-sysupgrade.img.gz` to a microSD (`dd`/Etcher) and boot.
+
+### Build variants
+
+```bash
+python3 spookywrt/build.py                        # flagship (default, lean — 42 pkgs)
+python3 spookywrt/build.py --profile wifi-audit   # + monitor/injection drivers + audit tools
+```
+
+The **`wifi-audit`** variant adds a monitor-mode/injection driver zoo (mt76 / ath9k / rt2800)
+and audit tooling (aircrack-ng, hcxdumptool, reaver, horst) plus the 6 GHz-capable
+`wpad-mbedtls`. It's **opt-in on purpose** — kept out of the default image so the flagship
+stays lean and the attack surface is a deliberate choice (authorized use only). Verified
+chipset/adapter matrix: [`../docs/wireless-support.md`](../docs/wireless-support.md).
 First boot applies the branding, topology, and (deferred) secured Wi-Fi AP; log in over SSH
 and run `spooky-setup` to finish provisioning.
 

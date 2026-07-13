@@ -31,6 +31,36 @@ PACKAGES = [
     "lldpd", "iperf3", "irqbalance", "usbutils", "pciutils",
 ]
 
+# --- wifi-audit variant (OPT-IN, --profile wifi-audit) -----------------------------
+# Monitor-mode + injection driver zoo and audit tooling. Kept OUT of the default image:
+# it widens the attack surface (~15-20 MB) and should be a deliberate choice. All names
+# verified against rockchip/armv8 SNAPSHOT (2026-07-13). Steer users to mt76 / ath9k
+# adapters — out-of-tree Realtek (rtl8812au) and kismet/mdk4 are NOT in the snapshot feed
+# (they fail the build). See docs/wireless-support.md.
+WIFI_DRIVERS = [
+    "kmod-mt76x2u", "kmod-mt76x0u", "kmod-mt7601u", "kmod-mt7921u",
+    "kmod-ath9k-htc", "kmod-carl9170", "kmod-rt2800-usb", "kmod-rtl8xxxu",
+]
+WIFI_AUDIT = [
+    "aircrack-ng", "hcxdumptool", "hcxtools", "reaver", "horst", "iw", "iwinfo",
+]
+PROFILES = ("flagship", "wifi-audit")
+
+def build_packages(variant):
+    """Return the package list for a build variant. Default flagship stays lean."""
+    pkgs = list(PACKAGES)
+    if variant == "wifi-audit":
+        pkgs += WIFI_DRIVERS + WIFI_AUDIT
+        # 6 GHz / WPA3-SAE needs the full supplicant; wpad-basic can't do SAE on 6 GHz.
+        pkgs = [p for p in pkgs if p != "wpad-basic-mbedtls"]
+        pkgs += ["-wpad-basic-mbedtls", "wpad-mbedtls"]
+    # de-dup while preserving order
+    seen, out = set(), []
+    for p in pkgs:
+        if p not in seen:
+            seen.add(p); out.append(p)
+    return out
+
 def post(body):
     req = urllib.request.Request(ASU, data=json.dumps(body).encode(),
                                  headers={"Content-Type": "application/json"}, method="POST")
@@ -41,18 +71,26 @@ def post(body):
         return e.code, json.loads(e.read().decode() or "{}")
 
 def main():
+    # variant: default "flagship" (lean) or "wifi-audit" (opt-in driver/audit stack)
+    variant = "flagship"
+    if "--profile" in sys.argv:
+        variant = sys.argv[sys.argv.index("--profile") + 1]
+    if variant not in PROFILES:
+        print(f"[!] unknown --profile '{variant}'. choose one of: {', '.join(PROFILES)}")
+        sys.exit(1)
+    packages = build_packages(variant)
     defaults = (WORK / "first-boot-full.sh").read_text()
     body = {
         "version": "SNAPSHOT",
         "target": "rockchip/armv8",
         "profile": "hinlink_h68k",
-        "packages": PACKAGES,
+        "packages": packages,
         "defaults": defaults,
         # H68K default rootfs is tiny; we're writing to a 32GB card, so give the
         # squashfs rootfs 1GB of headroom for the full flagship package set.
         "rootfs_size_mb": 1024,
     }
-    print(f"[*] requesting build: {len(PACKAGES)} packages + {len(defaults)}-byte first-boot script")
+    print(f"[*] variant '{variant}': {len(packages)} packages + {len(defaults)}-byte first-boot script")
     status, data = post(body)
     for _ in range(50):  # poll up to ~5 min
         if status == 200 and data.get("images"):
