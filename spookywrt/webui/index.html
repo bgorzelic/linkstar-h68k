@@ -14,7 +14,7 @@
     --ink:#08070d; --ink2:#0c0a14; --panel:#12101d; --panel2:#181426;
     --line:#2a2440; --line2:#38304f;
     --spectral:#3df0c0; --violet:#b15bff; --amber:#ffb454; --rose:#ff5c72; --good:#54e08a;
-    --text:#eae6f5; --muted:#9a8fb8; --faint:#6a6188;
+    --text:#eae6f5; --muted:#9a8fb8; --faint:#8278a0;
     --disp:"Chakra Petch",sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
   }
   *{box-sizing:border-box} html,body{margin:0}
@@ -111,7 +111,7 @@
 </style>
 </head>
 <body>
-<div class="app">
+<div class="app" role="main">
 
   <div class="top">
     <svg class="ghost" viewBox="0 0 40 40" fill="none" aria-hidden="true">
@@ -142,9 +142,9 @@
       <div class="hd"><span class="t">Quick controls</span><span class="x">live</span></div>
       <div class="bd">
         <div class="ctl">
-          <div class="toggle"><div class="tl">Wi-Fi AP <small>SpookyWrt-H68K · MT7921</small></div><div class="sw" id="sw-wifi" role="switch" aria-checked="true" tabindex="0"></div></div>
-          <div class="toggle"><div class="tl">Guest network <small>isolated VLAN</small></div><div class="sw" id="sw-guest" role="switch" aria-checked="false" tabindex="0"></div></div>
-          <div class="toggle"><div class="tl">AdGuard DNS <small>network-wide ad-block</small></div><div class="sw" id="sw-ad" role="switch" aria-checked="true" tabindex="0"></div></div>
+          <div class="toggle"><div class="tl" id="sw-wifi-lbl">Wi-Fi AP <small>SpookyWrt-H68K · MT7921</small></div><div class="sw" id="sw-wifi" role="switch" aria-checked="true" aria-labelledby="sw-wifi-lbl" tabindex="0"></div></div>
+          <div class="toggle"><div class="tl" id="sw-guest-lbl">Guest network <small>isolated VLAN</small></div><div class="sw" id="sw-guest" role="switch" aria-checked="false" aria-labelledby="sw-guest-lbl" tabindex="0"></div></div>
+          <div class="toggle"><div class="tl" id="sw-ad-lbl">AdGuard DNS <small>network-wide ad-block</small></div><div class="sw" id="sw-ad" role="switch" aria-checked="true" aria-labelledby="sw-ad-lbl" tabindex="0"></div></div>
           <div style="font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin:6px 0 -2px">operating mode</div>
           <div class="modes" id="modes" role="group" aria-label="operating mode"></div>
         </div>
@@ -281,7 +281,13 @@
   el('t-badge').className='badge demo'; el('t-badge').textContent='demo';
   el('t-host').textContent=state.hostname||'spookywrt';
   el('t-luci').href = "http://"+state.lan+"/cgi-bin/luci";
-  el('t-reboot').onclick=function(){ if(state.live){ if(confirm('Reboot the router now?')) ubus("reboot","system"); } else { alert('Demo mode — reboot is disabled. On a device this calls ubus system.reboot.'); } };
+  // H-2: never call ubus system.reboot with the anonymous token (a misconfigured rpcd ACL
+  // would make it an unauthenticated LAN reboot). Send the user to LuCI's authenticated
+  // reboot page instead, which requires a login session.
+  el('t-reboot').onclick=function(){
+    if(state.live){ location.href = "http://"+state.lan+"/cgi-bin/luci/admin/system/reboot"; }
+    else { el('demobar').innerHTML='<b>Demo mode.</b> Reboot is disabled here. On a device this opens LuCI’s authenticated reboot page.'; }
+  };
   bindSwitch('sw-wifi','wifi'); bindSwitch('sw-guest','guest'); bindSwitch('sw-ad','ad');
   renderModes();
 

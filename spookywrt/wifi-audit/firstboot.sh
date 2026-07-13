@@ -1,65 +1,95 @@
 #!/bin/sh
-# SpookyWrt wifi-audit — first-boot consent gate (uci-defaults).
+# SpookyWrt wifi-audit — first-boot consent + audit gate (uci-defaults).
 # Appended after the base first-boot when building `--profile wifi-audit`.
 #
-# This image ships packet-injection drivers + audit tools. They stay FAIL-CLOSED behind
-# a consent gate: nothing offensive runs until the operator records authorization AND a
-# regulatory domain. Implements the swarm safety spec (proposals/wifi-audit-variant.md §4).
+# This image ships packet-injection drivers + audit tools. This gate provides
+# CONSENT, ATTESTATION, REGDOM enforcement, and a LOGGING trail — plus it relocates
+# the offensive binaries off the default $PATH so they aren't reachable by accident.
+#
+# HONESTY NOTE: OpenWRT is single-user (root). This is NOT an unbypassable jail — a
+# determined root user can still exec a relocated binary by full path. What it DOES
+# guarantee: the tools aren't on $PATH by default, use requires recorded consent + a
+# regulatory domain, and every gated invocation is logged. Treat it as informed-consent
+# + audit, not as a technical access control.
 
-# ---- audit config defaults (off until consent) ----
+AUDIT_DIR=/opt/spooky-tools/bin
+# Offensive binaries relocated off $PATH (injection/capture/crack). Passive tools
+# (iw, iwinfo, tcpdump) stay on $PATH — they're generally useful and low-risk.
+OFFENSIVE="aircrack-ng aireplay-ng airodump-ng airmon-ng airbase-ng besside-ng \
+hcxdumptool hcxpcapngtool reaver wash mdk4"
+
+# ---- audit config defaults (disabled until consent) ----
 touch /etc/config/spookywrt
 uci -q get spookywrt.audit >/dev/null 2>&1 || uci -q set spookywrt.audit=audit
-uci -q set spookywrt.audit.enabled='0'       # 1 only after spooky-audit-consent
-uci -q set spookywrt.audit.scope=''          # authorized scope (logged)
+uci -q set spookywrt.audit.enabled='0'
+uci -q set spookywrt.audit.scope=''
 uci -q set spookywrt.audit.consent_ts=''
-uci -q set spookywrt.audit.regdom=''         # ISO country — REQUIRED before injection
+uci -q set spookywrt.audit.regdom=''
 uci -q commit spookywrt
-mkdir -p /etc/spookywrt
+mkdir -p /etc/spookywrt && chmod 700 /etc/spookywrt   # H-3: not world-readable
 
-# ---- login banner (Audit Edition, with the legal notice) ----
+# ---- relocate offensive tools off $PATH (real friction) ----
+mkdir -p "$AUDIT_DIR" && chmod 755 "$AUDIT_DIR"
+for t in $OFFENSIVE; do
+  [ -x "/usr/bin/$t" ] && mv "/usr/bin/$t" "$AUDIT_DIR/$t"
+done
+
+# ---- login banner ----
 cat > /etc/banner <<'BANNER'
   SpookyWrt · Wi-Fi Audit Edition — AUTHORIZED USE ONLY
-  Packet-injection drivers + wireless audit tools are present but DISABLED.
-  Enable only for networks you own or hold written authorization to test:
-      spooky-audit-consent      # records scope + regdom, unlocks tooling
-  Offensive tools are fail-closed behind:  spooky-audit <tool> [args]
+  Packet-injection + audit tools are present, moved off $PATH, and DISABLED.
+  Enable (records scope + regdom, all use logged):   spooky-audit-consent
+  Then run tools through:                            spooky-audit <tool> [args]
+  This is a consent + audit layer, not a jail — use only on networks you own
+  or hold written authorization to test.
 BANNER
 
-# ---- the fail-closed wrapper: audit tools are only reachable through this ----
-cat > /usr/bin/spooky-audit <<'WRAP'
+# ---- the audit wrapper: allowlisted, regdom-verified, logged ----
+cat > /usr/bin/spooky-audit <<WRAP
 #!/bin/sh
-# spooky-audit — gate for offensive wireless tooling. Fails closed.
+# spooky-audit — consent/regdom-gated launcher for offensive wireless tooling.
 set -u
+AUDIT_DIR="$AUDIT_DIR"
+WRAP
+cat >> /usr/bin/spooky-audit <<'WRAP'
 enabled=$(uci -q get spookywrt.audit.enabled)
 regdom=$(uci -q get spookywrt.audit.regdom)
 scope=$(uci -q get spookywrt.audit.scope)
-if [ "$enabled" != "1" ]; then
-  echo "spooky-audit: DISABLED. Run 'spooky-audit-consent' first (authorized use only)." >&2
-  exit 1
-fi
-[ -z "$1" ] && { echo "usage: spooky-audit <tool> [args...]   (aircrack-ng hcxdumptool reaver horst iw ...)"; exit 2; }
-# Injection needs a regulatory domain set, or the radio silently no-IRs / TXes out of spec.
-if [ -z "$regdom" ]; then
-  echo "spooky-audit: no regdom set. Run: uci set spookywrt.audit.regdom=<ISO>; uci commit; iw reg set <ISO>" >&2
-  exit 3
-fi
-iw reg get 2>/dev/null | grep -q "country $regdom" || iw reg set "$regdom" 2>/dev/null
-# rfkill preflight — refuse if wireless is soft/hard blocked
+[ "$enabled" = "1" ] || { echo "spooky-audit: DISABLED — run 'spooky-audit-consent' first." >&2; exit 1; }
+[ $# -eq 0 ] && { echo "usage: spooky-audit <tool> [args...]" >&2; exit 2; }   # W1: no bare $1 under set -u
+# C-3: allowlist — never exec arbitrary commands
+tool="$1"; shift
+case "$tool" in
+  aircrack-ng|aireplay-ng|airodump-ng|airmon-ng|airbase-ng|besside-ng|hcxdumptool|hcxpcapngtool|reaver|wash|mdk4|horst) ;;
+  *) echo "spooky-audit: '$tool' is not an allowlisted audit tool." >&2; exit 5 ;;
+esac
+[ -n "$regdom" ] || { echo "spooky-audit: no regdom recorded (re-run spooky-audit-consent)." >&2; exit 3; }
+# M-1: enforce + VERIFY the regulatory domain (don't swallow failure)
+iw reg set "$regdom" 2>/dev/null
+iw reg get 2>/dev/null | grep -q "country $regdom" || { echo "spooky-audit: kernel did not accept regdom '$regdom'." >&2; exit 5; }
+# rfkill preflight
 if command -v rfkill >/dev/null 2>&1 && rfkill list 2>/dev/null | grep -qi 'blocked: yes'; then
   echo "spooky-audit: a radio is rfkill-blocked — unblock before auditing." >&2; exit 4
 fi
-tool="$1"; shift
-# tamper-evident audit trail: who/what/when/scope
-logger -t spooky-audit "run tool=$tool scope=\"$scope\" by=$(id -un) args=\"$*\""
-printf '%s\t%s\t%s\t%s\n' "$(date -u +%FT%TZ)" "$(id -un)" "$tool" "$scope" >> /etc/spookywrt/audit.log
-exec "$tool" "$@"
+# M-3: sanitize scope (strip tab/newline) before it reaches the logs
+scope_safe=$(printf '%s' "$scope" | tr -d '\t\n\r')
+logger -t spooky-audit "run tool=$tool by=$(id -un) scope=$scope_safe"
+( umask 077; printf '%s\t%s\t%s\t%s\n' "$(date -u +%FT%TZ)" "$(id -un)" "$tool" "$scope_safe" >> /etc/spookywrt/audit.log )
+# resolve from the relocated dir (tools are off $PATH)
+bin="$AUDIT_DIR/$tool"; [ -x "$bin" ] || bin="$tool"
+exec "$bin" "$@"
 WRAP
-chmod 0750 /usr/bin/spooky-audit
+chmod 0755 /usr/bin/spooky-audit   # readable/execable; enforcement is by consent state, not file mode
 
-# ---- consent recorder: prints the legal notice, captures scope + "I ACCEPT", unlocks ----
+# ---- consent recorder (root-only; explicit re-consent) ----
 cat > /usr/bin/spooky-audit-consent <<'CONSENT'
 #!/bin/sh
 set -u
+# M-2: don't silently overwrite a recorded scope
+if [ "$(uci -q get spookywrt.audit.enabled)" = "1" ] && [ "${1:-}" != "--re-consent" ]; then
+  echo "audit already enabled for scope: $(uci -q get spookywrt.audit.scope)"
+  echo "to change scope, re-run with:  spooky-audit-consent --re-consent"; exit 0
+fi
 cat <<'NOTICE'
 
   SpookyWrt — Wi-Fi Audit Edition — Authorized Use Only
@@ -86,9 +116,11 @@ uci -q set spookywrt.audit.regdom="$reg"
 uci -q set spookywrt.audit.consent_ts="$ts"
 uci -q commit spookywrt
 iw reg set "$reg" 2>/dev/null
-umask 077
-printf '{"enabled":true,"scope":"%s","regdom":"%s","consent_ts":%s,"by":"%s"}\n' \
-  "$scope" "$reg" "$ts" "$(id -un)" > /etc/spookywrt/audit-consent.json
+# M-4/W2: JSON-escape backslash then double-quote in the recorded values
+esc(){ printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
+( umask 077
+  printf '{"enabled":true,"scope":"%s","regdom":"%s","consent_ts":%s,"by":"%s"}\n' \
+    "$(esc "$scope")" "$(esc "$reg")" "$ts" "$(esc "$(id -un)")" > /etc/spookywrt/audit-consent.json )
 echo "audit tooling ENABLED for scope: $scope (regdom $reg). Use: spooky-audit <tool>"
 CONSENT
-chmod 0755 /usr/bin/spooky-audit-consent
+chmod 0700 /usr/bin/spooky-audit-consent   # M-2: root-only

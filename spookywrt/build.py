@@ -83,12 +83,18 @@ def main():
     # variant: default "flagship" (lean) or "wifi-audit" (opt-in driver/audit stack)
     variant = "flagship"
     if "--profile" in sys.argv:
-        variant = sys.argv[sys.argv.index("--profile") + 1]
+        i = sys.argv.index("--profile")
+        if i + 1 >= len(sys.argv):          # B2: --profile with no value
+            print("[!] --profile needs a value: " + ", ".join(PROFILES)); sys.exit(1)
+        variant = sys.argv[i + 1]
     if variant not in PROFILES:
         print(f"[!] unknown --profile '{variant}'. choose one of: {', '.join(PROFILES)}")
         sys.exit(1)
     packages = build_packages(variant)
-    defaults = (WORK / "first-boot-full.sh").read_text()
+    WORK.mkdir(parents=True, exist_ok=True)
+    # B1: read the first-boot script from the repo, not a manually-staged /tmp copy
+    fb = Path(__file__).parent / "first-boot-full.sh"
+    defaults = fb.read_text() if fb.exists() else (WORK / "first-boot-full.sh").read_text()
     if variant == "wifi-audit":
         # append the fail-closed consent gate (spookywrt/wifi-audit/firstboot.sh)
         gate = Path(__file__).parent / "wifi-audit" / "firstboot.sh"

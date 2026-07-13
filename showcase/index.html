@@ -199,7 +199,7 @@
   @media (prefers-reduced-motion:reduce){ .rail-hd .live::before{animation:none} * {transition:none!important} }
 </style>
 
-<div class="wrap">
+<div class="wrap" role="main">
   <div class="grid-bg"></div>
 
   <header class="shell hero">
@@ -317,7 +317,7 @@
             <label class="chk" style="margin-bottom:10px"><input type="checkbox" id="c-wifi" checked> broadcast an access point</label>
             <div class="frow">
               <div class="fld"><label for="c-ssid">SSID</label><input class="inp" id="c-ssid" value="SpookyWrt-H68K" spellcheck="false"></div>
-              <div class="fld"><label for="c-key">password (8+)</label><input class="inp" id="c-key" value="spooky-h68k-2026" spellcheck="false"></div>
+              <div class="fld"><label for="c-key">password (8+)</label><input class="inp" id="c-key" value="" placeholder="blank → random per-device key" spellcheck="false"></div>
             </div>
           </div>
           <div class="fgroup"><div class="flab">operating mode</div>
@@ -372,6 +372,7 @@
 
   function esc(s){return String(s).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
   function attr(s){return esc(s).replace(/"/g,'&quot;')}
+  function shq(s){return "'"+String(s).replace(/'/g,"'\\''")+"'"}  // safe shell single-quote
   function chip(id,o,pressed){return '<button class="chip" aria-pressed="'+(pressed?'true':'false')+'"'+(o.hot?' data-hot="1"':'')+' data-id="'+id+'">'+esc(o.name)+'<span class="d">'+esc(o.d)+'</span></button>'}
   function pkgSet(){
     var s=[].concat(BASE_UI, DEV[state.dev].base, MODE[state.mode].pkgs);
@@ -481,7 +482,7 @@
     var lan=document.getElementById('c-lan').value||'192.168.1.1';
     var wifiOn=document.getElementById('c-wifi').checked;
     var ssid=document.getElementById('c-ssid').value||'SpookyWrt';
-    var key=document.getElementById('c-key').value||'changeme123';
+    var key=document.getElementById('c-key').value;
     var lanPorts=['eth0','eth1','eth2','eth3'].filter(function(p){return p!==wan});
     var svc={nas:"/etc/init.d/samba4 enable; /etc/init.d/samba4 start",
              honeypot:"/etc/init.d/banip enable; /etc/init.d/banip start   # run spooky-setup to arm decoys",
@@ -491,7 +492,7 @@
              router:"/etc/init.d/dnsmasq enable; /etc/init.d/firewall enable"}[cfg.mode];
     var s='# SpookyWrt first-boot config - paste over SSH\n';
     s+='# identity\n';
-    s+="uci set system.@system[0].hostname='"+host+"'\n";
+    s+="uci set system.@system[0].hostname="+shq(host)+"\n";
     s+="uci set system.@system[0].zonename='"+tz[1]+"'; uci set system.@system[0].timezone='"+tz[2]+"'\n";
     s+="uci set system.ntp.enabled='1'; uci set luci.main.mediaurlbase='/luci-static/material'\n";
     s+='# network - WAN='+wan+', LAN bridge='+lanPorts.join('+')+'\n';
@@ -499,12 +500,19 @@
     s+='for p in eth0 eth1 eth2 eth3; do uci -q del_list network.$BR.ports="$p"; done\n';
     s+=lanPorts.map(function(p){return 'uci add_list network.$BR.ports="'+p+'"'}).join('\n')+'\n';
     s+="uci set network.wan.device='"+wan+"'; uci set network.wan6.device='"+wan+"'\n";
-    s+="uci set network.lan.ipaddr='"+lan+"'\n";
+    s+="uci set network.lan.ipaddr="+shq(lan)+"\n";
     if(wifiOn){
       s+='# wi-fi AP\n';
       s+="uci set wireless.radio0.disabled='0'; uci set wireless.radio0.country='US'\n";
-      s+="uci set wireless.default_radio0.ssid='"+ssid+"'\n";
-      s+="uci set wireless.default_radio0.encryption='psk2'; uci set wireless.default_radio0.key='"+key+"'\n";
+      s+="uci set wireless.default_radio0.ssid="+shq(ssid)+"\n";
+      s+="uci set wireless.default_radio0.encryption='psk2'\n";
+      if(key && key.length>=8){
+        s+="uci set wireless.default_radio0.key="+shq(key)+"\n";
+      } else {
+        s+="# no key given → strong random per-device key (never a shipped default)\n";
+        s+="KEY=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 16); uci set wireless.default_radio0.key=\"$KEY\"\n";
+        s+="echo \"$KEY\" > /etc/spooky-initial-wifi.txt; chmod 600 /etc/spooky-initial-wifi.txt\n";
+      }
     } else { s+="# wi-fi off\nuci set wireless.radio0.disabled='1'\n"; }
     s+='# mode: '+MODE[cfg.mode].name+'\n'+svc+'\n';
     s+='uci commit; reload_config; wifi reload\n';

@@ -50,7 +50,7 @@ apply_network(){
 apply_soft(){ uci commit; printf "  ${G}Saved.${R}\n"; }
 
 # ---- building blocks ----
-set_password(){ local p; p=$(secret "New root password"); printf '%s\n%s\n' "$p" "$p" | passwd root >/dev/null 2>&1 && printf "  ${G}password set${R}\n"; }
+set_password(){ local p; p=$(secret "New root password (8+ chars)"); [ "${#p}" -ge 8 ] || { printf "  ${Y}password too short (need 8+) — unchanged${R}\n"; return 1; }; printf '%s\n%s\n' "$p" "$p" | passwd root >/dev/null 2>&1 && printf "  ${G}password set${R}\n"; }
 set_hostname(){ local h; h=$(ask "Hostname" "$(uci -q get system.@system[0].hostname || echo SpookyWrt)"); uci -q set system.@system[0].hostname="$h"; uci -q set network.lan.hostname="$h" 2>/dev/null; }
 set_tz(){
   printf "  ${D}1)UTC 2)Pacific 3)Mountain 4)Central 5)Eastern 6)London 7)custom${R}\n"
@@ -292,7 +292,7 @@ boot() {
     uci -q set wireless.default_radio0.encryption='psk2'
     # Per-device random PSK — never ship a static Wi-Fi password. Recorded root-only.
     key=$(tr -dc 'A-Za-z0-9' </dev/urandom 2>/dev/null | head -c 16)
-    [ -z "$key" ] && key="spooky-$(tr -d - < /proc/sys/kernel/random/uuid | head -c 10)"
+    [ -z "$key" ] && key="spooky-$(cat /proc/sys/kernel/random/uuid /proc/sys/kernel/random/uuid | tr -d - | head -c 24)"
     uci -q set wireless.default_radio0.key="$key"
     printf 'SpookyWrt initial Wi-Fi\nSSID:     SpookyWrt-H68K\nPassword: %s\n' "$key" > /etc/spooky-initial-wifi.txt
     chmod 600 /etc/spooky-initial-wifi.txt
