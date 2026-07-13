@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="SpookyWrt Control — a guided WebUI to configure and flash your OpenWRT box. Build a custom image or preview first-run setup, then download a ready first-boot config.">
+<meta property="og:title" content="SpookyWrt Control — configure your box">
+<meta property="og:description" content="Guided image builder + first-run setup for SpookyWrt. Configure visually, download a ready first-boot script.">
+<meta name="theme-color" content="#08070d">
+<title>SpookyWrt Control — configure your box</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme:dark;
+    --ink:#08070d; --ink2:#0c0a14; --panel:#12101d; --panel2:#181426; --panel3:#1f1a30;
+    --line:#2a2440; --line2:#38304f;
+    --spectral:#3df0c0; --spectral-dim:#1fae8c; --violet:#b15bff; --violet-dim:#7d3fce;
+    --amber:#ffb454; --rose:#ff5c72;
+    --text:#eae6f5; --muted:#9a8fb8; --faint:#6a6188;
+    --glow:0 0 22px rgba(61,240,192,.28);
+    --glow-v:0 0 22px rgba(177,91,255,.30);
+    --disp:"Chakra Petch",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+    --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--ink); color:var(--text); font-family:var(--sans); font-size:15px; line-height:1.55;
+    min-height:100vh; overflow-x:hidden;
+    background-image:
+      radial-gradient(900px 480px at 88% -8%, rgba(61,240,192,.10), transparent 60%),
+      radial-gradient(760px 460px at 4% 4%, rgba(177,91,255,.10), transparent 58%);
+  }
+  /* faint instrument grid + scanline atmosphere */
+  body::before{content:""; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.35;
+    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:40px 40px; mask-image:radial-gradient(1200px 700px at 70% 0%,#000,transparent 75%);}
+  body::after{content:""; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.5; mix-blend-mode:overlay;
+    background:repeating-linear-gradient(180deg,rgba(255,255,255,.02) 0 1px,transparent 1px 3px);}
+  a{color:var(--spectral); text-decoration:none}
+  .k{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint)}
+
+  /* ---------- app bar ---------- */
+  .bar{position:sticky; top:0; z-index:20; display:flex; align-items:center; gap:18px;
+    padding:14px 22px; background:rgba(10,8,17,.82); backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line)}
+  .brand{display:flex; align-items:center; gap:12px; flex:0 0 auto}
+  .ghost{width:34px; height:34px; filter:drop-shadow(0 0 10px rgba(61,240,192,.5))}
+  .ghost .eye{animation:blink 6s infinite}
+  @keyframes blink{0%,94%,100%{opacity:1}96%{opacity:.15}}
+  .wordmark{font-family:var(--disp); font-weight:700; font-size:20px; letter-spacing:.08em; line-height:1}
+  .wordmark b{background:linear-gradient(100deg,var(--spectral),#bfe 55%,var(--violet));
+    -webkit-background-clip:text; background-clip:text; color:transparent}
+  .wordmark small{display:block; font-family:var(--mono); font-size:9.5px; letter-spacing:.34em; color:var(--faint); margin-top:3px}
+  .tabs{display:flex; gap:6px; margin:0 auto; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:5px}
+  .tab{font-family:var(--mono); font-size:12.5px; font-weight:500; letter-spacing:.04em; color:var(--muted);
+    padding:9px 16px; border-radius:8px; border:0; background:none; cursor:pointer; display:flex; align-items:center; gap:8px; transition:.16s}
+  .tab:hover{color:var(--text)}
+  .tab[aria-selected="true"]{background:linear-gradient(120deg,rgba(61,240,192,.16),rgba(177,91,255,.14));
+    color:var(--text); box-shadow:inset 0 0 0 1px rgba(61,240,192,.34)}
+  .tab .n{font-family:var(--mono); font-size:10px; opacity:.6}
+  .barlink{font-family:var(--mono); font-size:12px; color:var(--muted); flex:0 0 auto; padding:8px 12px; border:1px solid var(--line); border-radius:8px; transition:.16s}
+  .barlink:hover{border-color:var(--spectral-dim); color:var(--text)}
+
+  /* ---------- layout ---------- */
+  .main{position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:30px 22px 70px}
+  .headline{margin:6px 0 26px}
+  .headline h1{font-family:var(--disp); font-weight:700; font-size:clamp(26px,4.4vw,40px); letter-spacing:.01em; margin:8px 0 8px; line-height:1.05}
+  .headline p{color:var(--muted); max-width:640px; margin:0; font-size:16px}
+  .split{display:grid; grid-template-columns:1.15fr .85fr; gap:22px; align-items:start}
+
+  .card{background:linear-gradient(180deg,var(--panel),var(--ink2)); border:1px solid var(--line); border-radius:16px}
+  .card > .hd{display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:15px 20px; border-bottom:1px solid var(--line)}
+  .card > .hd .t{font-family:var(--disp); font-weight:600; font-size:15px; letter-spacing:.02em}
+  .card > .bd{padding:20px}
+
+  /* segmented section label */
+  .sec{display:flex; align-items:center; gap:12px; margin:22px 0 12px}
+  .sec:first-child{margin-top:0}
+  .sec .k{white-space:nowrap}
+  .sec .ln{flex:1; height:1px; background:linear-gradient(90deg,var(--line),transparent)}
+
+  /* option chips (instrument buttons) */
+  .opts{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:9px}
+  .opt{font-family:var(--mono); text-align:left; cursor:pointer; user-select:none; transition:.14s;
+    background:var(--panel2); border:1px solid var(--line); border-radius:11px; padding:11px 13px; color:var(--muted)}
+  .opt:hover{border-color:var(--violet-dim); color:var(--text); transform:translateY(-1px)}
+  .opt:focus-visible{outline:2px solid var(--spectral); outline-offset:2px}
+  .opt .nm{font-size:13px; font-weight:500; color:var(--text); display:flex; align-items:center; justify-content:space-between; gap:8px}
+  .opt .ds{font-size:10.5px; color:var(--faint); margin-top:3px; line-height:1.4}
+  .opt[aria-pressed="true"]{background:linear-gradient(120deg,rgba(61,240,192,.16),rgba(177,91,255,.10));
+    border-color:var(--spectral); color:var(--text); box-shadow:var(--glow)}
+  .opt[aria-pressed="true"] .ds{color:var(--spectral)}
+  .opt[aria-pressed="true"][data-hot="1"]{background:linear-gradient(120deg,rgba(255,92,114,.18),rgba(255,180,84,.12));
+    border-color:var(--rose); box-shadow:0 0 20px rgba(255,92,114,.24)}
+  .opt[aria-pressed="true"][data-hot="1"] .ds{color:var(--amber)}
+  .dot-on{width:7px; height:7px; border-radius:50%; background:var(--spectral); box-shadow:0 0 8px var(--spectral); flex:0 0 auto}
+  .opt[aria-pressed="false"] .dot-on{background:var(--line2); box-shadow:none}
+
+  /* form fields */
+  .field{margin-bottom:15px}
+  .field label{display:block; font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:6px}
+  .field input, .field select{width:100%; font-family:var(--mono); font-size:13.5px; color:var(--text);
+    background:var(--ink2); border:1px solid var(--line); border-radius:10px; padding:11px 13px; transition:.14s}
+  .field input:focus, .field select:focus{outline:none; border-color:var(--spectral); box-shadow:var(--glow)}
+  .field .hint{font-size:11px; color:var(--faint); margin-top:5px; line-height:1.4}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+  .seg{display:flex; gap:6px; background:var(--ink2); border:1px solid var(--line); border-radius:10px; padding:4px}
+  .seg button{flex:1; font-family:var(--mono); font-size:12px; color:var(--muted); background:none; border:0; border-radius:7px; padding:9px; cursor:pointer; transition:.14s}
+  .seg button[aria-pressed="true"]{background:linear-gradient(120deg,var(--violet-dim),var(--violet)); color:#fff; box-shadow:var(--glow-v)}
+
+  /* right console panel */
+  .console{position:sticky; top:86px; background:var(--ink2); border:1px solid var(--line2); border-radius:16px; overflow:hidden;
+    box-shadow:0 22px 60px -30px rgba(61,240,192,.28)}
+  .console .top{display:flex; align-items:center; gap:8px; padding:12px 16px; border-bottom:1px solid var(--line); background:var(--panel)}
+  .console .top .d{width:10px;height:10px;border-radius:50%}
+  .console .top .ttl{font-family:var(--mono); font-size:12px; color:var(--muted); margin-left:6px}
+  .console .top .live{margin-left:auto; font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--spectral); display:flex; align-items:center; gap:6px}
+  .console .top .live::before{content:""; width:6px;height:6px;border-radius:50%; background:var(--spectral); box-shadow:0 0 7px var(--spectral); animation:pulse 1.8s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .cbd{padding:16px}
+  .gauge{display:flex; align-items:center; gap:16px; padding:10px 14px; margin-bottom:14px; background:var(--panel); border:1px solid var(--line); border-radius:12px}
+  .gauge .ring{position:relative; width:58px; height:58px; flex:0 0 auto}
+  .gauge .ring svg{transform:rotate(-90deg)}
+  .gauge .ring .num{position:absolute; inset:0; display:grid; place-items:center; font-family:var(--mono); font-weight:600; font-size:17px}
+  .gauge .lbl{font-family:var(--mono); font-size:11px; color:var(--muted); line-height:1.5}
+  .gauge .lbl b{color:var(--text); font-size:13px; display:block; font-weight:600}
+  .mrow{display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:8px 0; border-bottom:1px dashed var(--line); font-size:13px}
+  .mrow:last-child{border-bottom:0}
+  .mrow .mk{font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--faint)}
+  .mrow .mv{font-family:var(--mono); text-align:right; color:var(--text)}
+  .pill{font-family:var(--mono); font-size:10.5px; padding:2px 9px; border-radius:20px; border:1px solid var(--line); display:inline-block}
+  .pkgs{display:flex; flex-wrap:wrap; gap:5px; margin:8px 0 4px}
+  .pk{font-family:var(--mono); font-size:10.5px; padding:3px 7px; border-radius:6px; background:var(--panel2); color:#c9c0e0; border:1px solid var(--line)}
+  .code{position:relative; background:#050308; border:1px solid var(--line); border-radius:11px; padding:13px 13px; margin:10px 0;
+    font-family:var(--mono); font-size:12px; color:#d9d2ec; white-space:pre-wrap; word-break:break-word; line-height:1.65}
+  .code .cm{color:var(--faint)} .code .sp{color:var(--spectral)} .code .vi{color:var(--violet)} .code .gn{color:#7ee6a6}
+  .cbtns{position:absolute; top:8px; right:8px; display:flex; gap:6px}
+  .mini{font-family:var(--mono); font-size:10.5px; color:var(--spectral); cursor:pointer; border:1px solid var(--line); border-radius:6px; padding:3px 9px; background:var(--panel)}
+  .mini:hover{border-color:var(--spectral)}
+  .flabel{font-family:var(--mono); font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--spectral); margin:16px 0 3px}
+  .warnbox{margin-top:12px; padding:10px 12px; border-radius:10px; background:rgba(255,180,84,.09);
+    border:1px solid rgba(255,180,84,.3); color:var(--amber); font-size:11.5px; font-family:var(--mono); line-height:1.5}
+  .dlrow{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap}
+  .dl{flex:1 1 auto; font-family:var(--mono); font-size:12.5px; font-weight:500; cursor:pointer; text-align:center;
+    padding:12px 14px; border-radius:11px; border:1px solid transparent; transition:.16s;
+    background:linear-gradient(120deg,var(--violet-dim),var(--violet)); color:#fff; box-shadow:var(--glow-v)}
+  .dl:hover{transform:translateY(-1px); filter:brightness(1.08)}
+  .dl.ghostbtn{background:var(--panel); border-color:var(--line); color:var(--text); box-shadow:none}
+  .dl.ghostbtn:hover{border-color:var(--spectral)}
+  .dl:focus-visible{outline:2px solid var(--spectral); outline-offset:2px}
+
+  .note{border-left:2px solid var(--spectral); padding:3px 0 3px 15px; margin:16px 0 4px; color:var(--muted); font-size:13px}
+  .note.hot{border-color:var(--rose)}
+  .note.hot b{color:var(--amber)}
+
+  footer{position:relative; z-index:1; text-align:center; color:var(--faint); font-family:var(--mono); font-size:11.5px; padding:36px 22px 50px; border-top:1px solid var(--line)}
+  footer a{color:var(--muted)}
+
+  .hidden{display:none !important}
+  @media (max-width:900px){ .split{grid-template-columns:1fr} .console{position:static} .tabs{order:3; margin:0} .bar{flex-wrap:wrap} }
+  @media (prefers-reduced-motion:reduce){ .ghost .eye,.console .top .live::before{animation:none} *{transition:none!important} }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div class="brand">
+    <svg class="ghost" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+      <path d="M20 4C11.7 4 6 10 6 18v16.5c0 1.4 1.6 2.2 2.7 1.4l2.6-1.9 2.7 2a2 2 0 0 0 2.4 0l2.6-2 2.6 2a2 2 0 0 0 2.4 0l2.7-2 2.6 1.9c1.1.8 2.7 0 2.7-1.4V18C34 10 28.3 4 20 4Z" fill="#12101d" stroke="#3df0c0" stroke-width="1.5"/>
+      <circle class="eye" cx="15" cy="18" r="2.4" fill="#3df0c0"/>
+      <circle class="eye" cx="25" cy="18" r="2.4" fill="#b15bff"/>
+    </svg>
+    <div class="wordmark"><b>SPOOKYWRT</b><small>CONTROL</small></div>
+  </div>
+  <div class="tabs" role="tablist" aria-label="workflow">
+    <button class="tab" role="tab" id="tab-build" aria-selected="true" aria-controls="view-build"><span class="n">01</span> Build image</button>
+    <button class="tab" role="tab" id="tab-setup" aria-selected="false" aria-controls="view-setup"><span class="n">02</span> First-run setup</button>
+  </div>
+  <a class="barlink" href="../showcase/" title="Marketing showcase">showcase ↗</a>
+  <a class="barlink" href="https://github.com/bgorzelic/linkstar-h68k" target="_blank" rel="noopener">repo ↗</a>
+</div>
+
+<main class="main">
+
+  <!-- ============ BUILD VIEW ============ -->
+  <section id="view-build" role="tabpanel" aria-labelledby="tab-build">
+    <div class="headline">
+      <div class="k">step 01 · before you flash</div>
+      <h1>Build your image</h1>
+      <p>Pick your box, choose what it does, toggle the extras. The recipe, the exact commands, and a ready-to-drop <b>first-boot script</b> assemble themselves — download and flash. No toolchain, no account.</p>
+    </div>
+    <div class="split">
+      <div class="card">
+        <div class="hd"><span class="t">Configuration</span><span class="k" id="b-summary">—</span></div>
+        <div class="bd">
+          <div class="sec"><span class="k">1 · device</span><span class="ln"></span></div>
+          <div class="opts" id="b-devices"></div>
+          <div class="sec"><span class="k">2 · role</span><span class="ln"></span></div>
+          <div class="opts" id="b-modes"></div>
+          <div class="sec"><span class="k">3 · add-ons</span><span class="ln"></span></div>
+          <div class="opts" id="b-feats"></div>
+          <div class="sec"><span class="k">4 · identity</span><span class="ln"></span></div>
+          <div class="row2">
+            <div class="field"><label for="b-host">Hostname</label><input id="b-host" value="SpookyWrt" spellcheck="false"></div>
+            <div class="field"><label for="b-lan">LAN address</label><input id="b-lan" value="192.168.1.1" spellcheck="false"></div>
+          </div>
+          <div class="field" id="b-wifi-wrap"><label for="b-ssid">Wi-Fi network name (SSID)</label><input id="b-ssid" value="SpookyWrt-H68K" spellcheck="false"><div class="hint">Password is randomly generated per-device on first boot and saved to <code>/etc/spooky-initial-wifi.txt</code> — never a shipped default.</div></div>
+        </div>
+      </div>
+      <div class="console" aria-label="live build output">
+        <div class="top"><span class="d" style="background:#ff5c72"></span><span class="d" style="background:#ffb454"></span><span class="d" style="background:#3df0c0"></span><span class="ttl" id="b-ttl">~/spookywrt</span><span class="live">live</span></div>
+        <div class="cbd" id="b-console"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SETUP VIEW ============ -->
+  <section id="view-setup" role="tabpanel" aria-labelledby="tab-setup" class="hidden">
+    <div class="headline">
+      <div class="k">step 02 · after it boots</div>
+      <h1>First-run setup</h1>
+      <p>A preview of <code>spooky-setup</code> — the on-device onboarding wizard. Fill it in to see exactly what the box will do, then download the plan. Every network change runs under a <b>rollback timer</b>, so a wrong turn can't lock you out.</p>
+    </div>
+    <div class="split">
+      <div class="card">
+        <div class="hd"><span class="t">Onboarding wizard</span><span class="k">express</span></div>
+        <div class="bd">
+          <div class="sec"><span class="k">identity</span><span class="ln"></span></div>
+          <div class="field"><label for="s-host">Hostname</label><input id="s-host" value="SpookyWrt" spellcheck="false"></div>
+          <div class="sec"><span class="k">network role</span><span class="ln"></span></div>
+          <div class="field"><label>WAN (internet uplink)</label><div class="seg" id="s-wan" role="group">
+            <button data-v="dhcp" aria-pressed="true">DHCP client</button>
+            <button data-v="pppoe" aria-pressed="false">PPPoE</button>
+            <button data-v="ap" aria-pressed="false">Dumb AP</button>
+          </div><div class="hint" id="s-wan-hint">Router mode — grab an address from your modem and share it.</div></div>
+          <div class="row2">
+            <div class="field"><label for="s-lan">LAN address</label><input id="s-lan" value="192.168.1.1" spellcheck="false"></div>
+            <div class="field"><label for="s-tz">Timezone</label>
+              <select id="s-tz"><option>UTC</option><option selected>America/New_York</option><option>America/Chicago</option><option>America/Denver</option><option>America/Los_Angeles</option><option>Europe/London</option><option>Europe/Berlin</option></select>
+            </div>
+          </div>
+          <div class="sec"><span class="k">wi-fi</span><span class="ln"></span></div>
+          <div class="field"><label for="s-ssid">SSID</label><input id="s-ssid" value="SpookyWrt-H68K" spellcheck="false"></div>
+          <div class="field"><label for="s-wpa">Wi-Fi password</label><input id="s-wpa" value="" placeholder="leave blank → random, saved on device" spellcheck="false"><div class="hint">Blank = a strong random key generated on the box (recommended). 8+ chars to set your own.</div></div>
+          <div class="sec"><span class="k">security</span><span class="ln"></span></div>
+          <div class="opts" id="s-sec"></div>
+        </div>
+      </div>
+      <div class="console" aria-label="setup plan">
+        <div class="top"><span class="d" style="background:#ff5c72"></span><span class="d" style="background:#ffb454"></span><span class="d" style="background:#3df0c0"></span><span class="ttl">root@SpookyWrt</span><span class="live">plan</span></div>
+        <div class="cbd" id="s-console"></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  SpookyWrt Control · part of the SpookyJuice ecosystem · free &amp; open · MIT<br>
+  <a href="https://github.com/bgorzelic/linkstar-h68k" target="_blank" rel="noopener">github.com/bgorzelic/linkstar-h68k</a> · built on OpenWRT + the Attended-Sysupgrade build server
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  // ---------- data ----------
+  var DEV={
+    h68k:{name:"LinkStar H68K",arch:"aarch64",target:"rockchip/armv8",profile:"hinlink_h68k",base:["kmod-r8125","kmod-mt7921e"],spec:"RK3568 · 2×2.5G + 2×1G · MT7921",disk:"mmcblk1",wan:"eth0"},
+    nanopi:{name:"NanoPi R5S",arch:"aarch64",target:"rockchip/armv8",profile:"friendlyarm_nanopi-r5s",base:["kmod-r8125"],spec:"RK3568 · 2×2.5G + 1G",disk:"mmcblk0",wan:"eth0"},
+    pi5:{name:"Raspberry Pi 5",arch:"aarch64",target:"bcm27xx/bcm2712",profile:"rpi-5",base:[],spec:"BCM2712 · PCIe/NVMe · HDMI",disk:"mmcblk0",wan:"eth0"},
+    gl6000:{name:"GL-MT6000 Flint 2",arch:"aarch64",target:"mediatek/filogic",profile:"glinet_gl-mt6000",base:[],spec:"MT7986 · Wi-Fi 6",disk:"mtd",wan:"wan"},
+    x86:{name:"x86-64 PC / VM",arch:"x86_64",target:"x86/64",profile:"generic",base:["kmod-r8169","kmod-igb","kmod-e1000e"],spec:"mini-PC · thin client · VM",disk:"sda",wan:"eth0"},
+    beryl:{name:"GL-MT1300 Beryl",arch:"mipsel",target:"ramips/mt7621",profile:"glinet_gl-mt1300",base:[],spec:"MT7621 · Wi-Fi 5 · pocket",disk:"mtd",wan:"wan",small:1},
+    c7:{name:"TP-Link Archer C7",arch:"mips",target:"ath79/generic",profile:"tplink_archer-c7-v5",base:[],spec:"QCA9563 · ~16MB flash",disk:"mtd",wan:"wan",small:2}
+  };
+  var ARCHC={aarch64:"#3df0c0",x86_64:"#b15bff",mipsel:"#ffb454",mips:"#7ee6a6"};
+  var MODE={
+    router:{name:"Router",pkgs:[],d:"gateway · DHCP · NAT"},
+    ap:{name:"Access Point",pkgs:[],d:"bridge & extend"},
+    nas:{name:"NAS",pkgs:["block-mount","kmod-usb-storage","kmod-fs-ext4","kmod-fs-exfat","luci-app-samba4","samba4-server"],d:"SMB file shares"},
+    travel:{name:"Travel VPN",pkgs:["wireguard-tools","kmod-wireguard","luci-proto-wireguard"],d:"WireGuard always-on"},
+    hacker:{name:"Lab / Audit",pkgs:["tcpdump","nmap","arp-scan","mtr"],d:"authorized only",hot:1},
+    honeypot:{name:"Honeypot",pkgs:["banip","luci-app-banip","socat","tcpdump"],d:"decoy + auto-ban",hot:1,decoy:1}
+  };
+  var FEAT={
+    wifi:{name:"Wi-Fi AP",pkgs:["wpad-basic-mbedtls"],d:"secured access point"},
+    be6500:{name:"USB Wi-Fi 7",pkgs:["kmod-mt7925u"],d:"BE6500 adapter"},
+    vpn:{name:"WireGuard",pkgs:["wireguard-tools","kmod-wireguard","luci-proto-wireguard"],d:"VPN client+server"},
+    adguard:{name:"AdGuard",pkgs:["adguardhome"],d:"DNS ad-block"},
+    qos:{name:"SQM QoS",pkgs:["luci-app-sqm","sqm-scripts"],d:"beat bufferbloat"},
+    tools:{name:"Toolkit",pkgs:["htop","nano","mtr","curl","ethtool"],d:"admin niceties"}
+  };
+  var SEC={
+    hostkeys:{name:"Fresh SSH keys",d:"regenerate on first boot",on:true},
+    fw:{name:"Strict firewall",d:"deny WAN inbound",on:true},
+    nopw:{name:"SSH keys only",d:"disable password login",on:false}
+  };
+  var BASE_UI=["luci","luci-ssl","luci-theme-material","luci-app-attendedsysupgrade"];
+
+  var B={dev:"h68k",mode:"router",feat:{wifi:true},host:"SpookyWrt",lan:"192.168.1.1",ssid:"SpookyWrt-H68K"};
+  var S={host:"SpookyWrt",wan:"dhcp",lan:"192.168.1.1",tz:"America/New_York",ssid:"SpookyWrt-H68K",wpa:"",sec:{hostkeys:true,fw:true,nopw:false}};
+
+  function esc(s){return String(s).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
+  function el(id){return document.getElementById(id);}
+  function pkgSet(){
+    var s=BASE_UI.concat(DEV[B.dev].base, MODE[B.mode].pkgs);
+    Object.keys(B.feat).forEach(function(f){ if(B.feat[f]) s=s.concat(FEAT[f].pkgs); });
+    return s.filter(function(v,i,a){return a.indexOf(v)===i;}).sort();
+  }
+  function download(name,text){
+    var blob=new Blob([text],{type:"text/plain"});
+    var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){URL.revokeObjectURL(a.href);},2000);
+  }
+
+  // ---------- generic option renderer ----------
+  function optHTML(id,o,pressed){
+    return '<button class="opt" role="button" aria-pressed="'+(pressed?'true':'false')+'"'+(o.hot?' data-hot="1"':'')+' data-id="'+id+'">'+
+      '<span class="nm">'+esc(o.name)+'<span class="dot-on"></span></span><span class="ds">'+esc(o.d)+'</span></button>';
+  }
+  function wire(container,onpick){
+    container.querySelectorAll('.opt').forEach(function(b){ b.onclick=function(){onpick(b.dataset.id);}; });
+  }
+
+  // ---------- first-boot.sh generator (the payoff) ----------
+  function firstBootScript(){
+    var d=DEV[B.dev], wifiOn=!!B.feat.wifi, decoy=MODE[B.mode].decoy;
+    var L=[];
+    L.push("#!/bin/sh");
+    L.push("# SpookyWrt first-boot (uci-defaults) — generated by SpookyWrt Control");
+    L.push("# device: "+d.name+" ("+d.profile+")   role: "+MODE[B.mode].name);
+    L.push("");
+    L.push("uci -q set system.@system[0].hostname='"+B.host+"'");
+    L.push("uci -q set luci.main.mediaurlbase='/luci-static/material'");
+    L.push("uci -q set network.lan.ipaddr='"+B.lan+"'");
+    L.push("# H68K/RK3568 boards have no RTC — sync the clock every boot");
+    L.push("uci -q set system.ntp.enabled='1'");
+    if(B.mode!=="ap"){
+      L.push("# "+d.wan+" = WAN uplink");
+      L.push("uci -q set network.wan.device='"+d.wan+"'");
+    }
+    if(wifiOn){
+      L.push("");
+      L.push("# Wi-Fi AP — deferred: the radio driver loads AFTER uci-defaults, so a");
+      L.push("# one-shot boot service waits for the PHY, sets a RANDOM per-device key,");
+      L.push("# records it root-only, then removes itself. Never a shipped password.");
+      L.push("cat > /etc/init.d/spooky-wifi <<'WIFI'");
+      L.push("#!/bin/sh /etc/rc.common");
+      L.push("START=99");
+      L.push("boot(){");
+      L.push("  i=0; while [ ! -e /sys/class/ieee80211/phy0 ] && [ \"$i\" -lt 20 ]; do sleep 1; i=$((i+1)); done");
+      L.push("  [ -z \"$(uci -q get wireless.radio0)\" ] && wifi config");
+      L.push("  key=$(tr -dc 'A-Za-z0-9' </dev/urandom 2>/dev/null | head -c 16)");
+      L.push("  uci -q set wireless.radio0.disabled='0'; uci -q set wireless.radio0.country='US'");
+      L.push("  uci -q set wireless.default_radio0.ssid='"+B.ssid+"'");
+      L.push("  uci -q set wireless.default_radio0.encryption='psk2'");
+      L.push("  uci -q set wireless.default_radio0.key=\"$key\"");
+      L.push("  printf 'SSID: "+B.ssid+"\\nKey:  %s\\n' \"$key\" > /etc/spooky-initial-wifi.txt; chmod 600 /etc/spooky-initial-wifi.txt");
+      L.push("  uci -q commit wireless; wifi reload");
+      L.push("  /etc/init.d/spooky-wifi disable; rm -f /etc/init.d/spooky-wifi");
+      L.push("}");
+      L.push("WIFI");
+      L.push("chmod +x /etc/init.d/spooky-wifi; /etc/init.d/spooky-wifi enable");
+    }
+    if(decoy){
+      L.push("");
+      L.push("# Honeypot: decoy listeners + auto-ban (banip). Deception only — your network.");
+      L.push("uci -q set banip.global.ban_enabled='1'");
+    }
+    L.push("");
+    L.push("uci commit");
+    L.push("exit 0");
+    return L.join("\n")+"\n";
+  }
+
+  // ---------- render: BUILD ----------
+  function renderBuild(){
+    var d=DEV[B.dev], pk=pkgSet();
+    el('b-devices').innerHTML=Object.keys(DEV).map(function(k){return optHTML(k,{name:DEV[k].name,d:DEV[k].arch,hot:0},B.dev===k);}).join('');
+    wire(el('b-devices'),function(id){B.dev=id; renderBuild();});
+    el('b-modes').innerHTML=Object.keys(MODE).map(function(k){return optHTML(k,MODE[k],B.mode===k);}).join('');
+    wire(el('b-modes'),function(id){B.mode=id; renderBuild();});
+    el('b-feats').innerHTML=Object.keys(FEAT).map(function(k){return optHTML(k,FEAT[k],!!B.feat[k]);}).join('');
+    wire(el('b-feats'),function(id){B.feat[id]=!B.feat[id]; renderBuild();});
+    el('b-wifi-wrap').classList.toggle('hidden', !B.feat.wifi);
+    el('b-summary').textContent=d.arch+' · '+pk.length+' pkgs';
+    el('b-ttl').textContent='~/spookywrt — '+d.profile;
+
+    var pct=Math.min(100,Math.round(pk.length/34*100)), circ=2*Math.PI*24, off=circ*(1-pct/100);
+    var chips=pk.map(function(p){return '<span class="pk">'+esc(p)+'</span>';}).join(' ');
+    var buildJson=JSON.stringify({version:"SNAPSHOT",target:d.target,profile:d.profile,packages:pk,rootfs_size_mb:1024},null,0);
+    var buildCmd='curl -s https://sysupgrade.openwrt.org/api/v1/build \\\n  -d \''+buildJson+'\' | tee build.json\nIMG=$(grep -o \'https[^"]*sysupgrade[^"]*\\.img\\.gz\' build.json | head -1)';
+    var flash=(d.disk==='mtd')
+      ? 'scp *.img.gz root@'+B.lan+':/tmp/\nssh root@'+B.lan+' \'sysupgrade -n /tmp/*.img.gz\''
+      : (d.arch==='x86_64'
+        ? 'gunzip -c *combined*.img.gz | sudo dd of=/dev/'+d.disk+' bs=4M status=progress'
+        : 'gunzip -c *.img.gz | sudo dd of=/dev/'+d.disk+' bs=4M status=progress');
+    var warn=(d.small && pk.length>8)?'<div class="warnbox">⚠ ~'+(d.small===2?'16MB':'32MB')+' flash — '+pk.length+' packages likely needs USB extroot. Trim add-ons to fit.</div>':'';
+
+    el('b-console').innerHTML=
+      '<div class="gauge"><div class="ring"><svg width="58" height="58">'+
+        '<circle cx="29" cy="29" r="24" fill="none" stroke="#2a2440" stroke-width="5"/>'+
+        '<circle cx="29" cy="29" r="24" fill="none" stroke="#3df0c0" stroke-width="5" stroke-linecap="round" stroke-dasharray="'+circ.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'"/></svg>'+
+        '<span class="num">'+pk.length+'</span></div>'+
+        '<div class="lbl"><b>'+esc(d.name)+'</b>'+esc(d.target)+' · '+MODE[B.mode].name+' role<br>'+pk.length+' packages baked in — no post-install</div></div>'+
+      '<div class="pkgs">'+chips+'</div>'+
+      '<div class="flabel">1 · compile on OpenWRT\'s build server (~30s)</div>'+
+      '<div class="code"><span class="cbtns"><span class="mini" data-copy="build">copy</span></span><span class="cm"># server-side build — no local toolchain</span>\n'+esc(buildCmd)+'</div>'+
+      '<div class="flabel">2 · flash — '+esc(d.name)+'</div>'+
+      '<div class="code"><span class="cbtns"><span class="mini" data-copy="flash">copy</span></span>'+esc(flash)+'</div>'+
+      warn+
+      '<div class="dlrow"><button class="dl" id="b-dl">⬇ Download first-boot.sh</button>'+
+      '<button class="dl ghostbtn" id="b-dljson">⬇ recipe.json</button></div>'+
+      '<div class="note"><b style="color:var(--spectral)">✓</b> Boots to Material LuCI at <b>http://'+esc(B.lan)+'</b>'+(B.feat.wifi?', a secured Wi-Fi AP':'')+(MODE[B.mode].decoy?', decoys armed':'')+' — every driver baked in.</div>';
+
+    el('b-console').querySelectorAll('.mini').forEach(function(m){m.onclick=function(){
+      var t=m.dataset.copy==='build'?buildCmd:flash;
+      if(navigator.clipboard) navigator.clipboard.writeText(t);
+      var o=m.textContent; m.textContent='copied'; setTimeout(function(){m.textContent=o;},1100);
+    };});
+    el('b-dl').onclick=function(){download('first-boot.sh',firstBootScript());};
+    el('b-dljson').onclick=function(){download('recipe.json',buildJson);};
+  }
+
+  // ---------- render: SETUP ----------
+  function setupPlan(){
+    var L=[];
+    L.push("#!/bin/sh");
+    L.push("# spooky-setup plan — generated by SpookyWrt Control");
+    L.push("# Applied under a 90s ROLLBACK TIMER: if you lose access, it auto-reverts.");
+    L.push("");
+    L.push("uci -q set system.@system[0].hostname='"+S.host+"'");
+    L.push("uci -q set system.@system[0].zonename='"+S.tz+"'");
+    L.push("uci -q set network.lan.ipaddr='"+S.lan+"'");
+    L.push("");
+    if(S.wan==='dhcp'){ L.push("uci -q set network.wan.proto='dhcp'   # router: uplink via DHCP"); }
+    else if(S.wan==='pppoe'){ L.push("uci -q set network.wan.proto='pppoe'  # set .username / .password next"); }
+    else { L.push("# Dumb AP: no WAN — bridge into the LAN, disable DHCP server"); L.push("uci -q set dhcp.lan.ignore='1'"); }
+    L.push("");
+    L.push("# Wi-Fi");
+    L.push("uci -q set wireless.default_radio0.ssid='"+S.ssid+"'");
+    L.push("uci -q set wireless.radio0.disabled='0'");
+    if(S.wpa && S.wpa.length>=8){
+      L.push("uci -q set wireless.default_radio0.encryption='psk2'");
+      L.push("uci -q set wireless.default_radio0.key='"+S.wpa+"'");
+    } else {
+      L.push("KEY=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 16)   # random per-device");
+      L.push("uci -q set wireless.default_radio0.encryption='psk2'");
+      L.push("uci -q set wireless.default_radio0.key=\"$KEY\"; echo \"$KEY\" > /etc/spooky-initial-wifi.txt");
+    }
+    L.push("");
+    if(S.sec.hostkeys){ L.push("# fresh SSH host keys (vendor images ship shared keys)"); L.push("rm -f /etc/dropbear/dropbear_* ; /etc/init.d/dropbear restart"); }
+    if(S.sec.fw){ L.push("uci -q set firewall.@zone[1].input='DROP'   # strict: deny WAN inbound"); }
+    if(S.sec.nopw){ L.push("uci -q set dropbear.@dropbear[0].PasswordAuth='off'   # SSH keys only"); }
+    L.push("");
+    L.push("uci commit && /etc/init.d/network reload");
+    return L.join("\n")+"\n";
+  }
+  function renderSetup(){
+    el('s-sec').innerHTML=Object.keys(SEC).map(function(k){return optHTML(k,SEC[k],!!S.sec[k]);}).join('');
+    wire(el('s-sec'),function(id){S.sec[id]=!S.sec[id]; renderSetup();});
+    var hints={dhcp:"Router mode — grab an address from your modem and share it.",pppoe:"DSL/fiber that needs a login — you'll add username + password.",ap:"Extend an existing network — no routing, just more Wi-Fi/LAN."};
+    el('s-wan-hint').textContent=hints[S.wan];
+    var wifiLine = (S.wpa && S.wpa.length>=8) ? 'set: “'+esc(S.wpa)+'”' : '<span class="sp">random per-device</span> → /etc/spooky-initial-wifi.txt';
+    var plan=setupPlan();
+
+    el('s-console').innerHTML=
+      '<div class="gauge"><div class="ring"><svg width="58" height="58"><circle cx="29" cy="29" r="24" fill="none" stroke="#2a2440" stroke-width="5"/><circle cx="29" cy="29" r="24" fill="none" stroke="#b15bff" stroke-width="5" stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="0"/></svg><span class="num">✓</span></div>'+
+        '<div class="lbl"><b>'+esc(S.host)+'</b>'+({dhcp:"Router",pppoe:"Router (PPPoE)",ap:"Dumb AP"}[S.wan])+' · '+esc(S.tz)+'<br>applied under a 90s rollback timer</div></div>'+
+      '<div class="mrow"><span class="mk">hostname</span><span class="mv">'+esc(S.host)+'</span></div>'+
+      '<div class="mrow"><span class="mk">wan</span><span class="mv"><span class="pill" style="border-color:var(--violet);color:var(--violet)">'+({dhcp:"DHCP",pppoe:"PPPoE",ap:"none (AP)"}[S.wan])+'</span></span></div>'+
+      '<div class="mrow"><span class="mk">lan</span><span class="mv">'+esc(S.lan)+'</span></div>'+
+      '<div class="mrow"><span class="mk">wi-fi key</span><span class="mv">'+wifiLine+'</span></div>'+
+      '<div class="mrow"><span class="mk">hardening</span><span class="mv">'+(Object.keys(S.sec).filter(function(k){return S.sec[k];}).map(function(k){return SEC[k].name;}).join(' · ')||'—')+'</span></div>'+
+      '<div class="flabel">what the box will run</div>'+
+      '<div class="code"><span class="cbtns"><span class="mini" id="s-copy">copy</span></span>'+esc(plan)+'</div>'+
+      '<div class="note hot">🛟 <b>Rollback timer.</b> spooky-setup applies every network change, then waits 90s for you to confirm on a fresh connection. No confirm → it reverts. You cannot lock yourself out.</div>'+
+      '<div class="dlrow"><button class="dl" id="s-dl">⬇ Download setup plan</button></div>';
+    el('s-copy').onclick=function(){ if(navigator.clipboard) navigator.clipboard.writeText(plan); var o=this.textContent; this.textContent='copied'; var me=this; setTimeout(function(){me.textContent=o;},1100); };
+    el('s-dl').onclick=function(){download('spooky-setup-plan.sh',setupPlan());};
+  }
+
+  // ---------- inputs + tabs ----------
+  function bindInput(id,obj,key,after){ el(id).oninput=function(){obj[key]=el(id).value; if(after)after();}; }
+  bindInput('b-host',B,'host',renderBuild); bindInput('b-lan',B,'lan',renderBuild); bindInput('b-ssid',B,'ssid',renderBuild);
+  bindInput('s-host',S,'host',renderSetup); bindInput('s-lan',S,'lan',renderSetup); bindInput('s-ssid',S,'ssid',renderSetup); bindInput('s-wpa',S,'wpa',renderSetup);
+  el('s-tz').onchange=function(){S.tz=el('s-tz').value; renderSetup();};
+  el('s-wan').querySelectorAll('button').forEach(function(b){b.onclick=function(){
+    S.wan=b.dataset.v; el('s-wan').querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed', x===b?'true':'false');}); renderSetup();
+  };});
+
+  function selectTab(which){
+    var build=which==='build';
+    el('tab-build').setAttribute('aria-selected',build?'true':'false');
+    el('tab-setup').setAttribute('aria-selected',build?'false':'true');
+    el('view-build').classList.toggle('hidden',!build);
+    el('view-setup').classList.toggle('hidden',build);
+    if(location.hash!==(build?'#build':'#setup')) history.replaceState(null,'',build?'#build':'#setup');
+  }
+  el('tab-build').onclick=function(){selectTab('build');};
+  el('tab-setup').onclick=function(){selectTab('setup');};
+
+  renderBuild(); renderSetup();
+  selectTab(location.hash==='#setup'?'setup':'build');
+})();
+</script>
+</body>
+</html>

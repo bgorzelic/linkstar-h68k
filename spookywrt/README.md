@@ -8,6 +8,10 @@ actually work** (unlike the vendor 4.19 Ubuntu/Android track). The design brief 
 [`../docs/openwrt-superprompt.md`](../docs/openwrt-superprompt.md); this directory is the
 build.
 
+> 🎛️ **Configure it visually:** the **[SpookyWrt Control WebUI](https://bgorzelic.github.io/linkstar-h68k/webui/)**
+> ([source](../webui/index.html)) builds a recipe and generates a first-boot script for you —
+> a click-driven front end to everything below.
+
 ## What's here
 
 | File | Purpose |

@@ -40,8 +40,13 @@ firmware.
 New here? Find yourself in the table and jump straight to the right guide — no need to
 read the whole thing.
 
+> 🎛️ **Prefer to click, not read?** The **[SpookyWrt Control WebUI](https://bgorzelic.github.io/linkstar-h68k/webui/)**
+> configures your box visually — build a custom OpenWRT image or preview first-run setup,
+> then download a ready first-boot script. ([source](./webui/index.html))
+
 | I want to… | Start here |
 |------------|-----------|
+| 🎛️ **Configure my box the easy way** (visual) | [SpookyWrt Control WebUI](https://bgorzelic.github.io/linkstar-h68k/webui/) |
 | 🟢 **Just get Ubuntu running** on my H68K | [Flash it from a Mac](./docs/flash-ubuntu-sd-from-mac.md) |
 | 🔒 **Secure a unit I already have** (it ships wide open) | [Hardening](./docs/hardening.md) |
 | 🖥️ **Run a desktop, server, or home cloud** | [Flavors](./flavors/README.md) · [CasaOS](./docs/casaos.md) |
