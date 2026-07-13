@@ -111,7 +111,7 @@
   .row2{display:grid; grid-template-columns:1fr 1fr; gap:14px}
   .seg{display:flex; gap:6px; background:var(--ink2); border:1px solid var(--line); border-radius:10px; padding:4px}
   .seg button{flex:1; font-family:var(--mono); font-size:12px; color:var(--muted); background:none; border:0; border-radius:7px; padding:9px; cursor:pointer; transition:.14s}
-  .seg button[aria-pressed="true"]{background:linear-gradient(120deg,var(--violet-dim),var(--violet)); color:#fff; box-shadow:var(--glow-v)}
+  .seg button[aria-checked="true"]{background:linear-gradient(120deg,var(--violet-dim),var(--violet)); color:#fff; box-shadow:var(--glow-v)}
 
   /* right console panel */
   .console{position:sticky; top:86px; background:var(--ink2); border:1px solid var(--line2); border-radius:16px; overflow:hidden;
@@ -234,10 +234,10 @@
           <div class="sec"><span class="k">identity</span><span class="ln"></span></div>
           <div class="field"><label for="s-host">Hostname</label><input id="s-host" value="SpookyWrt" spellcheck="false"></div>
           <div class="sec"><span class="k">network role</span><span class="ln"></span></div>
-          <div class="field"><label>WAN (internet uplink)</label><div class="seg" id="s-wan" role="group">
-            <button data-v="dhcp" aria-pressed="true">DHCP client</button>
-            <button data-v="pppoe" aria-pressed="false">PPPoE</button>
-            <button data-v="ap" aria-pressed="false">Dumb AP</button>
+          <div class="field"><label id="s-wan-lbl">WAN (internet uplink)</label><div class="seg" id="s-wan" role="radiogroup" aria-labelledby="s-wan-lbl">
+            <button role="radio" data-v="dhcp" aria-checked="true" tabindex="0">DHCP client</button>
+            <button role="radio" data-v="pppoe" aria-checked="false" tabindex="-1">PPPoE</button>
+            <button role="radio" data-v="ap" aria-checked="false" tabindex="-1">Dumb AP</button>
           </div><div class="hint" id="s-wan-hint">Router mode — grab an address from your modem and share it.</div></div>
           <div class="row2">
             <div class="field"><label for="s-lan">LAN address</label><input id="s-lan" value="192.168.1.1" spellcheck="false"></div>
@@ -493,9 +493,26 @@
   bindInput('b-host',B,'host',renderBuild); bindInput('b-lan',B,'lan',renderBuild); bindInput('b-ssid',B,'ssid',renderBuild);
   bindInput('s-host',S,'host',renderSetup); bindInput('s-lan',S,'lan',renderSetup); bindInput('s-ssid',S,'ssid',renderSetup); bindInput('s-wpa',S,'wpa',renderSetup);
   el('s-tz').onchange=function(){S.tz=el('s-tz').value; renderSetup();};
-  el('s-wan').querySelectorAll('button').forEach(function(b){b.onclick=function(){
-    S.wan=b.dataset.v; el('s-wan').querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed', x===b?'true':'false');}); renderSetup();
-  };});
+  // WAN: proper ARIA radiogroup — aria-checked, roving tabindex, arrow-key navigation
+  (function(){
+    var radios=Array.prototype.slice.call(el('s-wan').querySelectorAll('[role="radio"]'));
+    function select(b,focus){
+      S.wan=b.dataset.v;
+      radios.forEach(function(x){ var on=x===b; x.setAttribute('aria-checked',on?'true':'false'); x.tabIndex=on?0:-1; });
+      if(focus) b.focus();
+      renderSetup();
+    }
+    radios.forEach(function(b,i){
+      b.onclick=function(){ select(b,false); };
+      b.onkeydown=function(e){
+        var n=null;
+        if(e.key==='ArrowRight'||e.key==='ArrowDown') n=radios[(i+1)%radios.length];
+        else if(e.key==='ArrowLeft'||e.key==='ArrowUp') n=radios[(i-1+radios.length)%radios.length];
+        else if(e.key===' '||e.key==='Enter') n=b;
+        if(n){ e.preventDefault(); select(n,true); }
+      };
+    });
+  })();
 
   function selectTab(which){
     var build=which==='build';
