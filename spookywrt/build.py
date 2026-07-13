@@ -10,6 +10,8 @@ WORK = Path("/tmp/h68k-build")
 PACKAGES = [
     # base + UI + in-UI upgrades
     "luci", "luci-ssl", "luci-theme-material", "luci-app-attendedsysupgrade",
+    # ubus-over-HTTP backend for the SpookyWrt dashboard (spookywrt/webui/)
+    "uhttpd-mod-ubus", "rpcd", "rpcd-mod-rrdns",
     # NICs + Wi-Fi (2.5G, MT7921, BE6500 USB Wi-Fi 7)
     "kmod-r8125", "kmod-mt7921e", "kmod-mt7925u", "wpad-basic-mbedtls",
     # NAS / storage

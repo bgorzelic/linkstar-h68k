@@ -21,6 +21,27 @@ build.
 | `first-boot-full.sh` | The flagship variant — also installs the `spooky-setup` wizard onto the device. |
 | `spooky-setup` | An on-device onboarding wizard (POSIX/ash): Express or Advanced, every network change under a **rollback timer** so you can't lock yourself out. |
 
+## The on-device dashboard
+
+[`webui/index.html`](webui/index.html) is the **SpookyWrt dashboard** — a modern, GL.iNet-class
+single-page WebUI that runs *on the box* alongside LuCI. Live status, an instrument-cluster of
+gauges (CPU / memory / temp / throughput), quick toggles (Wi-Fi, guest, AdGuard), an
+operating-mode switcher, and the client list — all driven by **ubus over HTTP**, no build step.
+
+**Preview it** (demo data): <https://bgorzelic.github.io/linkstar-h68k/spookywrt/webui/>
+
+**Install on a device:**
+
+```bash
+# the image already bundles the backend (uhttpd-mod-ubus + rpcd — see build.py)
+scp webui/index.html root@192.168.1.1:/www/spooky/index.html   # mkdir -p /www/spooky first
+# open http://192.168.1.1/spooky/
+```
+
+It auto-detects the device: a reachable `ubus` flips the badge from **demo** to **live**; with no
+device (e.g. the Pages preview) it runs a self-contained demo engine so the design is fully
+navigable. Full LuCI stays one click away for advanced settings.
+
 ## Build it
 
 No local toolchain needed — the [ASU server](https://sysupgrade.openwrt.org/) compiles it
