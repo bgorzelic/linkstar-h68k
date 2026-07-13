@@ -5,6 +5,7 @@
 </p>
 
 [![Live site](https://img.shields.io/badge/site-what%20is%20this%3F-3df0c0.svg)](https://bgorzelic.github.io/linkstar-h68k/)
+[![The Story](https://img.shields.io/badge/read-the%20teardown-7cfc00.svg)](https://bgorzelic.github.io/linkstar-h68k/story/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Docs: CC BY 4.0](https://img.shields.io/badge/Docs-CC%20BY%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by/4.0/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="How we took a $99 Chinese mini-router that shipped broken — dead Wi-Fi, no security updates, unauthenticated root shell on the LAN — and rebuilt it into SpookyWrt, a hardened OpenWrt firmware. An engineering teardown: root-cause analyses, the fixes, and how two AI agents built it in ~22 hours.">
+<meta property="og:title" content="From e-waste to SpookyWrt — an engineering teardown">
+<meta property="og:description" content="A $99 router that shipped broken → a hardened OpenWrt firmware. Root-cause deep-dives + how two AI agents built it in ~22 hours.">
+<meta name="theme-color" content="#0a0e07">
+<title>From E-Waste to SpookyWrt — an engineering teardown · SpookyJuice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0a0e07; --ink2:#0f150b; --panel:#131b0d; --panel2:#1a2412;
+    --line:#25361a; --line2:#33471f;
+    --slime:#7cfc00; --slime-dim:#5bbd00; --toxic:#b6ff2e;
+    --text:#e9f5df; --muted:#9fb389; --faint:#6f8557;
+    --hazard:#ffd21f; --bad:#ff4d6d; --info:#57c7ff;
+    --disp:"Anton",sans-serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace; --sans:"Inter",system-ui,sans-serif;
+    --glow:0 0 26px rgba(124,252,0,.30);
+  }
+  *{box-sizing:border-box} html,body{margin:0} html{scroll-behavior:smooth}
+  body{background:var(--ink); color:var(--text); font-family:var(--sans); font-size:16px; line-height:1.7; overflow-x:hidden;
+    background-image:radial-gradient(1000px 560px at 84% -10%, rgba(124,252,0,.09), transparent 60%);}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.3;
+    background-image:linear-gradient(rgba(37,54,26,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(37,54,26,.5) 1px,transparent 1px);
+    background-size:48px 48px;mask-image:radial-gradient(1200px 800px at 70% 0%,#000,transparent 78%)}
+  main{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:0 22px 90px}
+  a{color:var(--slime)} a:hover{color:var(--toxic)}
+  .hazard{height:8px;background:repeating-linear-gradient(45deg,var(--hazard) 0 18px,#0a0e07 18px 36px)}
+  .k{font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--slime)}
+  h2{font-family:var(--disp);font-weight:400;font-size:clamp(28px,5vw,44px);letter-spacing:.01em;line-height:1.05;margin:12px 0 6px;text-transform:uppercase}
+  h3{font-family:var(--mono);font-weight:700;font-size:19px;color:var(--text);margin:26px 0 6px;letter-spacing:.01em}
+  section{padding:48px 0;border-top:1px solid var(--line)}
+  p{color:#d7e6c8} strong{color:var(--text)}
+  code{font-family:var(--mono);font-size:13.5px;background:#060a04;border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:#cdeaa8}
+
+  /* top bar */
+  .bar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:12px 22px;
+    background:rgba(10,14,7,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--slime-dim)}
+  .bar .sj{font-family:var(--disp);font-size:22px;letter-spacing:.04em;color:var(--slime);text-shadow:0 0 16px rgba(124,252,0,.5)}
+  .bar .sp{flex:1}
+  .bar a{font-family:var(--mono);font-size:12px;color:var(--muted);padding:7px 11px;border:1px solid var(--line);border-radius:8px}
+  .bar a:hover{border-color:var(--slime);color:var(--text)}
+
+  /* hero */
+  .hero{padding:70px 0 40px;border-top:0}
+  .hero .tag{font-family:var(--mono);font-size:13px;color:var(--hazard);letter-spacing:.12em;text-transform:uppercase}
+  .hero h1{font-family:var(--disp);font-weight:400;font-size:clamp(42px,9vw,92px);line-height:.94;margin:16px 0 18px;text-transform:uppercase;
+    background:linear-gradient(160deg,#fff 10%,var(--slime) 55%,var(--slime-dim));-webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 0 30px rgba(124,252,0,.25))}
+  .hero .lede{font-size:20px;color:#d7e6c8;max-width:720px}
+  .hero .lede b{color:#fff}
+  .arrow{display:inline-flex;gap:12px;align-items:center;flex-wrap:wrap;margin:26px 0 0;font-family:var(--mono);font-size:14px}
+  .arrow .from{color:var(--bad);border:1px solid rgba(255,77,109,.4);border-radius:8px;padding:7px 13px}
+  .arrow .to{color:#0a0e07;background:linear-gradient(120deg,var(--slime-dim),var(--slime));border-radius:8px;padding:7px 13px;font-weight:700;box-shadow:var(--glow)}
+  .arrow .x{color:var(--faint);font-size:20px}
+
+  /* stat band */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:34px}
+  .stat{background:var(--panel);padding:18px 16px;text-align:center}
+  .stat .n{font-family:var(--disp);font-size:32px;color:var(--slime);line-height:1}
+  .stat .l{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+
+  /* autopsy list */
+  .sins{list-style:none;padding:0;margin:14px 0}
+  .sins li{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--bad);border-radius:10px;padding:14px 16px;margin:9px 0}
+  .sins li b{color:#fff;font-family:var(--mono);font-size:14px}
+  .sins li .d{color:var(--muted);font-size:14px;margin-top:3px}
+
+  /* timeline */
+  .tl{position:relative;margin:20px 0 0;padding-left:26px}
+  .tl::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:2px;background:linear-gradient(var(--slime),var(--slime-dim),transparent)}
+  .ev{position:relative;margin:0 0 22px}
+  .ev::before{content:"";position:absolute;left:-26px;top:5px;width:12px;height:12px;border-radius:50%;background:var(--slime);box-shadow:0 0 10px var(--slime);border:2px solid var(--ink)}
+  .ev .h{font-family:var(--mono);font-weight:700;color:var(--text);font-size:15px}
+  .ev .b{color:var(--muted);font-size:14.5px}
+
+  /* rca cards */
+  .rca{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin:16px 0}
+  .rca .sym{font-family:var(--mono);color:var(--bad);font-size:14px}
+  .rca .cause{font-family:var(--mono);color:var(--hazard);font-size:14px;margin-top:8px}
+  .rca .fix{font-family:var(--mono);color:var(--slime);font-size:14px;margin-top:8px}
+  .rca p{margin:10px 0 0;font-size:15px}
+  .rca .tag{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);border:1px solid var(--line);border-radius:20px;padding:2px 9px;margin-bottom:10px}
+
+  /* agent grid */
+  .agents{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+  .ag{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .ag h4{font-family:var(--mono);margin:0 0 6px;color:var(--slime);font-size:14px}
+  .ag p{margin:0;font-size:14px;color:var(--muted)}
+  .callout{border-left:3px solid var(--slime);background:rgba(124,252,0,.05);padding:14px 18px;border-radius:0 10px 10px 0;margin:18px 0;color:#d7e6c8}
+  .callout b{color:var(--text)}
+  .quote{font-family:var(--disp);font-weight:400;font-size:clamp(20px,3.4vw,28px);color:var(--text);text-transform:uppercase;line-height:1.15;
+    border:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:26px 0;margin:26px 0;text-align:center}
+  .quote span{color:var(--slime)}
+
+  .cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+  .cta a{font-family:var(--mono);font-size:14px;padding:13px 20px;border-radius:11px;border:1px solid transparent;text-decoration:none}
+  .cta a.p{background:linear-gradient(120deg,var(--slime-dim),var(--slime));color:#0a0e07;font-weight:700;box-shadow:var(--glow)}
+  .cta a.g{background:var(--panel);border-color:var(--line);color:var(--text)}
+  .cta a:hover{filter:brightness(1.1)}
+  .fill{color:var(--hazard);font-family:var(--mono);font-size:12px}
+
+  /* ---- Beginner ⇄ Engineer dynamic delivery ---- */
+  .toggle{display:inline-flex;background:var(--ink2);border:1px solid var(--line2);border-radius:999px;padding:4px;gap:2px}
+  .toggle button{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.03em;color:var(--muted);
+    background:none;border:0;border-radius:999px;padding:8px 15px;cursor:pointer;transition:.16s;display:flex;align-items:center;gap:6px}
+  .toggle button[aria-pressed="true"]{background:linear-gradient(120deg,var(--slime-dim),var(--slime));color:#0a0e07;box-shadow:var(--glow)}
+  .toggle button:focus-visible{outline:2px solid var(--toxic);outline-offset:2px}
+  /* progressive disclosure: engineer sees .adv-only, beginner sees .beg-only */
+  body.mode-beg .adv-only{display:none !important}
+  body.mode-adv .beg-only{display:none !important}
+  .modehint{font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-top:10px}
+  .beg-list{list-style:none;padding:0;margin:14px 0}
+  .beg-list li{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:15px 18px;margin:10px 0;font-size:16px}
+  .beg-list li b{color:var(--slime);font-family:var(--mono);font-size:14px;display:block;margin-bottom:3px}
+
+  /* screenshots + roadmap */
+  .shots{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+  .shots figure{margin:0}
+  .shots img{width:100%;border-radius:12px;border:1px solid var(--line2);display:block}
+  .shots figcaption{font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:7px}
+  .road{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:16px}
+  .rd{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+  .rd .st{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:2px 9px;border-radius:20px;border:1px solid var(--line);display:inline-block;margin-bottom:9px}
+  .rd .st.done{color:var(--slime);border-color:var(--slime-dim)} .rd .st.now{color:var(--hazard);border-color:rgba(255,210,31,.4)} .rd .st.next{color:var(--info);border-color:rgba(87,199,255,.4)}
+  .rd h4{font-family:var(--mono);margin:0 0 5px;color:var(--text);font-size:15px} .rd p{margin:0;font-size:13.5px;color:var(--muted)}
+  @media (max-width:640px){ .shots{grid-template-columns:1fr} }
+  footer{position:relative;z-index:1;text-align:center;color:var(--faint);font-family:var(--mono);font-size:12px;padding:36px 22px 60px;border-top:1px solid var(--line);max-width:900px;margin:0 auto}
+  @media (max-width:640px){ .agents{grid-template-columns:1fr} }
+  @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
+</style>
+</head>
+<body class="mode-adv">
+<div class="hazard"></div>
+<div class="bar">
+  <span class="sj">SPOOKYJUICE</span><span class="sp"></span>
+  <div class="toggle" role="group" aria-label="reading level">
+    <button id="m-beg" aria-pressed="false" title="Plain-language version">🌱 Beginner</button>
+    <button id="m-adv" aria-pressed="true" title="Full engineering detail">🥷 Engineer</button>
+  </div>
+  <a href="../overview/">The project</a>
+  <a href="https://github.com/bgorzelic/linkstar-h68k" target="_blank" rel="noopener">Repo ↗</a>
+</div>
+
+<main>
+  <header class="hero">
+    <div class="tag">Engineering teardown · build log</div>
+    <h1>From E-Waste<br>to SpookyWrt</h1>
+    <p class="lede adv-only">We bought a <b>$99 Chinese mini-router</b> that shipped <b>broken</b> — dead Wi-Fi,
+    no security updates, and an <b>unauthenticated root shell exposed on the LAN</b>. We didn't trust it,
+    so we tore it down to the silicon and rebuilt the whole software stack. It became <b>SpookyWrt</b>.
+    Here's the autopsy, the root-cause analyses, and how <b>two AI agents built it in ~22 hours</b>.</p>
+    <p class="lede beg-only">We bought a cheap <b>$99 router</b> that showed up basically <b>broken and unsafe</b> —
+    the Wi-Fi didn't work and anyone on the network could take it over. So we rebuilt its software from
+    scratch into something fast, safe, and ours: <b>SpookyWrt</b>. Here's the story — <b>two AIs did it in about a day.</b></p>
+    <p class="modehint">📖 Reading as <span id="mode-label">an engineer</span> — flip the switch up top for the
+    <span class="adv-only">plain-language</span><span class="beg-only">full technical</span> version.</p>
+    <div class="arrow">
+      <span class="from">$99 vendor e-waste</span><span class="x">→</span>
+      <span class="from">4.19 kernel · no Wi-Fi · wide open</span><span class="x">→</span>
+      <span class="to">SpookyWrt · hardened · kernel 6.x</span>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="n">~22h</div><div class="l">wall-clock</div></div>
+      <div class="stat"><div class="n">54</div><div class="l">commits</div></div>
+      <div class="stat"><div class="n">10.6k</div><div class="l">lines</div></div>
+      <div class="stat"><div class="n">25</div><div class="l">docs</div></div>
+      <div class="stat"><div class="n">7</div><div class="l">CVE-class fixes</div></div>
+      <div class="stat"><div class="n">2</div><div class="l">AI agents</div></div>
+    </div>
+  </header>
+
+  <section>
+    <div class="k">the patient</div>
+    <h2>A router that fought back</h2>
+    <p>The <strong>Seeed LinkStar H68K</strong> is a fanless Rockchip <strong>RK3568</strong> mini-router:
+    quad-core Cortex-A55, <strong>2× 2.5 GbE + 2× 1 GbE</strong>, an optional Wi-Fi 6 radio, ~32 GB eMMC —
+    a genuinely capable little box for $99. It ships with a vendor Ubuntu 20.04 / Android 11 image.</p>
+    <p>And that image is where it all goes wrong. The hardware is fine. <strong>The software it shipped
+    with is the junk.</strong> Here's what we found on a fresh unit:</p>
+    <ul class="sins">
+      <li><b>adbd on 0.0.0.0:5555</b><div class="d">Android Debug Bridge listening, unauthenticated, on the LAN — a root shell to anyone on the network. On a <em>router</em>.</div></li>
+      <li><b>Wi-Fi simply doesn't work</b><div class="d">The MediaTek MT7921 radio has no driver on the vendor's 2019-era 4.19 kernel. There is no <code>wlan</code> interface. At all.</div></li>
+      <li><b>The 2.5 GbE ports are flaky</b><div class="d">Same story — the RTL8125B driver on the vendor kernel doesn't reliably bring them up.</div></li>
+      <li><b>cleartext FTP · no firewall · shared SSH host keys</b><div class="d">vsftpd on :21, iptables wide open, and SSH host keys baked into the image — every unit worldwide shares the same keys (trivial MITM).</div></li>
+      <li><b>Default passwords, no security updates</b><div class="d"><code>root/root</code>, <code>linkstar/linkstar</code>, on an OS that stopped getting patches. This is the "don't trust hardware from China" story in one image.</div></li>
+      <li><b>No RTC → the clock is wrong on every boot</b><div class="d">No battery-backed clock, so it boots to a 2022 date and <code>apt</code> refuses every repo ("Release file is not valid yet"). TLS breaks. Nothing updates.</div></li>
+    </ul>
+    <p class="callout">The verdict: a fast, cheap, 4-port router with a modern SoC — running an <b>abandoned,
+    insecure OS on a kernel too old to drive its own radios.</b> Half-asleep and wide open. So we replaced all of it.</p>
+  </section>
+
+  <section>
+    <div class="k">the operation</div>
+    <h2>Three evolutions</h2>
+    <div class="tl">
+      <div class="ev"><div class="h">01 · Flash Ubuntu from a Mac — no maskrom, no Windows</div>
+        <div class="b">The vendor only documents a Windows tool + a maskrom cable. We reverse-engineered the RKFW image format, rebuilt the loader, and booted Ubuntu from a microSD on a Mac. First win: full control, non-destructive to the factory image.</div></div>
+      <div class="ev"><div class="h">02 · Drag it into the present — 20.04 → 22.04 → 24.04</div>
+        <div class="b">A live in-place distro upgrade across three LTS releases on the vendor kernel. Every step hit a real gotcha (firefox-snap abort, interface renames, dead DNS, the clock trap). Modern userland — but Wi-Fi was <em>still</em> dead, because the kernel never changed.</div></div>
+      <div class="ev"><div class="h">03 · The pivot — real OpenWrt on a mainline 6.x kernel = SpookyWrt</div>
+        <div class="b">The insight that reframed everything: the problem was never the OS, it was the <em>kernel version</em>. We moved to OpenWrt SNAPSHOT (kernel 6.x). <b>Wi-Fi came alive. The 2.5 GbE ports came alive.</b> The hardware we paid for finally woke up — and we built a hardened, branded firmware on top: SpookyWrt.</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="k">the interesting part</div>
+    <h2 class="adv-only">Root-cause analyses</h2>
+    <h2 class="beg-only">What was broken — and how we fixed it</h2>
+    <p class="adv-only">This is the engineering meat — five non-obvious problems, each diagnosed to the actual cause, not the symptom.</p>
+
+    <ul class="beg-list beg-only">
+      <li><b>Wi-Fi didn't work</b>The router's brain (its software "kernel") was too old to know how to use its own Wi-Fi chip. We gave it a modern brain — Wi-Fi came to life.</li>
+      <li><b>It wouldn't accept a fresh install</b>The factory image was packaged in an odd format that a normal copy can't boot. We figured out the format and wrote a tool that flashes it correctly.</li>
+      <li><b>Faster (6 GHz) Wi-Fi stayed dark</b>Two things: a missing driver file, and a regional radio rule that blocks it. We added the file and set the right region — 6 GHz works.</li>
+      <li><b>VPN wouldn't connect</b>One line of settings was in the wrong place, so it silently failed. We fixed the format and made it a one-command setup.</li>
+      <li><b>It looked finished but wasn't safe</b>Automated checks all passed — yet a security review found serious holes hiding underneath. We fixed every one before shipping.</li>
+    </ul>
+
+    <div class="rca adv-only"><span class="tag">RCA-1 · the thesis</span>
+      <div class="sym">SYMPTOM: no Wi-Fi on Ubuntu, on Android, even after upgrading to 24.04.</div>
+      <div class="cause">ROOT CAUSE: the MT7921 driver (<code>mt7921e</code>) landed in Linux <b>kernel 5.12</b>. The vendor ships <b>4.19</b>. Userland upgrades never touch the kernel — it lives in <code>boot.img</code>, not apt.</div>
+      <div class="fix">FIX: a distro with a mainline kernel ≥ 5.12. OpenWrt SNAPSHOT runs 6.x → the radio just works.</div>
+      <p>Every downstream "Wi-Fi doesn't work" report traces to this one fact. It's why upgrading Ubuntu felt productive but changed nothing: we were repainting a house with a broken foundation.</p>
+    </div>
+
+    <div class="rca adv-only"><span class="tag">RCA-2 · the black screen</span>
+      <div class="sym">SYMPTOM: flash the vendor <code>.img</code> to an SD with <code>dd</code> → black screen, no boot.</div>
+      <div class="cause">ROOT CAUSE: the "image" is an <b>RKFW container</b>, not a disk image, and its loader is in the <code>LDR</code> download-mode format. Sector 64 needs an <code>RKNS</code> rksd loader — write the wrong one and the bootROM stays dark.</div>
+      <div class="fix">FIX: unpack the RKFW (handling a 32-bit size-field overflow on the &gt;4 GB payload), rebuild the loader as <code>RKNS</code>, write the partition layout by hand.</div>
+      <p>This is the single hardest thing in the project and the reason no one else had a clean no-maskrom SD path. It's now three scripts.</p>
+    </div>
+
+    <div class="rca adv-only"><span class="tag">RCA-3 · the 6 GHz wall</span>
+      <div class="sym">SYMPTOM: a Wi-Fi 7 USB adapter is plugged in, driver loaded, but the 6 GHz AP never beacons.</div>
+      <div class="cause">ROOT CAUSE (two layers): (1) the <code>mt7925u</code> firmware blob wasn't installed — driver present, radio dead ("MCU is not ready"). (2) The US regulatory DB marks all 6 GHz channels <b>no-IR</b> (no-initiate-radiation), so the kernel refuses to run a 6 GHz AP.</div>
+      <div class="fix">FIX: add the <code>kmod-mt7925-firmware</code> package, and set the regdomain to <code>CA</code> (which permits 6 GHz LPI indoor APs on the same channels).</div>
+      <p>Lesson baked into the build: a USB Wi-Fi <em>driver</em> is useless without its matching <code>*-firmware</code> package — a clean build and a dead radio look identical until you flash real hardware.</p>
+    </div>
+
+    <div class="rca adv-only"><span class="tag">RCA-4 · the tunnel that wouldn't build</span>
+      <div class="sym">SYMPTOM: WireGuard/NordVPN config imported, uci looks right — but no interface, no handshake, IP unchanged.</div>
+      <div class="cause">ROOT CAUSE: in OpenWrt a WireGuard peer must be its <b>own <code>config wireguard_&lt;iface&gt;</code> section</b>, never an inline option on the interface. A stray peer option makes netifd <em>silently</em> refuse to create the device.</div>
+      <div class="fix">FIX: emit the peer as a separate section. Plus a base64 key-parser bug — keys end in <code>=</code>, so splitting on <code>=</code> naively truncated them.</div>
+      <p>Now a one-command <code>spooky vpn</code> importer emits the correct structure so no one reproduces the trap.</p>
+    </div>
+
+    <div class="rca adv-only"><span class="tag">RCA-5 · the audit the linters passed</span>
+      <div class="sym">SYMPTOM: every linter green. CI green. Ship it?</div>
+      <div class="cause">ROOT CAUSE: linters check grammar, not meaning. An adversarial 3-agent audit found <b>3 CRITICAL + 4 HIGH</b> issues sitting under a clean build: shell injection in a config generator, a "consent gate" for pentest tools that was <em>cosmetic</em> (tools still on <code>$PATH</code>), a static Wi-Fi password shipped in every image, an unauthenticated reboot path.</div>
+      <div class="fix">FIX: shell-quote all generated config, relocate audit tools off <code>$PATH</code> behind a fail-closed gate, per-device random keys, and — as important — <b>rewrite the docs that over-claimed a security guarantee we couldn't deliver.</b></div>
+      <p>The most valuable output of the audit wasn't a code fix. It was catching a firmware that <em>looked</em> done sitting on top of a root shell-injection vuln.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="k">the twist</div>
+    <h2>Two AI agents built this</h2>
+    <p>The entire thing — the RKFW reverse-engineering, the 25 docs, the four web UIs, the security
+    remediation, the on-device tooling — was built by <strong>two Claude agents working in parallel</strong>,
+    coordinating like a small engineering team.</p>
+    <div class="agents">
+      <div class="ag"><h4>◈ The terminal agent (repo owner)</h4><p>Owned the git repo, the build system, docs, web UIs, and the on-device control shell. Committed directly; gated every push on shellcheck + markdownlint + link + Python checks.</p></div>
+      <div class="ag"><h4>◈ The desktop agent (live device)</h4><p>Owned the physical box — flashing, the live upgrade, the radio-stack debugging, VPN bring-up. Staged findings to a shared directory for the repo agent to ingest.</p></div>
+    </div>
+    <h3>How they stayed out of each other's way</h3>
+    <p>One rule made parallel work collision-free: <strong>partition by file, coordinate at the seam.</strong>
+    A shared <code>COORDINATION.md</code> + staging directory was the message bus. The device agent never
+    touched the repo; the repo agent never touched the box. When one edited the other's file, it left a
+    note. Bugs hid at the boundaries — and got caught there (the device agent flashed an image the repo
+    agent had marked "done" and found it wouldn't boot).</p>
+    <h3>They spawned sub-agents, too</h3>
+    <p>For hard problems, each agent fanned out specialists: a <strong>3-agent adversarial audit</strong>
+    (security / correctness / UX, each with a different hostile lens), <strong>research agents</strong> to
+    source the wireless chipset matrix, and a <strong>verification swarm</strong> that build-tested the
+    Wi-Fi-audit package manifest against the live OpenWrt build server before a single package was committed.</p>
+    <p class="callout"><b>Why diverse agents beat one:</b> the security auditor assumes the user is
+    malicious; the code reviewer assumes the author erred; the UX auditor assumes the user is confused.
+    A single reviewer averages those lenses and misses the sharp cases each catches. The audit found the
+    cosmetic consent gate, the ASU-rejecting build command, <em>and</em> the shipped weak password — three
+    different failure modes, three different reviewers.</p>
+  </section>
+
+  <section>
+    <div class="k">by the numbers</div>
+    <h2>What ~22 hours produced</h2>
+    <div class="stats">
+      <div class="stat"><div class="n">54</div><div class="l">commits</div></div>
+      <div class="stat"><div class="n">100</div><div class="l">files</div></div>
+      <div class="stat"><div class="n">10,621</div><div class="l">lines</div></div>
+      <div class="stat"><div class="n">33</div><div class="l">scripts</div></div>
+      <div class="stat"><div class="n">4</div><div class="l">build variants</div></div>
+      <div class="stat"><div class="n">4</div><div class="l">web UIs</div></div>
+      <div class="stat"><div class="n">6</div><div class="l">diagrams</div></div>
+      <div class="stat"><div class="n">100%</div><div class="l">CI green</div></div>
+    </div>
+    <p style="margin-top:20px">Tokens consumed: <span class="fill">[ FILL FROM DASHBOARD ]</span> ·
+    Model: Claude (Opus/Sonnet) · Every push gated on shellcheck, markdownlint, link-check, and Python
+    compile — no "trust me," evidence before assertions.</p>
+    <p>The deliverable is a complete firmware program, not a proof of concept: a no-maskrom flashing
+    toolchain, four build variants (flagship / Wi-Fi-audit / VPN / AI), an on-device control shell, a
+    ubus-powered web dashboard, a branded LuCI theme, a router-native LLM agent, and 25 docs — every
+    hard-won gotcha turned into a guardrail so the next person doesn't rediscover it at 2 a.m.</p>
+  </section>
+
+  <section>
+    <div class="k">what it looks like</div>
+    <h2>A router with a face</h2>
+    <p>Not a config file and a prayer — a real control surface. A ubus-powered dashboard, a build-your-image
+    configurator, an on-device control shell, and a branded LuCI theme. All the hardware, finally usable.</p>
+    <figure style="margin:16px 0 0">
+      <img src="../assets/photos/h68k-hardware-overview.jpg" alt="The LinkStar H68K hardware — four Ethernet ports on a palm-sized RK3568 mini-router"
+        style="width:100%;border-radius:12px;border:1px solid var(--line2);display:block">
+      <figcaption style="font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:7px">The patient: a $99 RK3568 box — 2× 2.5 GbE + 2× 1 GbE + Wi-Fi. <span style="color:var(--faint)">Photo © Seeed Studio, CC BY-SA 4.0.</span></figcaption>
+    </figure>
+    <div class="shots">
+      <figure><img src="../assets/screenshots/dash.jpg" alt="The SpookyWrt on-device dashboard — live gauges, quick controls, connected clients"><figcaption>The on-device dashboard — live status, gauges, quick controls.</figcaption></figure>
+      <figure><img src="../assets/screenshots/ctl.jpg" alt="SpookyWrt Control — the build-your-image configurator"><figcaption>Control — build a custom image, get a ready first-boot script.</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="k">where it's going</div>
+    <h2>Roadmap</h2>
+    <p class="beg-only">SpookyWrt already runs great on the H68K. Next up: making it run on more popular little
+    computers, and offering ready-made "editions" for different kinds of users.</p>
+    <p class="adv-only">The toolkit is OpenWrt-target-agnostic by design — the flashing pipeline and the whole
+    SpookyWrt userland port to any board OpenWrt supports. Priorities:</p>
+    <div class="road">
+      <div class="rd"><span class="st done">shipped</span><h4>LinkStar H68K</h4><p>The flagship — kernel 6.x, Wi-Fi + 2.5 GbE alive, 4 build variants, fully hardened.</p></div>
+      <div class="rd"><span class="st now">building</span><h4>Editions</h4><p>One shared core, several flavors — a friendly appliance edition, a prosumer flagship, a separate authorized-audit build, and a builder/dev edition.</p></div>
+      <div class="rd"><span class="st next">next</span><h4>Raspberry Pi 5</h4><p>The most popular SBC on earth (BCM2712, PCIe/NVMe, HDMI) — SpookyWrt as a first-class Pi router/AP.</p></div>
+      <div class="rd"><span class="st next">next</span><h4>NanoPi (pocket boards)</h4><p>The tiny NanoPi R-class boards — SpookyWrt in the smallest, cheapest form factor for travel routers &amp; sensors.</p></div>
+      <div class="rd"><span class="st next">next</span><h4>Wi-Fi client profiling</h4><p>WLAN-Pi-class analysis — see exactly what every device negotiates. Lands in the pro + audit editions.</p></div>
+      <div class="rd"><span class="st next">explore</span><h4>Pre-baked images + mirror</h4><p>Download-and-flash release images, mirrored to the Internet Archive so they never rot.</p></div>
+    </div>
+  </section>
+
+  <div class="quote">We didn't just patch a router.<br>We turned <span>e-waste</span> into a <span>platform.</span></div>
+
+  <section>
+    <div class="k">see it · run it</div>
+    <h2>It's all open</h2>
+    <p>MIT-licensed, CI-green, and live. Flash your own H68K — or any OpenWrt box — and never buy a
+    router's software story on faith again.</p>
+    <div class="cta">
+      <a class="p" href="https://github.com/bgorzelic/linkstar-h68k" target="_blank" rel="noopener">The code on GitHub →</a>
+      <a class="g" href="../overview/">What it does ↗</a>
+      <a class="g" href="../webui/">Build your image ↗</a>
+    </div>
+  </section>
+</main>
+
+<footer>SpookyWrt · a SpookyJuice project · free &amp; open · MIT ·
+  <a href="https://github.com/bgorzelic/linkstar-h68k" target="_blank" rel="noopener">github.com/bgorzelic/linkstar-h68k</a><br>
+  Built with Claude · every claim in this post is backed by a commit.</footer>
+<div class="hazard"></div>
+<script>
+(function(){
+  var body=document.body, beg=document.getElementById('m-beg'), adv=document.getElementById('m-adv');
+  var label=document.getElementById('mode-label');
+  function set(mode,save){
+    var b = mode==='beg';
+    body.classList.toggle('mode-beg', b); body.classList.toggle('mode-adv', !b);
+    beg.setAttribute('aria-pressed', b?'true':'false'); adv.setAttribute('aria-pressed', b?'false':'true');
+    if(label) label.textContent = b ? 'a beginner' : 'an engineer';
+    if(save){ try{ localStorage.setItem('spooky-story-mode', mode); }catch(e){} }
+  }
+  beg.onclick=function(){ set('beg',true); }; adv.onclick=function(){ set('adv',true); };
+  var saved; try{ saved=localStorage.getItem('spooky-story-mode'); }catch(e){}
+  set(saved==='beg' ? 'beg' : 'adv', false);   // default: engineer
+})();
+</script>
+</body>
+</html>
