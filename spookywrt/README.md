@@ -42,3 +42,7 @@ The `mt7921` driver loads **after** `uci-defaults` runs on first boot, so config
 radio inline races the driver and the AP can come up open. `first-boot.sh` instead installs
 a one-shot init service that **waits for the radio to appear**, secures the AP, then removes
 itself — the reliable pattern for driver-dependent first-boot config.
+
+The AP comes up with a **random per-device WPA2 password** (never a static shipped key). It's
+recorded root-only at **`/etc/spooky-initial-wifi.txt`** on the device — read it over SSH, or
+change it in `spooky-setup` / LuCI. SSID: `SpookyWrt-H68K`.

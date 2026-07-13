@@ -290,7 +290,12 @@ boot() {
     uci -q set wireless.radio0.country='US'
     uci -q set wireless.default_radio0.ssid='SpookyWrt-H68K'
     uci -q set wireless.default_radio0.encryption='psk2'
-    uci -q set wireless.default_radio0.key='spooky-h68k-2026'
+    # Per-device random PSK — never ship a static Wi-Fi password. Recorded root-only.
+    key=$(tr -dc 'A-Za-z0-9' </dev/urandom 2>/dev/null | head -c 16)
+    [ -z "$key" ] && key="spooky-$(tr -d - < /proc/sys/kernel/random/uuid | head -c 10)"
+    uci -q set wireless.default_radio0.key="$key"
+    printf 'SpookyWrt initial Wi-Fi\nSSID:     SpookyWrt-H68K\nPassword: %s\n' "$key" > /etc/spooky-initial-wifi.txt
+    chmod 600 /etc/spooky-initial-wifi.txt
     uci -q commit wireless
     wifi reload
   fi
