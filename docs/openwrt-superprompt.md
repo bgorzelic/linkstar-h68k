@@ -22,6 +22,15 @@ integrated as the **v0.2.0 "OpenWrt" track** of the `linkstar-h68k` repo
 
 Codename the build **SpookyWrt** (themeable — treat brand as a variable).
 
+**Positioning — free, open, and everywhere.** SpookyWrt is **given away for free** and built entirely
+on open infrastructure (OpenWrt + the public Image Builder / Attended-Sysupgrade build server — no
+license, no account, no phone-home). The H68K is the flagship, but the H68K is **not the product** —
+the product is *"GL.iNet-class firmware for any box that runs OpenWrt."* Anything OpenWrt targets is a
+candidate: arm64 SBCs, **x86-64 mini-PCs / thin clients / VMs / VPS**, and MIPS consumer routers
+(ramips/ath79) — a $15 thrift-store router and a rack VM get the same UI. Design every layer
+(UI, config, banner/MOTD, modes, the config generator) to be **target-agnostic from day one**;
+the per-board layer is only drivers + form factor. See §9b.
+
 ---
 
 ## 1. Target device — VERIFIED facts
@@ -208,9 +217,18 @@ spookywrt/
 │   ├── rpi-5/          # bcm27xx/bcm2712 · rpi-5 · +USB/PCIe 2.5G NICs                (HDMI console ✓)
 │   ├── rpi-4/          # bcm27xx/bcm2711 · rpi-4                                       (HDMI console ✓)
 │   ├── rpi-3/          # bcm27xx/bcm2710                                               (HDMI console ✓)
-│   └── gl-*/           # GL.iNet: ramips/mt7621, mediatek/filogic, ipq807x  (see below)
+│   ├── x86-64/         # x86/64 · generic · +kmod-r8169/igb/e1000e  (mini-PC · thin client · VM · VPS)
+│   ├── nanopi-r5s/     # rockchip/armv8 · friendlyarm_nanopi-r5s · +kmod-r8125        (inline probe)
+│   ├── gl-*/           # GL.iNet: ramips/mt7621, mediatek/filogic, ipq807x  (see below)
+│   └── router-*/       # cheap MIPS: ramips/mt7621, ath79/generic (Archer C7, etc.)  (small-flash ⚠)
 └── build.sh <device>       # picks the matching OpenWrt Image Builder, merges common/ + device recipe
 ```
+
+**This is the whole point of "free + everywhere":** the catalog above is a *starting set*, not a
+whitelist. If OpenWrt has a profile for a board, SpookyWrt can target it — `build.sh <device>` only
+needs `{target, profile, extra-drivers}`. The public config generator (see the showcase) exposes this
+directly: pick an arch (aarch64 / x86_64 / mipsel / mips), pick a role, and it emits the exact
+Attended-Sysupgrade `curl` one-liner against `sysupgrade.openwrt.org` — **no toolchain, no account.**
 
 **Build method (all targets):** official OpenWrt **Image Builder** per target (no source compile) →
 consistent, no snapshot skew (the `libubus` conflict that blocks post-hoc `apk add`). `build.sh`
@@ -233,6 +251,14 @@ flashable image + SHA256. Pin the snapshot/release revision for reproducibility.
   - **Un-brickable:** GL devices ship a **U-Boot web-failsafe** (hold reset → recovery at 192.168.1.1),
     so custom-image experimentation is safe. A few models need GL's own build for cellular/proprietary
     bits — target the mainline-supported ones first.
+- **x86-64** (`x86/64`, profile `generic`) — the sleeper: any mini-PC, thin client (Wyse/HP t-series),
+  old laptop, or **VM/VPS** becomes a router with the same UI. No Wi-Fi driver headaches (add a card or
+  run AP-less); bundle common NIC kmods (`kmod-r8169`, `kmod-igb`, `kmod-e1000e`). Console works on real
+  HDMI/serial and virtual consoles. Biggest storage of any target → all NAS/tools/hacker packages fit.
+- **Cheap MIPS routers** (`ramips/mt7621`, `ath79/generic`) — the "$15 revival" story: a thrift-store
+  TP-Link Archer C7 or GL-MT1300 runs the *same SpookyWrt UI*. Caveat: **small flash (16–32 MB)** — LuCI
+  - drivers fit, but NAS/AdGuard/hacker bundles do **not** without USB extroot. The config generator
+  must **warn** when a small-flash board is paired with a heavy role (the showcase builder already does).
 
 ## 9c. Operating modes (the mode switcher — a first-class UI feature)
 

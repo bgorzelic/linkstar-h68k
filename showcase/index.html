@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="SpookyWrt — one identity across three engines for the LinkStar H68K (RK3568): Ubuntu, OpenWRT, and Android. Flash it your way.">
+<meta property="og:title" content="SpookyWrt — LinkStar H68K">
+<meta property="og:description" content="One identity, three engines. Flash the RK3568 H68K your way.">
+<title>SpookyWrt — LinkStar H68K (RK3568)</title>
+</head>
+<body>
+<style>
+  :root{
+    color-scheme: dark;
+    --bg:#0a0711; --bg2:#0e0a18; --surface:#150f24; --surface2:#1d1533; --line:#2c2244;
+    --violet:#b15bff; --violet-dim:#8b3fe0; --cyan:#2ce6d6; --cyan-dim:#1aa89b;
+    --text:#ece7f6; --muted:#9a8fb8; --faint:#6b6086;
+    --good:#54e08a; --warn:#ffb454; --bad:#ff5c72;
+    --glow: 0 0 24px rgba(177,91,255,.35);
+    --mono: ui-monospace,"SF Mono","Cascadia Code","JetBrains Mono",Menlo,monospace;
+    --sans: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0}
+  .wrap{background:var(--bg); color:var(--text); font-family:var(--sans); line-height:1.6;
+    font-size:16px; overflow-x:hidden; position:relative;
+    background-image:
+      radial-gradient(1200px 600px at 80% -10%, rgba(177,91,255,.13), transparent 60%),
+      radial-gradient(900px 500px at 0% 10%, rgba(44,230,214,.08), transparent 55%);}
+  .grid-bg{position:absolute; inset:0; pointer-events:none; opacity:.5;
+    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:44px 44px; mask-image:linear-gradient(180deg,rgba(0,0,0,.6),transparent 40%);}
+  .shell{max-width:1120px; margin:0 auto; padding:0 24px; position:relative; z-index:1}
+  a{color:var(--cyan); text-decoration:none}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.24em; text-transform:uppercase;
+    color:var(--cyan); font-weight:600}
+  h1,h2,h3{text-wrap:balance; margin:0; font-weight:800; letter-spacing:-.01em}
+  section{padding:76px 0; border-top:1px solid var(--line)}
+  .muted{color:var(--muted)}
+
+  /* ---------- hero ---------- */
+  .hero{padding:96px 0 72px; text-align:center; position:relative}
+  .brandmark{font-family:var(--mono); font-weight:800; letter-spacing:.06em;
+    font-size:clamp(44px,9vw,104px); line-height:.98;
+    background:linear-gradient(100deg,var(--violet),#e79bff 40%,var(--cyan));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter:drop-shadow(0 0 30px rgba(177,91,255,.35)); animation:flick 7s infinite}
+  @keyframes flick{0%,97%,100%{opacity:1}98%{opacity:.72}99%{opacity:.9}}
+  .tag{font-size:clamp(18px,2.4vw,24px); max-width:640px; margin:20px auto 0; color:#cfc6e6}
+  .tag b{color:var(--text)}
+  .cta-row{display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:30px}
+  .btn{font-family:var(--mono); font-size:14px; font-weight:600; letter-spacing:.02em;
+    padding:12px 20px; border-radius:10px; border:1px solid var(--line); cursor:pointer;
+    background:var(--surface); color:var(--text); transition:.18s}
+  .btn:hover{border-color:var(--violet); box-shadow:var(--glow); transform:translateY(-1px)}
+  .btn.primary{background:linear-gradient(100deg,var(--violet-dim),var(--violet)); border-color:transparent; color:#fff}
+  .stats{display:flex; gap:34px; justify-content:center; flex-wrap:wrap; margin-top:46px}
+  .stat{font-family:var(--mono)}
+  .stat .n{font-size:30px; font-weight:800; color:var(--text)}
+  .stat .l{font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+
+  h2.sec{font-size:clamp(26px,4vw,38px); margin:8px 0 8px}
+  .lede{color:var(--muted); max-width:620px; margin:0 0 34px; font-size:17px}
+
+  /* ---------- ecosystem cards ---------- */
+  .three{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px}
+  .eco{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:26px; transition:.18s}
+  .eco:hover{transform:translateY(-3px); border-color:var(--violet); box-shadow:var(--glow)}
+  .eco .k{font-family:var(--mono); font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--cyan)}
+  .eco h3{font-size:22px; margin:6px 0 8px}
+  .eco p{margin:0; color:var(--muted); font-size:15px}
+  .eco .ic{width:40px;height:40px;margin-bottom:14px}
+
+  /* ---------- device grid ---------- */
+  .devs{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:16px}
+  .dev{background:linear-gradient(180deg,var(--surface),var(--bg2)); border:1px solid var(--line);
+    border-radius:14px; padding:20px; position:relative; overflow:hidden}
+  .dev svg{width:100%; height:78px; margin-bottom:12px}
+  .dev h3{font-size:17px}
+  .dev .spec{font-family:var(--mono); font-size:12px; color:var(--muted); margin-top:8px; line-height:1.7}
+  .flavor{font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+    padding:3px 8px; border-radius:20px; border:1px solid var(--line); color:var(--cyan); display:inline-block; margin-top:12px}
+
+  /* ---------- infographic ---------- */
+  .info{background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:8px}
+
+  /* ---------- builder ---------- */
+  .builder{display:grid; grid-template-columns:1.15fr .85fr; gap:22px; align-items:start}
+  .panel{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:22px}
+  .step-l{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint); margin:18px 0 10px}
+  .step-l:first-child{margin-top:0}
+  .opts{display:flex; flex-wrap:wrap; gap:10px}
+  .chip{font-family:var(--mono); font-size:13px; padding:9px 14px; border-radius:10px; border:1px solid var(--line);
+    background:var(--surface2); color:var(--muted); cursor:pointer; transition:.14s; user-select:none}
+  .chip:hover{border-color:var(--violet-dim); color:var(--text)}
+  .chip[aria-pressed="true"]{background:linear-gradient(100deg,rgba(177,91,255,.22),rgba(44,230,214,.12));
+    border-color:var(--violet); color:var(--text); box-shadow:inset 0 0 0 1px rgba(177,91,255,.3)}
+  .chip .d{display:block; font-size:10px; color:var(--faint); letter-spacing:0; text-transform:none; margin-top:2px}
+  .chip[aria-pressed="true"] .d{color:var(--cyan)}
+  .term{background:#08060f; border:1px solid var(--line); border-radius:16px; overflow:hidden; position:sticky; top:16px}
+  .term-bar{display:flex; align-items:center; gap:7px; padding:12px 15px; border-bottom:1px solid var(--line); background:var(--bg2)}
+  .dot{width:11px;height:11px;border-radius:50%}
+  .term-title{font-family:var(--mono); font-size:12px; color:var(--muted); margin-left:8px}
+  .term-body{padding:18px; font-family:var(--mono); font-size:12.5px; line-height:1.75; color:#cbd5e1; max-height:none}
+  .term-body .cm{color:var(--faint)}
+  .term-body .vi{color:var(--violet)}
+  .term-body .cy{color:var(--cyan)}
+  .term-body .gn{color:var(--good)}
+  .pkgs{display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 4px}
+  .pk{font-family:var(--mono); font-size:11px; padding:3px 8px; border-radius:6px; background:var(--surface2); color:#c9c0e0; border:1px solid var(--line)}
+  .cmd{white-space:pre-wrap; word-break:break-word; background:#050308; border:1px solid var(--line); border-radius:10px; padding:12px; margin-top:12px; color:#d9d2ec}
+  .copy{float:right; font-family:var(--mono); font-size:11px; color:var(--cyan); cursor:pointer; border:1px solid var(--line); border-radius:6px; padding:2px 8px; background:var(--surface)}
+  .yield{font-size:13px; color:var(--muted); margin-top:14px}
+  .yield b{color:var(--good)}
+
+  footer{padding:48px 0 60px; border-top:1px solid var(--line); text-align:center; color:var(--faint); font-family:var(--mono); font-size:12px}
+  .callout{border-left:2px solid var(--violet); padding:2px 0 2px 16px; margin-top:18px; color:var(--muted); font-size:14px}
+  @media (max-width:820px){ .builder{grid-template-columns:1fr} .term{position:static} }
+  @media (prefers-reduced-motion:reduce){ .brandmark{animation:none} * {transition:none!important} }
+</style>
+
+<div class="wrap">
+  <div class="grid-bg"></div>
+
+  <header class="shell hero">
+    <div class="eyebrow">SpookyJuice · open firmware</div>
+    <div class="brandmark">SPOOKYWRT</div>
+    <p class="tag">A <b>custom, branded OpenWrt firmware</b> and diagnostic suite for the boxes you actually own — routers, Pis, and hacker gear, one identity across all of them.</p>
+    <div class="cta-row">
+      <button class="btn primary" onclick="document.getElementById('builder').scrollIntoView({behavior:'smooth'})">Build your image ↓</button>
+      <a class="btn" href="https://github.com/bgorzelic/linkstar-h68k" target="_blank" rel="noopener">View the repo</a>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="n">6+</div><div class="l">boards</div></div>
+      <div class="stat"><div class="n">6</div><div class="l">modes</div></div>
+      <div class="stat"><div class="n">~30s</div><div class="l">to build</div></div>
+      <div class="stat"><div class="n">MIT</div><div class="l">license</div></div>
+    </div>
+  </header>
+
+  <section class="shell">
+    <div class="eyebrow">the ecosystem</div>
+    <h2 class="sec">One identity, three engines</h2>
+    <p class="lede">The trick that keeps "many tools on many boards" from becoming twenty forks: a shared look + a shared tool suite, with the right base OS chosen per role.</p>
+    <div class="three">
+      <div class="eco">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#b15bff" stroke-width="1.6"><rect x="2" y="7" width="20" height="10" rx="2"/><path d="M6 11h.01M10 11h.01M6 14h6"/></svg>
+        <div class="k">routers</div><h3>SpookyWrt</h3>
+        <p>OpenWrt image-builder flow. Router / AP / travel / NAS across H68K, GL.iNet, NanoPi, Pi. LuCI underneath, GL.iNet-class UI on top.</p>
+      </div>
+      <div class="eco">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#2ce6d6" stroke-width="1.6"><path d="M3 12h4l2 6 4-14 2 8h6"/></svg>
+        <div class="k">diagnostics</div><h3>SpookyProbe</h3>
+        <p>Plug-in "network doctor in a box" for field techs. Debian + a containerized tool suite. Auto-sweep, pcap to NVMe, hand-off report.</p>
+      </div>
+      <div class="eco">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#ffb454" stroke-width="1.6"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+        <div class="k">security · authorized</div><h3>SpookyLab</h3>
+        <p>Home-lab / CTF / authorized-audit toolkit. Monitor-mode Wi-Fi, IDS, isolated lab VLAN, consent-gated. Your gear, your rules.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="shell">
+    <div class="eyebrow">supported hardware</div>
+    <h2 class="sec">Pick your box</h2>
+    <p class="lede">All arm64 — the tool suite runs identically on each. Adding a board is a thin driver + form-factor layer, not a rewrite.</p>
+    <div class="devs" id="devgrid"></div>
+  </section>
+
+  <section class="shell">
+    <div class="eyebrow">architecture</div>
+    <h2 class="sec">Three decoupled layers</h2>
+    <p class="lede">Write the tools once, choose an OS by role, keep hardware differences to a thin edge.</p>
+    <div class="info">
+      <svg viewBox="0 0 900 300" style="width:100%;height:auto" font-family="var(--mono)">
+        <defs>
+          <linearGradient id="l1" x1="0" x2="1"><stop offset="0" stop-color="#b15bff" stop-opacity=".22"/><stop offset="1" stop-color="#2ce6d6" stop-opacity=".12"/></linearGradient>
+        </defs>
+        <g>
+          <rect x="40" y="24" width="820" height="66" rx="12" fill="url(#l1)" stroke="#b15bff" stroke-opacity=".5"/>
+          <text x="60" y="52" fill="#ece7f6" font-size="16" font-weight="700">TOOL SUITE — portable, containerized (write once)</text>
+          <text x="60" y="76" fill="#9a8fb8" font-size="12.5">probe · wifi · capture · collector (Influx+Grafana) · analyze · the SpookyJuice UI</text>
+
+          <rect x="40" y="106" width="820" height="66" rx="12" fill="#150f24" stroke="#2c2244"/>
+          <text x="60" y="134" fill="#ece7f6" font-size="16" font-weight="700">BASE OS — chosen by ROLE, not by board</text>
+          <text x="60" y="158" fill="#9a8fb8" font-size="12.5">Router → OpenWrt (image builder)   ·   Diagnostics/Security → Debian + containers</text>
+
+          <rect x="40" y="188" width="820" height="66" rx="12" fill="#150f24" stroke="#2c2244"/>
+          <text x="60" y="216" fill="#ece7f6" font-size="16" font-weight="700">HARDWARE FLAVOR — thin per-board layer</text>
+          <text x="60" y="240" fill="#9a8fb8" font-size="12.5">drivers + form factor: NICs · Wi-Fi · NVMe · OLED / HDMI console</text>
+          <text x="450" y="286" fill="#6b6086" font-size="11" text-anchor="middle">adding a new board ≈ a day, not a rewrite</text>
+        </g>
+      </svg>
+    </div>
+  </section>
+
+  <section class="shell" id="builder">
+    <div class="eyebrow">dynamic workflow</div>
+    <h2 class="sec">Build your image</h2>
+    <p class="lede">Pick a board, a role, and the features you want. The recipe — package list + the exact one-command build — writes itself as you go.</p>
+    <div class="builder">
+      <div class="panel">
+        <div class="step-l">1 · board</div>
+        <div class="opts" id="pick-dev"></div>
+        <div class="step-l">2 · role / mode</div>
+        <div class="opts" id="pick-mode"></div>
+        <div class="step-l">3 · features</div>
+        <div class="opts" id="pick-feat"></div>
+        <div class="callout" id="hint">Tip: Wi-Fi AP needs the <code>wpad</code> daemon — toggle it and it's baked in automatically (the exact thing that bit us installing after the fact).</div>
+      </div>
+      <div class="term" aria-label="generated build recipe">
+        <div class="term-bar">
+          <span class="dot" style="background:#ff5c72"></span><span class="dot" style="background:#ffb454"></span><span class="dot" style="background:#54e08a"></span>
+          <span class="term-title">~/spookywrt/build.sh</span>
+        </div>
+        <div class="term-body" id="out"></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="shell">
+    SpookyWrt · part of the SpookyJuice ecosystem · MIT<br>
+    github.com/bgorzelic/linkstar-h68k · built with OpenWrt + the firmware-selector build API
+  </footer>
+</div>
+
+<script>
+(function(){
+  var DEV={
+    h68k:{name:"LinkStar H68K",arch:"aarch64",target:"rockchip/armv8",profile:"hinlink_h68k",base:["kmod-r8125","kmod-mt7921e"],spec:"RK3568 · 2×2.5G + 2×1G · MT7921",flavor:"router · serial"},
+    pi5:{name:"Raspberry Pi 5",arch:"aarch64",target:"bcm27xx/bcm2712",profile:"rpi-5",base:[],spec:"BCM2712 · PCIe/NVMe · HDMI ✓",flavor:"router / collector"},
+    nanopi:{name:"NanoPi R5S",arch:"aarch64",target:"rockchip/armv8",profile:"friendlyarm_nanopi-r5s",base:["kmod-r8125"],spec:"RK3568 · 2×2.5G + 1G",flavor:"inline probe"},
+    gl6000:{name:"GL-MT6000 Flint 2",arch:"aarch64",target:"mediatek/filogic",profile:"glinet_gl-mt6000",base:[],spec:"MT7986 · Wi-Fi 6",flavor:"router · un-brickable"},
+    x86:{name:"x86-64 PC / VM",arch:"x86_64",target:"x86/64",profile:"generic",base:["kmod-r8169","kmod-igb","kmod-e1000e"],spec:"mini-PC · thin client · VM · VPS",flavor:"router / cloud"},
+    glmt1300:{name:"GL-MT1300 Beryl",arch:"mipsel",target:"ramips/mt7621",profile:"glinet_gl-mt1300",base:[],spec:"MT7621 · Wi-Fi 5 · pocket",flavor:"travel router",small:1},
+    archerc7:{name:"TP-Link Archer C7",arch:"mips",target:"ath79/generic",profile:"tplink_archer-c7-v5",base:[],spec:"QCA9563 · Wi-Fi 5 · ~16MB flash",flavor:"$15 router revival",small:2}
+  };
+  var ARCHC={aarch64:"#b15bff",x86_64:"#2ce6d6",mipsel:"#ffb454",mips:"#54e08a"};
+  var MODE={
+    router:{name:"Router",pkgs:[],d:"gateway + DHCP + NAT"},
+    ap:{name:"Access Point",pkgs:[],d:"bridge & extend"},
+    nas:{name:"NAS",pkgs:["block-mount","kmod-usb-storage","kmod-fs-ext4","kmod-fs-exfat","luci-app-samba4","samba4-server"],d:"SMB shares"},
+    travel:{name:"Travel",pkgs:["luci-app-wireguard","wireguard-tools","kmod-wireguard"],d:"VPN always-on"},
+    hacker:{name:"Hacker / Lab",pkgs:["tcpdump","nmap","kmod-usb-net","mtr"],d:"authorized audit"}
+  };
+  var FEAT={
+    wifi:{name:"Wi-Fi AP",pkgs:["wpad-basic-mbedtls"],d:"MT7921 access point"},
+    be6500:{name:"BE6500 USB",pkgs:["kmod-mt7925u"],d:"Netgear Wi-Fi 7 adapter"},
+    vpn:{name:"WireGuard",pkgs:["luci-app-wireguard","wireguard-tools","kmod-wireguard"],d:"VPN client+server"},
+    adguard:{name:"AdGuard",pkgs:["adguardhome"],d:"DNS ad-block"},
+    tools:{name:"Toolkit",pkgs:["htop","nano","tcpdump","mtr","curl"],d:"admin niceties"}
+  };
+  var BASE_UI=["luci","luci-ssl","luci-theme-material"];
+  var state={dev:"h68k",mode:"router",feat:{wifi:true}};
+
+  function esc(s){return s.replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
+  function chip(id,o,pressed){return '<button class="chip" role="button" aria-pressed="'+(pressed?'true':'false')+'" data-id="'+id+'">'+o.name+'<span class="d">'+o.d+'</span></button>'}
+
+  function render(){
+    // device grid (static showcase)
+    var g=document.getElementById('devgrid');
+    if(!g.dataset.done){
+      var glyph='<svg viewBox="0 0 200 60"><rect x="6" y="12" width="188" height="36" rx="5" fill="#150f24" stroke="#2c2244"/><rect x="14" y="22" width="26" height="16" rx="2" fill="#1d1533" stroke="#b15bff" stroke-opacity=".5"/><rect x="46" y="22" width="26" height="16" rx="2" fill="#1d1533" stroke="#2ce6d6" stroke-opacity=".5"/><rect x="78" y="22" width="26" height="16" rx="2" fill="#1d1533" stroke="#2c2244"/><rect x="110" y="22" width="26" height="16" rx="2" fill="#1d1533" stroke="#2c2244"/><circle cx="168" cy="30" r="7" fill="none" stroke="#b15bff" stroke-opacity=".6"/></svg>';
+      var html="";
+      Object.keys(DEV).forEach(function(k){var d=DEV[k]; var ac=ARCHC[d.arch]||'#9a8fb8';
+        html+='<div class="dev">'+glyph+'<h3>'+d.name+'</h3><div class="spec">'+esc(d.spec)+'</div>'+
+          '<span class="flavor" style="border-color:'+ac+'55;color:'+ac+'">'+d.arch+'</span> '+
+          '<span class="flavor">'+esc(d.flavor)+'</span></div>';});
+      g.innerHTML=html; g.dataset.done="1";
+    }
+    // builder pickers
+    document.getElementById('pick-dev').innerHTML=Object.keys(DEV).map(function(k){return chip(k,{name:DEV[k].name,d:DEV[k].arch+" · "+DEV[k].profile},state.dev===k)}).join('');
+    document.getElementById('pick-mode').innerHTML=Object.keys(MODE).map(function(k){return chip(k,MODE[k],state.mode===k)}).join('');
+    document.getElementById('pick-feat').innerHTML=Object.keys(FEAT).map(function(k){return chip(k,FEAT[k],!!state.feat[k])}).join('');
+    bind();
+    output();
+  }
+  function bind(){
+    document.querySelectorAll('#pick-dev .chip').forEach(function(c){c.onclick=function(){state.dev=c.dataset.id; render()}});
+    document.querySelectorAll('#pick-mode .chip').forEach(function(c){c.onclick=function(){state.mode=c.dataset.id; render()}});
+    document.querySelectorAll('#pick-feat .chip').forEach(function(c){c.onclick=function(){var id=c.dataset.id; state.feat[id]=!state.feat[id]; render()}});
+  }
+  function pkgSet(){
+    var s=[].concat(BASE_UI, DEV[state.dev].base, MODE[state.mode].pkgs);
+    Object.keys(state.feat).forEach(function(f){ if(state.feat[f]) s=s.concat(FEAT[f].pkgs); });
+    return s.filter(function(v,i,a){return a.indexOf(v)===i}).sort();
+  }
+  function output(){
+    var d=DEV[state.dev], pk=pkgSet();
+    var chips=pk.map(function(p){return '<span class="pk">'+p+'</span>'}).join(' ');
+    var cmd='curl -s https://sysupgrade.openwrt.org/api/v1/build -d \''+
+      JSON.stringify({version:"SNAPSHOT",target:d.target,profile:d.profile,packages:pk,defaults:"# SpookyWrt first-boot: banner + Wi-Fi AP + Material theme"}, null, 0)+'\'';
+    var el=document.getElementById('out');
+    var warn = (d.small && pk.length>8) ? '<div class="yield" style="color:var(--warn)">⚠ '+esc(d.name)+' has ~'+(d.small===2?'16MB':'32MB')+' flash — trim features, or add USB/extroot for the extras.</div>' : '';
+    el.innerHTML=
+      '<span class="cm"># target: <span class="cy">'+esc(d.name)+'</span> · <span class="vi">'+d.target+'</span> · arch <span class="cy">'+d.arch+'</span></span>\n'+
+      '<span class="cm"># role: <span class="cy">'+MODE[state.mode].name+'</span>  ·  '+pk.length+' packages baked in · <span class="gn">free build</span></span>\n\n'+
+      '<span class="cm">packages:</span>\n<div class="pkgs">'+chips+'</div>\n'+
+      '<span class="cm"># one command — OpenWrt\'s free public build server compiles it (~30s):</span>'+
+      '<div class="cmd"><span class="copy" data-cmd="'+esc(cmd).replace(/"/g,'&quot;')+'">copy</span>'+esc(cmd)+'</div>'+
+      warn+
+      '<div class="yield"><span class="gn">✓</span> boots with a branded SPOOKY console, '+
+      (state.feat.wifi?'a live Wi-Fi AP, ':'')+'Material LuCI at <span class="cy">http://192.168.1.1</span>, every driver baked in — <b>no post-install, no skew</b>.</div>';
+    var cp=el.querySelector('.copy');
+    if(cp) cp.onclick=function(){ navigator.clipboard && navigator.clipboard.writeText(cp.dataset.cmd); cp.textContent='copied'; setTimeout(function(){cp.textContent='copy'},1200); };
+    var hint=document.getElementById('hint');
+    hint.style.display = state.feat.wifi ? 'none':'block';
+  }
+  render();
+})();
+</script>
+</body>
+</html>
