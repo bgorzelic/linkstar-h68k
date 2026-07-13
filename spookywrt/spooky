@@ -86,12 +86,60 @@ svc_menu(){
 vpn_menu(){
   title; printf "  ${RB}VPN / mesh${R}\n\n"
   if command -v tailscale >/dev/null 2>&1; then tailscale status 2>/dev/null | head -3 | sed 's/^/  /' || echo "  tailscale: not up"; fi
-  printf "\n  1) tailscale up (login)   2) tailscale status   3) wireguard (LuCI)   b) back\n\n"; ask "choice:"
+  wg=$(wg show 2>/dev/null | grep -c 'interface:'); [ "${wg:-0}" -gt 0 ] && ok "$wg WireGuard tunnel(s) up" || printf "  ${D}no WireGuard tunnel${R}\n"
+  printf "\n  1) tailscale up (login)   2) tailscale status   3) NordLynx/WireGuard setup\n  4) show WireGuard   b) back\n\n"; ask "choice:"
   case "$REPLY" in
     1) command -v tailscale >/dev/null && tailscale up || bad "tailscale not installed"; pause;;
     2) command -v tailscale >/dev/null && tailscale status | sed 's/^/  /'; pause;;
-    3) echo "  configure WireGuard in LuCI → Network → Interfaces (proto WireGuard)"; pause;;
+    3) wg_setup;;
+    4) wg show 2>/dev/null | sed 's/^/  /' || bad "wg not available"; pause;;
   esac
+}
+
+wg_setup(){
+  # interactive NordLynx / commercial-WireGuard setup — applies the CORRECT uci structure
+  # (peer = its own wireguard_<iface> section, never an inline option).
+  title; printf "  ${RB}NordLynx / WireGuard setup${R}\n\n"
+  printf "  You need 3 values (from your provider — for NordLynx see docs/capture-and-vpn.md):\n"
+  printf "  ${D}client private key · server public key · server endpoint IP${R}\n\n"
+  ask "client private key:";  KEY="$REPLY"
+  ask "server public key:";   PUB="$REPLY"
+  ask "server endpoint IP:";  EP="$REPLY"
+  [ -n "$KEY" ] && [ -n "$PUB" ] && [ -n "$EP" ] || { bad "all three are required"; pause; return; }
+  yes "apply this tunnel + route ALL traffic through it?" || { echo "  cancelled"; pause; return; }
+  # interface
+  uci -q delete network.vpn
+  uci set network.vpn=interface
+  uci set network.vpn.proto='wireguard'
+  uci set network.vpn.private_key="$KEY"
+  uci add_list network.vpn.addresses='10.5.0.2/32'
+  # peer — SEPARATE section (the part that must not be inline)
+  uci -q delete network.vpnpeer
+  uci set network.vpnpeer=wireguard_vpn
+  uci set network.vpnpeer.public_key="$PUB"
+  uci set network.vpnpeer.endpoint_host="$EP"
+  uci set network.vpnpeer.endpoint_port='51820'
+  uci add_list network.vpnpeer.allowed_ips='0.0.0.0/0'
+  uci set network.vpnpeer.route_allowed_ips='1'
+  uci set network.vpnpeer.persistent_keepalive='25'
+  uci commit network
+  # firewall: a 'vpn' zone with masq (only add if absent)
+  if ! uci show firewall 2>/dev/null | grep -q "name='vpn'"; then
+    uci add firewall zone >/dev/null
+    uci set firewall.@zone[-1].name='vpn'
+    uci set firewall.@zone[-1].input='REJECT'; uci set firewall.@zone[-1].output='ACCEPT'
+    uci set firewall.@zone[-1].forward='REJECT'; uci set firewall.@zone[-1].masq='1'; uci set firewall.@zone[-1].mtu_fix='1'
+    uci add_list firewall.@zone[-1].network='vpn'
+    uci add firewall forwarding >/dev/null
+    uci set firewall.@forwarding[-1].src='lan'; uci set firewall.@forwarding[-1].dest='vpn'
+    uci commit firewall
+  fi
+  /etc/init.d/network restart; /etc/init.d/firewall restart
+  sleep 3
+  printf "\n"; wg show 2>/dev/null | sed 's/^/  /'
+  if wg show 2>/dev/null | grep -q 'latest handshake'; then ok "handshake up — checking exit IP…"; printf "  exit IP: %s\n" "$(curl -s --max-time 8 https://ipinfo.io/ip 2>/dev/null || echo '?')"
+  else bad "no handshake yet — recheck the 3 values + endpoint IP (not hostname)"; fi
+  pause
 }
 
 bundle(){
