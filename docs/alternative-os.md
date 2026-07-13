@@ -71,6 +71,32 @@ the honest answer:
   Armbian (general Linux).** Both ship a kernel new enough for the MT7921 driver. Internal
   Wi-Fi is a *kernel-version* limit, not something the OS userland can fix.
 
+## More options (community RK3568 builds)
+
+Almost anything with an RK3568 target runs on the H68K — and most of these inherit a
+**mainline kernel**, so Wi-Fi (MT7921) and the 2.5 G ports actually work, unlike the vendor
+4.19 images. Notable picks by use case:
+
+| Goal | OS | Notes |
+|------|----|-------|
+| **Media center** | **LibreELEC** (Kodi) | RK3568 in LE13 testing (chewitt's Rockchip images). Ideal for the HDMI media box. |
+| **Retro gaming** | **Batocera** (or Lakka / EmuELEC) | RK3568 supported (Anbernic RG-class, Odroid M1); Kodi included. |
+| **NAS** | **OpenMediaVault** | Full NAS web UI on a Debian/Armbian base — heavier-duty alternative to CasaOS. |
+| **Minimal server** | **DietPi** | Lightweight Debian, tiny footprint; installs on an Armbian base. |
+| **Home automation** | **Home Assistant** | Supervised on Armbian, or HAOS generic-aarch64. |
+| **Router (best HW support)** | **ImmortalWrt** | OpenWRT fork with `kmod-r8125` (2.5 G) + MT7921 Wi-Fi — often smoother here than stock OpenWRT. |
+| **Arch / rolling** | **Manjaro ARM** | Boots, but display issues have been reported on RK3568 — test HDMI. |
+| **Custom / minimal** | **Buildroot / Yocto** | Vendor-supported; for appliances you build yourself. |
+
+Most ship as **raw disk images** — `dd`/Etcher to SD (below). Sourcing:
+[ophub](https://github.com/ophub/amlogic-s9xxx-openwrt) and
+[amazingfate](https://github.com/amazingfate/armbian-h68k-images) target `rk3568-opc-h68k`;
+[LibreELEC](https://forum.libreelec.tv/thread/29953) and Batocera publish their own RK3568 images.
+
+> [!NOTE]
+> **Wi-Fi and 2.5 G work on these only if the build uses a kernel ≥ 5.12** (mainline) — the norm
+> for LibreELEC / Batocera / Armbian-based images, and the opposite of the vendor 4.19 track.
+
 ## How to flash a raw image (the simple path)
 
 ```bash
