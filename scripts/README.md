@@ -22,6 +22,8 @@ See **[`../docs/flash-ubuntu-sd-from-mac.md`](../docs/flash-ubuntu-sd-from-mac.m
 | `expand-rootfs.sh` | the device (root) | Grow the root filesystem to fill the card/eMMC (partition grow + online `resize2fs`). |
 | `harden.sh` | the device (root) | Disable network ADB (:5555) & FTP (:21), install `ufw`, add an SSH key, disable password auth. |
 | `first-setup.sh` | the device (root) | Hostname, timezone/NTP, updates, admin user. |
+| `optimize-boot.sh` | the device (root) | De-bloat + security trim (adb/FTP off), ~14 s→9 s boot, with lifeline checks (`--headless`). |
+| `finish-upgrade.sh` | the device (root) | One-shot self-repair for an interrupted 24.04 upgrade (purge firefox, `dpkg --configure -a`). |
 | `lib/common.sh` | — | Shared logging / dry-run / helpers (sourced by all of the above). |
 
 ## Cut a release (reproducible)
@@ -30,6 +32,7 @@ See **[`../docs/flash-ubuntu-sd-from-mac.md`](../docs/flash-ubuntu-sd-from-mac.m
 | -------- | --------- | --------- |
 | `bootstrap-tools.sh` | workstation | Fetch + build the Rockchip toolchain (`rkdeveloptool`, `rkbin`) at pinned commits. |
 | `build-release.sh` | workstation | One command: unpack → rebuild idbloader → (optional) flash → emit `SHA256SUMS` + manifest. |
+| `make-release-image.sh` | workstation | Build a clean, sanitized, shrunk `.img.xz` release image from a prepared card/rootfs. |
 
 Full runbook (versioning, publishing, adding OS tracks): **[`../docs/releasing.md`](../docs/releasing.md)**.
 

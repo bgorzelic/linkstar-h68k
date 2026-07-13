@@ -21,6 +21,9 @@ either verified on real hardware or is clearly marked as unverified.
 | Fix networking / DNS / no-IP | [Networking](networking.md) · [Known issues](known-issues.md) |
 | Upgrade Ubuntu to the latest | [Upgrading](upgrading.md) |
 | Understand the boot process | [How it works](how-it-works.md) |
+| Run it as a NAS / web-managed box | [Appliance: Cockpit + Samba + firewall](appliance-cockpit-nas-firewall.md) |
+| Speed up boot / de-bloat | [Boot optimization](boot-optimization.md) |
+| Recover an unbootable card (from a Mac) | [Offline SD repair](offline-sd-repair-debugfs.md) |
 | Build & publish a release | [Releasing](releasing.md) |
 
 ## Start here
@@ -47,6 +50,11 @@ either verified on real hardware or is clearly marked as unverified.
 - **[Networking](networking.md)** — the four ports + chipsets, the /22 discovery quirk,
   DHCP/static config, and router port mapping.
 - **[Storage](storage.md)** — eMMC vs microSD boot, expanding the rootfs, SD backups.
+- **[Appliance: web + NAS + firewall](appliance-cockpit-nas-firewall.md)** — Cockpit console,
+  Samba NAS, and a `ufw` setup with a lockout-proof rollback timer.
+- **[Boot optimization](boot-optimization.md)** — de-bloat to a ~9 s boot with an SSH-only surface.
+- **[Offline SD repair (debugfs)](offline-sd-repair-debugfs.md)** — diagnose/fix an unbootable
+  rootfs from a Mac, no Linux box needed.
 - **[OS images](os-images/)** — image matrix + the archived vendor release note.
 - **[Firmware downloads & checksums](../firmware/README.md)**
 
@@ -60,5 +68,7 @@ either verified on real hardware or is clearly marked as unverified.
   variants and how a flavored image is built.
 - **[CasaOS flavor](casaos.md)** — the home-server / personal-cloud web UI: install, first
   boot, and firewall.
+- **[OpenWRT build brief](openwrt-superprompt.md)** — the v0.2.0 spec for a GL.iNet-class
+  OpenWRT firmware (the path to a full Wi-Fi router / AP).
 
 Contributions welcome — see [`../CONTRIBUTING.md`](../CONTRIBUTING.md).

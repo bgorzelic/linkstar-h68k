@@ -17,11 +17,17 @@ tags (`<track>/vX.Y`); see [docs/releasing.md](docs/releasing.md).
   (survives interface renames) and repairs DNS when the image's `resolv.conf` is a
   dangling symlink; docs cover the no-RTC clock-drift and missing-`systemd-resolved`
   gotchas that break `apt`.
+- **Field-hardened docs & scripts** from the live 24.04 sessions: the appliance guide
+  (Cockpit + Samba NAS + rollback-safe `ufw`), boot-optimization (~9 s boot), offline SD
+  repair via `debugfs`, the OpenWRT v0.2 build brief, and `make-release-image.sh` /
+  `optimize-boot.sh` / `finish-upgrade.sh`. Documented the `/usr` perms defect and that
+  **Wi-Fi/AP is impossible on the vendor 4.19 kernel** (use the OpenWRT track for AP);
+  corrected the 24.04 `eth*`→`end*` interface rename.
 
 ### In progress
 
-- **Ubuntu 24.04 release** (`ubuntu-desktop-24.04` / `ubuntu-server-24.04`) — pending the
-  live in-place upgrade + boot verification, then snapshot → image.
+- **Ubuntu 24.04 release** (`ubuntu-desktop-24.04` / `ubuntu-server-24.04` / `ubuntu-casaos-24.04`)
+  — the live 24.04.4 upgrade is **verified**; pending the flavor snapshots → images, then publish.
 
 ## [0.1.0] — 2026-07-12
 

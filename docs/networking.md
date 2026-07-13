@@ -85,9 +85,10 @@ Under the OpenWRT image the default roles are `eth0` = **WAN**, the remaining po
 
 ## On Ubuntu 24.04
 
-- **Interface names** stay `eth0`–`eth3` on this board (the `rk_gmac-dwmac` driver names
-  them; verified they are *not* renamed to `enP*`). Even so, `fix-networking.sh` installs a
-  **name-independent** DHCP fallback so a rename couldn't break networking.
+- **Interface names change by release.** On vendor 20.04/22.04 the ports are `eth0`–`eth3`;
+  **Ubuntu 24.04's predictable naming renames them to `end0`/`end1`** — a netplan file that
+  hard-codes `eth0` silently stops matching after the upgrade → no network. `fix-networking.sh`
+  installs a **name-independent** DHCP fallback (matches `en* eth* end*`) so a rename can't break it.
 - **Boot with the cable already connected** to a 1 G port → your router, so the link is up
   during early boot and DHCP completes. Verify with `ip -br addr show eth0` — **not** `iw`,
   which only shows Wi-Fi.

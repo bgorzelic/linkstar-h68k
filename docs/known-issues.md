@@ -28,6 +28,21 @@ or [ophub](https://github.com/ophub/amlogic-s9xxx-armbian) (both ship an
 > builds (open, no posted fix). A community image can trade the 2.5 G bug for a 1 G
 > one — test all four ports after switching.
 
+## Wi-Fi & Access Point: impossible on the vendor 4.19 kernel
+
+Wi-Fi is **dead on the vendor kernel**, and no USB adapter rescues it:
+
+- **Internal MT7921 ("M7921E")** — the `mt7921e` driver landed in kernel ~5.12; **4.19 has
+  none**, so there's no `wlan` interface at all.
+- **USB Wi-Fi doesn't help** — even a Wi-Fi 7 adapter (MediaTek `mt7925u`, needs kernel ≥ 6.7)
+  enumerates on USB but binds no driver.
+- **So the Access-Point role isn't achievable on the Ubuntu/Android track.** For Wi-Fi / AP,
+  use the **[OpenWRT track](alternative-os.md)** (mt7921 works there) or an Armbian mainline
+  kernel. Wired router/NAS is rock-solid on the 1 G ports.
+
+> [!NOTE]
+> `iw` is Wi-Fi-only — it never lists wired `eth`/`end` ports, so don't use it to hunt for Ethernet.
+
 ## "No DHCP" out of the box
 
 **Not a NIC fault** — the image enables **three network stacks at once** (netplan/
@@ -114,6 +129,20 @@ date). This bites hardest after the box has been off for a while.
 sudo date -u -s '2026-07-12 18:00:00'   # set it manually (UTC), then apt works
 sudo timedatectl set-ntp true           # better: NTP corrects it each boot (needs DNS first)
 sudo apt install -y fake-hwclock         # persist a sane time across reboots
+```
+
+## `/usr` ownership defect
+
+The vendor rootfs ships **`/usr`, `/usr/bin`, `/usr/lib` owned by a phantom uid 1000 and
+group-writable** — uid 1000 has no passwd entry (it was the vendor's build user).
+Group-writable system dirs are a **privilege-escalation risk** and make `sudo`/`ufw` warn.
+The stray files are Rockchip vendor additions (NPU tools, `upgrade_tool`, Realtek BT firmware).
+
+```bash
+sudo find /usr ! -user root -exec chown root:root {} +
+sudo chmod 755 /usr /usr/bin /usr/lib
+sudo find /usr -maxdepth 3 -perm -g+w -exec chmod g-w {} +
+sudo find /usr ! -user root          # verify → empty
 ```
 
 ## Ubuntu 20.04 is past standard support

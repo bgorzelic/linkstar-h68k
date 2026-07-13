@@ -45,6 +45,7 @@ read the whole thing.
 | 🔒 **Secure a unit I already have** (it ships wide open) | [Hardening](./docs/hardening.md) |
 | 🖥️ **Run a desktop, server, or home cloud** | [Flavors](./flavors/README.md) · [CasaOS](./docs/casaos.md) |
 | 🌐 **Use it as a router / firewall** | [OpenWRT & other Linux](./docs/alternative-os.md) |
+| 🗄️ **Run a NAS / web-managed appliance** | [Cockpit + Samba + firewall](./docs/appliance-cockpit-nas-firewall.md) |
 | 💽 **Install to internal storage (Windows/eMMC)** | [eMMC over USB](./docs/flash-emmc-windows.md) |
 | ⬆️ **Upgrade Ubuntu to the latest** | [Upgrading](./docs/upgrading.md) |
 | 🧠 **Understand how it boots** | [How it works](./docs/how-it-works.md) |
