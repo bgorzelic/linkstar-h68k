@@ -273,6 +273,7 @@ rollback-timer so it can't lock the user out):
 | **Travel Router** | VPN-always-on, MAC clone, captive-portal handling |
 | **NAS / Server** | Storage-first (Samba/ksmbd/NFS), minimal routing |
 | **Hacker / Lab** | Security-tooling profile — **authorized/own-network/CTF/education only** |
+| **Honeypot** | Deception + detection: decoy listeners on scanned ports, trap logging, auto-ban — **own-network only** |
 
 **Hacker / Lab mode** is a legitimate home-lab/CTF/authorized-pentest toolkit (spirit of Kali / Wi-Fi
 Pineapple on *your own* gear), scoped with guardrails — an isolated lab VLAN, an on-entry consent/scope
@@ -281,6 +282,17 @@ is why USB/NAS storage is baked in): recon (`nmap`, `tcpdump`/`tshark`, `arp-sca
 (`aircrack-ng`, `kismet`, monitor mode on MT7921/USB), **defensive IDS** (`suricata`/`snort`), privacy
 (Tor transparent proxy, WireGuard, DoH, AdGuard), and a capture/alerts dashboard in the UI. **Never**
 frame or build for attacking third parties; keep it audit/defense/learning-oriented.
+
+**Honeypot mode** turns the box into a **deception + early-warning sensor on a network the user owns** —
+the defensive inverse of Hacker mode. On entry it arms **decoy listeners** on commonly-scanned ports
+(`socat`/inetd on `:21`, `:23`, `:2323`, `:8080`) that accept, log, and drop; **captures** the
+attacker's packets (`tcpdump` → `/tmp/honeypot.pcap`); and **auto-bans** repeat offenders via
+**`banip`** (`luci-app-banip`, with threat-intel feeds) while surfacing every hit as an alert in the UI
+(and optionally an outbound push). Packages: `banip`, `luci-app-banip`, `socat`, `tcpdump`. Guardrails:
+same consent/scope gate as Hacker mode — decoys and capture run **only on the user's own network**, all
+data stays local, and the UI states plainly that this is detection/deception, not entrapment of third
+parties. Great paired with an isolated VLAN so the honeypot sees lateral movement without exposing real
+hosts.
 
 ---
 
