@@ -4,22 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="SpookyWrt dashboard — the on-device WebUI for your OpenWRT box. Live status, instrument-cluster gauges, and quick controls, powered by ubus.">
-<meta name="theme-color" content="#08070d">
+<meta name="theme-color" content="#0a0e07">
 <title>SpookyWrt · dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#08070d; --ink2:#0c0a14; --panel:#12101d; --panel2:#181426;
-    --line:#2a2440; --line2:#38304f;
-    --spectral:#3df0c0; --violet:#b15bff; --amber:#ffb454; --rose:#ff5c72; --good:#54e08a;
-    --text:#eae6f5; --muted:#9a8fb8; --faint:#8278a0;
+    --ink:#0a0e07; --ink2:#0f150b; --panel:#131b0d; --panel2:#1a2412;
+    --line:#25361a; --line2:#33471f;
+    --spectral:#7cfc00; --violet:#ffd21f; --amber:#ffb454; --rose:#ff4d6d; --good:#5bbd00;
+    --text:#e9f5df; --muted:#9fb389; --faint:#6f8557;
     --disp:"Chakra Petch",sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
   }
   *{box-sizing:border-box} html,body{margin:0}
   body{background:var(--ink); color:var(--text); font-family:var(--mono); font-size:14px; min-height:100vh; overflow-x:hidden;
-    background-image:radial-gradient(800px 460px at 90% -6%,rgba(61,240,192,.10),transparent 60%),radial-gradient(700px 440px at 2% 2%,rgba(177,91,255,.09),transparent 58%);}
+    background-image:radial-gradient(800px 460px at 90% -6%,rgba(124,252,0,.10),transparent 60%),radial-gradient(700px 440px at 2% 2%,rgba(255,210,31,.09),transparent 58%);}
   body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.3;
     background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
     background-size:38px 38px;mask-image:radial-gradient(1100px 640px at 72% 0%,#000,transparent 76%)}
@@ -29,16 +29,16 @@
 
   /* topbar */
   .top{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:16px;padding:14px 2px;margin-bottom:6px;
-    background:linear-gradient(180deg,rgba(8,7,13,.92),rgba(8,7,13,.6));backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-  .ghost{width:30px;height:30px;filter:drop-shadow(0 0 9px rgba(61,240,192,.5))}
+    background:linear-gradient(180deg,rgba(10,14,7,.92),rgba(10,14,7,.6));backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .ghost{width:30px;height:30px;filter:drop-shadow(0 0 9px rgba(124,252,0,.5))}
   .ghost .eye{animation:blink 6s infinite}@keyframes blink{0%,94%,100%{opacity:1}96%{opacity:.15}}
   .brand{font-family:var(--disp);font-weight:700;font-size:18px;letter-spacing:.07em}
-  .brand b{background:linear-gradient(100deg,var(--spectral),#bfe 55%,var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .brand b{background:linear-gradient(100deg,var(--spectral),#b6ff2e 55%,var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
   .host{font-size:12px;color:var(--muted);border-left:1px solid var(--line);padding-left:14px}
   .host b{color:var(--text);font-weight:600}
   .badge{margin-left:auto;font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:5px 11px;border-radius:20px;border:1px solid var(--line);display:flex;align-items:center;gap:6px}
   .badge::before{content:"";width:6px;height:6px;border-radius:50%}
-  .badge.live{color:var(--good);border-color:rgba(84,224,138,.4)}.badge.live::before{background:var(--good);box-shadow:0 0 7px var(--good);animation:pulse 1.8s infinite}
+  .badge.live{color:var(--good);border-color:rgba(124,252,0,.4)}.badge.live::before{background:var(--good);box-shadow:0 0 7px var(--good);animation:pulse 1.8s infinite}
   .badge.demo{color:var(--amber);border-color:rgba(255,180,84,.4)}.badge.demo::before{background:var(--amber)}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
   .tbtn{font-family:var(--mono);font-size:12px;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:8px 12px;cursor:pointer;transition:.15s}
@@ -91,7 +91,7 @@
   .sw:focus-visible{outline:2px solid var(--spectral);outline-offset:2px}
   .modes{display:flex;gap:6px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:5px;flex-wrap:wrap}
   .modes button{flex:1;min-width:70px;font-family:var(--mono);font-size:11.5px;color:var(--muted);background:none;border:0;border-radius:8px;padding:9px 6px;cursor:pointer;transition:.15s}
-  .modes button[aria-pressed="true"]{background:linear-gradient(120deg,var(--violet),var(--violet));color:#fff}
+  .modes button[aria-pressed="true"]{background:linear-gradient(120deg,var(--spectral),var(--violet));color:var(--ink);font-weight:600}
 
   /* clients */
   .clients{margin-top:16px}
@@ -101,7 +101,7 @@
   tr:last-child td{border-bottom:0}
   td .mac{color:var(--faint);font-size:11px}
   .tag{font-size:10px;padding:2px 7px;border-radius:20px;border:1px solid var(--line);color:var(--muted)}
-  .tag.w{color:var(--spectral);border-color:rgba(61,240,192,.4)}
+  .tag.w{color:var(--spectral);border-color:rgba(124,252,0,.4)}
 
   .demobar{margin:14px 0 0;padding:11px 14px;border-radius:12px;background:rgba(255,180,84,.08);border:1px solid rgba(255,180,84,.32);color:var(--amber);font-size:11.5px;line-height:1.5}
   footer{text-align:center;color:var(--faint);font-size:11px;padding:30px 0 0;margin-top:26px;border-top:1px solid var(--line)}
@@ -155,8 +155,8 @@
 
   <div class="top">
     <svg class="ghost" viewBox="0 0 40 40" fill="none" aria-hidden="true">
-      <path d="M20 4C11.7 4 6 10 6 18v16.5c0 1.4 1.6 2.2 2.7 1.4l2.6-1.9 2.7 2a2 2 0 0 0 2.4 0l2.6-2 2.6 2a2 2 0 0 0 2.4 0l2.7-2 2.6 1.9c1.1.8 2.7 0 2.7-1.4V18C34 10 28.3 4 20 4Z" fill="#12101d" stroke="#3df0c0" stroke-width="1.5"/>
-      <circle class="eye" cx="15" cy="18" r="2.4" fill="#3df0c0"/><circle class="eye" cx="25" cy="18" r="2.4" fill="#b15bff"/>
+      <path d="M20 4C11.7 4 6 10 6 18v16.5c0 1.4 1.6 2.2 2.7 1.4l2.6-1.9 2.7 2a2 2 0 0 0 2.4 0l2.6-2 2.6 2a2 2 0 0 0 2.4 0l2.7-2 2.6 1.9c1.1.8 2.7 0 2.7-1.4V18C34 10 28.3 4 20 4Z" fill="#131b0d" stroke="#7cfc00" stroke-width="1.5"/>
+      <circle class="eye" cx="15" cy="18" r="2.4" fill="#7cfc00"/><circle class="eye" cx="25" cy="18" r="2.4" fill="#ffd21f"/>
     </svg>
     <div class="brand disp"><b>SpookyWrt</b></div>
     <div class="host">host <b id="t-host">spookywrt</b> · up <b id="t-up">—</b></div>
@@ -313,17 +313,17 @@
   function gauge(lb,val,unit,pct,color){
     var circ=2*Math.PI*27, off=circ*(1-Math.min(100,pct)/100);
     return '<div class="gau"><div class="ring"><svg width="66" height="66">'+
-      '<circle cx="33" cy="33" r="27" fill="none" stroke="#2a2440" stroke-width="5"/>'+
+      '<circle cx="33" cy="33" r="27" fill="none" stroke="#25361a" stroke-width="5"/>'+
       '<circle cx="33" cy="33" r="27" fill="none" stroke="'+color+'" stroke-width="5" stroke-linecap="round" stroke-dasharray="'+circ.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'"/></svg>'+
       '<span class="n">'+Math.round(val)+(unit==='%'?'':'')+'</span></div>'+
       '<div class="meta"><div class="lb">'+lb+'</div><div class="v">'+Math.round(val)+unit+'</div></div></div>';
   }
   function renderCluster(){
     el('cluster').innerHTML=
-      gauge("CPU load",state.cpu,"%",state.cpu, state.cpu>85?"#ff5c72":"#3df0c0")+
-      gauge("Memory",state.mem,"%",state.mem, state.mem>80?"#ffb454":"#b15bff")+
-      gauge("Temp",state.temp,"°C",(state.temp-30)/50*100, state.temp>65?"#ff5c72":"#3df0c0")+
-      gauge("Uptime",Math.floor(state.up/3600),"h",Math.min(100,state.up/3600/24*100),"#b15bff");
+      gauge("CPU load",state.cpu,"%",state.cpu, state.cpu>85?"#ff4d6d":"#7cfc00")+
+      gauge("Memory",state.mem,"%",state.mem, state.mem>80?"#ffb454":"#ffd21f")+
+      gauge("Temp",state.temp,"°C",(state.temp-30)/50*100, state.temp>65?"#ff4d6d":"#7cfc00")+
+      gauge("Uptime",Math.floor(state.up/3600),"h",Math.min(100,state.up/3600/24*100),"#ffd21f");
     el('c-clock').textContent=new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
     el('thr-rx').textContent='↓ '+state.rx.toFixed(0)+' Mb/s';
     el('thr-tx').textContent='↑ '+state.tx.toFixed(0)+' Mb/s';
@@ -333,8 +333,8 @@
     var W=320,H=60,n=state.hist.length; if(n<2){el('spark').innerHTML='';return;}
     function path(key,max){var p='';state.hist.forEach(function(h,i){var x=i/(n-1)*W, y=H-Math.min(1,h[key]/max)*(H-4)-2; p+=(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1);});return p;}
     el('spark').innerHTML=
-      '<path d="'+path('rx',940)+'" fill="none" stroke="#3df0c0" stroke-width="1.6"/>'+
-      '<path d="'+path('tx',940)+'" fill="none" stroke="#b15bff" stroke-width="1.6" opacity=".9"/>';
+      '<path d="'+path('rx',940)+'" fill="none" stroke="#7cfc00" stroke-width="1.6"/>'+
+      '<path d="'+path('tx',940)+'" fill="none" stroke="#ffd21f" stroke-width="1.6" opacity=".9"/>';
   }
   function renderClients(){
     el('cl-count').textContent=CLIENTS.length+' devices';
