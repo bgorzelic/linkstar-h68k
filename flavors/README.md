@@ -7,7 +7,7 @@ A **release** is a combination of a **track** (which OS) and, for the Ubuntu tra
 |---------|-------|-----------|-------|
 | **ubuntu-desktop** | Ubuntu | base image (LXQt) → [`desktop.sh`](desktop.sh) | the stock experience |
 | **ubuntu-server** | Ubuntu | base → [`server.sh`](server.sh) (strips desktop) | headless, smaller |
-| **ubuntu-casaos** | Ubuntu | base → [`casaos.sh`](casaos.sh) (CasaOS + Docker) | home-server / personal-cloud web UI |
+| **ubuntu-casaos** | Ubuntu | base → [`casaos.sh`](casaos.sh) (CasaOS + Docker) | home-server web UI — see [casaos](../docs/casaos.md) |
 | **openwrt** | OpenWRT | vendor / community raw image | router / firewall — see [alternative-os](../docs/alternative-os.md) |
 | **android** | Android | vendor RKFW → eMMC | media / TV box — see [flash-emmc-windows](../docs/flash-emmc-windows.md) |
 

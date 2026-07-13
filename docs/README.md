@@ -36,7 +36,9 @@ either verified on real hardware or is clearly marked as unverified.
   release process, the track/flavor matrix, versioning, and how to add new tracks.
 - **[Upgrading Ubuntu in place](upgrading.md)** — 20.04 → 22.04 → 24.04 safely: the
   distro-upgrade path, the gotchas, and rollback.
-- **[Flavors & the release matrix](../flavors/README.md)** — desktop / server variants
-  and how a flavored image is built.
+- **[Flavors & the release matrix](../flavors/README.md)** — desktop / server / casaos
+  variants and how a flavored image is built.
+- **[CasaOS flavor](casaos.md)** — the home-server / personal-cloud web UI: install, first
+  boot, and firewall.
 
 Contributions welcome — see [`../CONTRIBUTING.md`](../CONTRIBUTING.md).
