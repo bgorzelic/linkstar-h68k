@@ -1,5 +1,7 @@
 # Flash Ubuntu to the LinkStar H68K from a Mac (no maskrom, no Windows)
 
+<sub>[Home](../README.md) › [Docs](README.md) › Flash from a Mac</sub>
+
 The vendor instructions require Windows + RKDevTool + entering maskrom mode to
 write eMMC. **You don't need any of that.** The H68K boots from microSD with
 priority, so you can lay the Ubuntu system onto an SD card from a Mac (or Linux)

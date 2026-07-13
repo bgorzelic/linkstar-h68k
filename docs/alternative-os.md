@@ -1,5 +1,7 @@
 # Running other operating systems
 
+<sub>[Home](../README.md) › [Docs](README.md) › Other OSes</sub>
+
 The H68K is not locked to the vendor Ubuntu. It's a mainstream RK3568 board, so it
 runs **OpenWRT, Armbian, Debian, and Android** too. There are two families of images,
 and they flash very differently:

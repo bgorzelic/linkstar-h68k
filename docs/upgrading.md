@@ -1,5 +1,7 @@
 # Upgrading Ubuntu in place (20.04 → 22.04 → 24.04)
 
+<sub>[Home](../README.md) › [Docs](README.md) › Upgrading</sub>
+
 You can upgrade the Ubuntu **userland** to a newer LTS while the board keeps booting its
 **vendor 4.19 kernel** (which lives in `boot.img`, not apt). This usually works — glibc
 and systemd are fine on a 4.19 kernel — but it's the riskiest thing you can do to a

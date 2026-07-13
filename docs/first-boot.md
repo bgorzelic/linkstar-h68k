@@ -1,5 +1,7 @@
 # First boot
 
+<sub>[Home](../README.md) › [Docs](README.md) › First boot</sub>
+
 What to expect the first time a LinkStar H68K boots the stock Ubuntu image, and how
 to get it into a sane, secure state fast.
 

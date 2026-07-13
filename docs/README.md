@@ -1,11 +1,27 @@
 # LinkStar H68K Documentation
 
+<sub>[← Home](../README.md) › Docs</sub>
+
 The complete guide to the Seeed Studio LinkStar H68K (RK3568). Everything here was
 either verified on real hardware or is clearly marked as unverified.
 
 <p align="center">
   <img src="../assets/diagrams/workflow.svg" alt="The complete LinkStar H68K workflow: vendor firmware → flash (SD no-maskrom or eMMC) → boot + baseline fixes → optional upgrade to 24.04 → flavor (desktop/server/casaos) → release; plus the OpenWRT/Armbian raw-image shortcut and a gotchas-and-fixes band (black screen, DHCP, DNS, clock drift, 2.5G driver, insecure defaults)." width="100%">
 </p>
+
+## Pick your path
+
+| I want to… | Go to |
+|------------|-------|
+| Flash Ubuntu the easy way | [Flash from a Mac](flash-ubuntu-sd-from-mac.md) |
+| Install to eMMC / use Windows | [eMMC over USB](flash-emmc-windows.md) |
+| Run OpenWRT, Armbian, or another Linux | [Other operating systems](alternative-os.md) |
+| Set up a desktop / server / home cloud | [Flavors](../flavors/README.md) · [CasaOS](casaos.md) |
+| Secure a running unit | [Hardening](hardening.md) |
+| Fix networking / DNS / no-IP | [Networking](networking.md) · [Known issues](known-issues.md) |
+| Upgrade Ubuntu to the latest | [Upgrading](upgrading.md) |
+| Understand the boot process | [How it works](how-it-works.md) |
+| Build & publish a release | [Releasing](releasing.md) |
 
 ## Start here
 

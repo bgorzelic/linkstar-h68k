@@ -1,5 +1,7 @@
 # CasaOS home-server flavor
 
+<sub>[Home](../README.md) › [Docs](README.md) › CasaOS</sub>
+
 [CasaOS](https://casaos.io/) turns the H68K into a **personal cloud / home server** — a
 clean web dashboard with a Docker-based app store (Nextcloud, Jellyfin, Home Assistant,
 the *arr stack, etc.), file management, and storage pooling. It's the `casaos`

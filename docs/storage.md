@@ -1,5 +1,7 @@
 # Storage
 
+<sub>[Home](../README.md) › [Docs](README.md) › Storage</sub>
+
 The H68K has **two independent storage devices**, and understanding the split is the
 key to flashing it safely.
 

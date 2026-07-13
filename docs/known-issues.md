@@ -1,5 +1,7 @@
 # Known Issues & Fixes
 
+<sub>[Home](../README.md) › [Docs](README.md) › Known issues</sub>
+
 Two categories: **driver bugs** the vendor shipped, and **insecure defaults** in the
 stock Ubuntu image. Everything here was observed on real hardware or taken from the
 official release note; fixes are scripted where possible.

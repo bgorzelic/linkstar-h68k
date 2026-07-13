@@ -1,5 +1,7 @@
 # Hardening
 
+<sub>[Home](../README.md) › [Docs](README.md) › Hardening</sub>
+
 The stock LinkStar H68K image is **insecure by default**. This is the companion to
 [`../scripts/harden.sh`](../scripts/harden.sh) — what's wrong, what the script fixes,
 and how to verify.

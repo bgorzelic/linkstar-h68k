@@ -1,5 +1,7 @@
 # Flashing to eMMC over USB (Windows & Linux/macOS)
 
+<sub>[Home](../README.md) › [Docs](README.md) › eMMC over USB</sub>
+
 The [SD-from-a-Mac path](flash-ubuntu-sd-from-mac.md) is the easy way to *run* an OS.
 But sometimes you want to write the board's **internal eMMC** — a permanent install
 that boots with no card inserted, a factory restore, or putting OpenWRT/Android on

@@ -1,5 +1,7 @@
 # How LinkStar H68K SD boot works (RK3568 internals)
 
+<sub>[Home](../README.md) › [Docs](README.md) › How it works</sub>
+
 The deep version of why the [flash guide](flash-ubuntu-sd-from-mac.md) does what
 it does. Everything here was verified on a live unit, not taken from spec.
 

@@ -1,5 +1,7 @@
 # Flashing & Recovery
 
+<sub>[Home](../README.md) › [Docs](README.md) › Flashing & recovery</sub>
+
 The LinkStar H68K can run from **microSD** or from its **onboard eMMC**. There are
 three situations you might be in — pick the matching path.
 

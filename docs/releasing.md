@@ -1,5 +1,7 @@
 # Releasing (reproducible builds)
 
+<sub>[Home](../README.md) › [Docs](README.md) › Releasing</sub>
+
 How to cut a release so anyone — including future-you building the next OS version —
 gets the **same artifacts from the same inputs**. Reproducibility rests on three
 pins:

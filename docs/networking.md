@@ -1,5 +1,7 @@
 # Networking
 
+<sub>[Home](../README.md) › [Docs](README.md) › Networking</sub>
+
 The H68K is a four-port box, and its networking has a few sharp edges worth knowing —
 the mixed NIC chipsets, a subnet-discovery quirk, and the vendor image's DHCP mess.
 

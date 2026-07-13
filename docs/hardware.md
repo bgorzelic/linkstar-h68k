@@ -1,5 +1,7 @@
 # Hardware
 
+<sub>[Home](../README.md) › [Docs](README.md) › Hardware</sub>
+
 <p align="center">
   <img src="../assets/h68k-infographic.svg" alt="LinkStar H68K hardware overview" width="100%">
 </p>
