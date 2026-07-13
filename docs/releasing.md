@@ -64,6 +64,7 @@ Tag as `<track>[-<flavor>]-<osversion>/v<major>.<minor>` so tracks *and* flavors
 | `ubuntu-desktop-20.04` | **v0.1.0 (current)** | Stock Lubuntu 20.04 (LXQt), hardened |
 | `ubuntu-desktop-24.04` | in progress | In-place upgrade to 24.04 ([upgrading.md](upgrading.md)), then release |
 | `ubuntu-server-24.04` | in progress | Headless flavor ([`flavors/server.sh`](../flavors/server.sh)) |
+| `ubuntu-casaos-24.04` | in progress | CasaOS home-server UI ([`flavors/casaos.sh`](../flavors/casaos.sh)) |
 | `openwrt` | planned | OpenWRT / LuCI (image catalogued) |
 | `android` | planned | Vendor Android → eMMC |
 | *(Armbian / Debian)* | exploratory | Community raw images — [alternative-os.md](alternative-os.md) |

@@ -12,6 +12,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=../scripts/lib/common.sh
 source "$SCRIPT_DIR/../scripts/lib/common.sh"
 
+# shellcheck disable=SC2034  # DRY_RUN is consumed by run() in ../scripts/lib/common.sh
 [ "${1:-}" = "--dry-run" ] && DRY_RUN=1
 require_root
 require_cmd apt-get systemctl

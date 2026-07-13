@@ -8,9 +8,9 @@ tags (`<track>/vX.Y`); see [docs/releasing.md](docs/releasing.md).
 
 ### Added
 
-- **Release matrix / flavors** (`flavors/`) — `desktop` and `server` flavors of the
-  Ubuntu track, a build workflow, and a `<track>[-<flavor>]-<osversion>` tag scheme
-  (see `flavors/README.md`).
+- **Release matrix / flavors** (`flavors/`) — `desktop`, `server`, and `casaos` (CasaOS
+  home-server UI) flavors of the Ubuntu track, a build workflow, and a
+  `<track>[-<flavor>]-<osversion>` tag scheme (see `flavors/README.md`).
 - **`docs/upgrading.md`** — in-place distro-upgrade guide (20.04 → 22.04 → 24.04) with
   the real gotchas and rollback.
 

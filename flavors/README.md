@@ -7,10 +7,11 @@ A **release** is a combination of a **track** (which OS) and, for the Ubuntu tra
 |---------|-------|-----------|-------|
 | **ubuntu-desktop** | Ubuntu | base image (LXQt) → [`desktop.sh`](desktop.sh) | the stock experience |
 | **ubuntu-server** | Ubuntu | base → [`server.sh`](server.sh) (strips desktop) | headless, smaller |
+| **ubuntu-casaos** | Ubuntu | base → [`casaos.sh`](casaos.sh) (CasaOS + Docker) | home-server / personal-cloud web UI |
 | **openwrt** | OpenWRT | vendor / community raw image | router / firewall — see [alternative-os](../docs/alternative-os.md) |
 | **android** | Android | vendor RKFW → eMMC | media / TV box — see [flash-emmc-windows](../docs/flash-emmc-windows.md) |
 
-**Flavors** apply only to the Ubuntu track (`desktop`, `server`). **OpenWRT** and
+**Flavors** apply only to the Ubuntu track (`desktop`, `server`, `casaos`). **OpenWRT** and
 **Android** are separate tracks — different base images we document and mirror, not build
 from the Ubuntu rootfs.
 
@@ -38,6 +39,7 @@ Verify it boots on a real unit before tagging the release. See
 
 - `ubuntu-desktop-24.04/v0.2.0`
 - `ubuntu-server-24.04/v0.2.0`
+- `ubuntu-casaos-24.04/v0.2.0`
 - `openwrt/v0.2.0`
 - `android/v0.2.0`
 
