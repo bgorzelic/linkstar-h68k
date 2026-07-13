@@ -12,6 +12,18 @@ build.
 > ([source](../webui/index.html)) builds a recipe and generates a first-boot script for you —
 > a click-driven front end to everything below.
 
+## First-time setup over Wi-Fi (no cable)
+
+A freshly flashed SpookyWrt raises an **open onboarding AP named `SpookyWrt-Setup`** on first
+boot (deferred until the MT7921 driver loads). Join it from a phone or laptop, open
+**`http://192.168.1.1`**, and configure the box via LuCI, the
+[on-device dashboard](webui/index.html), or `spooky-setup`. As soon as you set your own Wi-Fi
+the setup AP **retires itself** (or run `spooky-setup-done`).
+
+Implemented in [`setup-ap.sh`](setup-ap.sh) (appended to first-boot on every build). It's open
+because it's transient and onboarding-only — set a WPA key in the wizard, and complete setup
+promptly. No Wi-Fi radio (e.g. a no-Wi-Fi H68K SKU)? Use a LAN cable to `192.168.1.1` instead.
+
 ## What's here
 
 | File | Purpose |
@@ -20,6 +32,8 @@ build.
 | `first-boot.sh` | The `uci-defaults` first-boot script — branded banner + MOTD, `eth0`=WAN topology, NTP (no RTC), and a deferred Wi-Fi-AP setup. |
 | `first-boot-full.sh` | The flagship variant — also installs the `spooky-setup` wizard onto the device. |
 | `spooky-setup` | An on-device onboarding wizard (POSIX/ash): Express or Advanced, every network change under a **rollback timer** so you can't lock yourself out. |
+| `setup-ap.sh` | First-boot onboarding: raises the open `SpookyWrt-Setup` Wi-Fi AP so you can configure the box with no cable; self-retires after setup. |
+| `wifi-audit/firstboot.sh` | The `wifi-audit` variant's consent gate + boot-safety (services-off). |
 
 ## The on-device dashboard
 

@@ -95,6 +95,11 @@ def main():
     # B1: read the first-boot script from the repo, not a manually-staged /tmp copy
     fb = Path(__file__).parent / "first-boot-full.sh"
     defaults = fb.read_text() if fb.exists() else (WORK / "first-boot-full.sh").read_text()
+    # onboarding: an unconfigured box raises a "SpookyWrt-Setup" AP so you can configure
+    # it over Wi-Fi with no cable (self-disables once you set your own Wi-Fi).
+    setup_ap = Path(__file__).parent / "setup-ap.sh"
+    if setup_ap.exists():
+        defaults += "\n\n# ---- SpookyWrt-Setup onboarding AP ----\n" + setup_ap.read_text()
     if variant == "wifi-audit":
         # append the fail-closed consent gate (spookywrt/wifi-audit/firstboot.sh)
         gate = Path(__file__).parent / "wifi-audit" / "firstboot.sh"

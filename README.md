@@ -47,6 +47,7 @@ read the whole thing.
 | I want to… | Start here |
 |------------|-----------|
 | 🎛️ **Configure my box the easy way** (visual) | [SpookyWrt Control WebUI](https://bgorzelic.github.io/linkstar-h68k/webui/) |
+| 📶 **Set it up over Wi-Fi, no cable** | Join `SpookyWrt-Setup` → [`http://192.168.1.1`](./spookywrt/README.md#first-time-setup-over-wi-fi-no-cable) |
 | 🟢 **Just get Ubuntu running** on my H68K | [Flash it from a Mac](./docs/flash-ubuntu-sd-from-mac.md) |
 | 🔒 **Secure a unit I already have** (it ships wide open) | [Hardening](./docs/hardening.md) |
 | 🖥️ **Run a desktop, server, or home cloud** | [Flavors](./flavors/README.md) · [CasaOS](./docs/casaos.md) |
