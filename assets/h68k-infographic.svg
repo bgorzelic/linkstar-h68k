@@ -120,20 +120,20 @@
       <text x="148" y="28" fill="#3fb950">Flash from a Mac</text>
     </g>
     <g>
-      <rect x="252" y="0" width="176" height="44" rx="22" fill="#0d1f33" stroke="#1f6feb"/>
-      <text x="340" y="28" fill="#58a6ff">Secure by default</text>
+      <rect x="281" y="0" width="176" height="44" rx="22" fill="#0d1f33" stroke="#1f6feb"/>
+      <text x="369" y="28" fill="#58a6ff">Secure by default</text>
     </g>
     <g>
-      <rect x="444" y="0" width="204" height="44" rx="22" fill="#2b1d33" stroke="#8957e5"/>
-      <text x="546" y="28" fill="#bc8cff">Internals documented</text>
+      <rect x="502" y="0" width="204" height="44" rx="22" fill="#2b1d33" stroke="#8957e5"/>
+      <text x="604" y="28" fill="#bc8cff">Internals documented</text>
     </g>
     <g>
-      <rect x="664" y="0" width="212" height="44" rx="22" fill="#33230d" stroke="#bb8009"/>
-      <text x="770" y="28" fill="#e3b341">Checksummed firmware</text>
+      <rect x="751" y="0" width="212" height="44" rx="22" fill="#33230d" stroke="#bb8009"/>
+      <text x="857" y="28" fill="#e3b341">Checksummed firmware</text>
     </g>
     <g>
-      <rect x="892" y="0" width="132" height="44" rx="22" fill="#161b22" stroke="#30363d"/>
-      <text x="958" y="28" fill="#e6edf3">Open source</text>
+      <rect x="1008" y="0" width="132" height="44" rx="22" fill="#161b22" stroke="#30363d"/>
+      <text x="1074" y="28" fill="#e6edf3">Open source</text>
     </g>
   </g>
 </svg>
