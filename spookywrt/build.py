@@ -114,7 +114,7 @@ def main():
         defaults += "\n\n# ---- SpookyWrt-Setup onboarding AP ----\n" + setup_ap.read_text()
     # install on-device helper commands into /usr/bin (verbatim, via quoted heredoc so
     # their $vars expand on the device, not at build time).
-    for tool in ("spooky", "spooky-capture"):
+    for tool in ("spooky", "spooky-capture", "spooky-vpn"):
         tp = Path(__file__).parent / tool
         if tp.exists():
             d = "SPOOKYTOOL_" + tool.replace("-", "_")

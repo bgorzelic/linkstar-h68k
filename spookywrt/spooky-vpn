@@ -1,0 +1,109 @@
+#!/bin/sh
+# spooky-vpn — import any VPN provider into SpookyWrt (WireGuard or OpenVPN) with a kill-switch.
+#
+#   spooky-vpn wg   <file.conf>            import a WireGuard config (Mullvad/Proton/IVPN/Surfshark/Windscribe)
+#   spooky-vpn ovpn <file.ovpn> [user pass] import an OpenVPN config (Nord/PIA/ExpressVPN)
+#   spooky-vpn kill  on|off                enable/disable the kill-switch (block LAN→WAN unless via VPN)
+#   spooky-vpn up|down                     bring the tunnel up/down
+#   spooky-vpn status                      show tunnel + public IP
+#
+# The tunnel goes in firewall zone 'vpn' (masqueraded, forwarded from LAN). Kill-switch drops
+# LAN→WAN so nothing leaks if the tunnel is down. Pair with `pbr` for split-tunnel (per-device routing).
+set -u
+IF=vpn
+
+msg(){ echo "▚ $*"; }
+die(){ echo "✗ $*" >&2; exit 1; }
+
+ensure_zone(){
+  # firewall zone 'vpn' bound to the tunnel, masq + MTU fix, LAN forwards into it
+  if ! uci -q show firewall | grep -q "name='vpn'"; then
+    uci -q add firewall zone >/dev/null
+    uci -q set firewall.@zone[-1].name='vpn'
+    uci -q set firewall.@zone[-1].input='REJECT'
+    uci -q set firewall.@zone[-1].output='ACCEPT'
+    uci -q set firewall.@zone[-1].forward='REJECT'
+    uci -q set firewall.@zone[-1].masq='1'
+    uci -q set firewall.@zone[-1].mtu_fix='1'
+    uci -q add_list firewall.@zone[-1].network="$IF"
+    uci -q add firewall forwarding >/dev/null
+    uci -q set firewall.@forwarding[-1].src='lan'
+    uci -q set firewall.@forwarding[-1].dest='vpn'
+    uci -q commit firewall
+  fi
+}
+
+import_wg(){
+  f="$1"; [ -f "$f" ] || die "no such file: $f"
+  # split on the FIRST '=' only — base64 keys END in '=', so never use awk -F'= *' here
+  val(){ sed -n "s/^[[:space:]]*$1[[:space:]]*=[[:space:]]*//p" "$f" | head -1; }
+  pk=$(val PrivateKey); pub=$(val PublicKey)
+  addr=$(val Address | tr -d ' '); dns=$(val DNS | tr -d ' ')
+  ep=$(val Endpoint | tr -d ' '); aips=$(val AllowedIPs | tr -d ' ')
+  [ -n "$pk" ] && [ -n "$pub" ] && [ -n "$ep" ] || die "not a valid WireGuard config"
+  ehost=${ep%:*}; eport=${ep##*:}
+  msg "WireGuard → endpoint $ehost:$eport"
+  uci -q delete network.$IF 2>/dev/null
+  while uci -q delete network.@wireguard_${IF}[0] 2>/dev/null; do :; done
+  uci -q set network.$IF=interface
+  uci -q set network.$IF.proto=wireguard
+  uci -q set network.$IF.private_key="$pk"
+  for a in $(echo "$addr" | tr ',' ' '); do uci -q add_list network.$IF.addresses="$a"; done
+  [ -n "$dns" ] && uci -q set network.$IF.dns="$(echo "$dns" | tr ',' ' ')"
+  # peer section type is 'wireguard_<iface>' — netifd auto-associates it; no 'peers' option needed
+  s=$(uci -q add network wireguard_$IF)
+  uci -q set network.$s.public_key="$pub"
+  uci -q set network.$s.endpoint_host="$ehost"
+  uci -q set network.$s.endpoint_port="$eport"
+  uci -q set network.$s.route_allowed_ips=1
+  uci -q set network.$s.persistent_keepalive=25
+  for a in $(echo "${aips:-0.0.0.0/0}" | tr ',' ' '); do uci -q add_list network.$s.allowed_ips="$a"; done
+  uci -q commit network
+  ensure_zone
+  /etc/init.d/network reload
+  msg "imported. bring up:  spooky-vpn up   ·  then optionally:  spooky-vpn kill on"
+}
+
+import_ovpn(){
+  f="$1"; [ -f "$f" ] || die "no such file: $f"
+  grep -qE '^remote |BEGIN CERTIFICATE' "$f" || die "not a valid OpenVPN config"
+  mkdir -p /etc/openvpn; cp "$f" /etc/openvpn/$IF.ovpn
+  if [ -n "${2:-}" ]; then
+    printf '%s\n%s\n' "$2" "$3" > /etc/openvpn/$IF.auth; chmod 600 /etc/openvpn/$IF.auth
+    sed -i '/^auth-user-pass$/d' /etc/openvpn/$IF.ovpn
+    grep -q "auth-user-pass /etc/openvpn/$IF.auth" /etc/openvpn/$IF.ovpn || echo "auth-user-pass /etc/openvpn/$IF.auth" >> /etc/openvpn/$IF.ovpn
+  else
+    msg "no creds given — add them to /etc/openvpn/$IF.auth (line1 user, line2 pass) then: spooky-vpn up"
+  fi
+  uci -q set openvpn.$IF=openvpn
+  uci -q set openvpn.$IF.enabled=1
+  uci -q set openvpn.$IF.config=/etc/openvpn/$IF.ovpn
+  uci -q commit openvpn
+  ensure_zone
+  msg "imported. bring up:  spooky-vpn up"
+}
+
+killswitch(){
+  case "$1" in
+    on)  uci -q set firewall.spooky_ks=rule
+         uci -q set firewall.spooky_ks.name='spooky-killswitch'
+         uci -q set firewall.spooky_ks.src='lan'; uci -q set firewall.spooky_ks.dest='wan'
+         uci -q set firewall.spooky_ks.proto='all'; uci -q set firewall.spooky_ks.target='REJECT'
+         uci -q commit firewall; /etc/init.d/firewall reload
+         msg "kill-switch ON — LAN can only reach the internet through the VPN";;
+    off) uci -q delete firewall.spooky_ks 2>/dev/null; uci -q commit firewall; /etc/init.d/firewall reload
+         msg "kill-switch OFF";;
+  esac
+}
+
+case "${1:-status}" in
+  wg)     import_wg "$2";;
+  ovpn)   import_ovpn "$2" "${3:-}" "${4:-}";;
+  kill)   killswitch "${2:-on}";;
+  up)     ifup $IF 2>/dev/null; /etc/init.d/openvpn restart 2>/dev/null; sleep 4; $0 status;;
+  down)   ifdown $IF 2>/dev/null; /etc/init.d/openvpn stop 2>/dev/null; msg "tunnel down";;
+  status) echo "tun ifaces: $(ip -br link 2>/dev/null | grep -oE 'tun[0-9]+|wg[0-9]+|vpn' | tr '\n' ' ')"
+          echo "public IP:  $(curl -s -m6 https://api.ipify.org 2>/dev/null || echo '?')"
+          echo "kill-switch: $(uci -q get firewall.spooky_ks.name >/dev/null 2>&1 && echo ON || echo off)";;
+  *) sed -n '2,12p' "$0";;
+esac

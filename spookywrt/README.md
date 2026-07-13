@@ -50,6 +50,7 @@ promptly. No Wi-Fi radio (e.g. a no-Wi-Fi H68K SKU)? Use a LAN cable to `192.168
 | `spooky` | The **control shell** — a menu-driven config + troubleshooting TUI for SSH/console. Status, network, Wi-Fi, diagnostics, services, capture, VPN, and a diag bundle in one command. |
 | `spooky-setup` | An on-device onboarding wizard (POSIX/ash): Express or Advanced, every network change under a **rollback timer** so you can't lock yourself out. |
 | `spooky-capture` | Dead-simple packet capture (`tcpdump` wrapper) — auto-saves to a USB stick or a RAM ring buffer, prints the retrieval line. |
+| `spooky-vpn` | Import **any** VPN provider (WireGuard *or* OpenVPN — NordLynx/Mullvad/Proton/PIA/Express…) into a firewall zone with a one-command kill-switch. `spooky vpn` delegates to it. |
 | `setup-ap.sh` | First-boot onboarding: raises the open `SpookyWrt-Setup` Wi-Fi AP so you can configure the box with no cable; self-retires after setup. |
 | `wifi-audit/firstboot.sh` | The `wifi-audit` variant's consent gate + boot-safety (services-off). |
 | `luci-theme-spooky/` | The **SpookyJuice-branded LuCI theme** — repaints the on-device OpenWRT web UI (slime-green on near-black). Installed to `/www/luci-static/spooky/` by first-boot; LuCI points at it automatically. |

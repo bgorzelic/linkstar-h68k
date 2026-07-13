@@ -78,5 +78,7 @@ either verified on real hardware or is clearly marked as unverified.
   reality, and which USB adapters actually work.
 - **[Packet capture & VPN/mesh](capture-and-vpn.md)** — dump traffic to Wireshark, and Tailscale /
   WireGuard / OpenVPN / ZeroTier + split-tunnel (PBR) setup.
+- **[VPN providers](vpn-providers.md)** — import Mullvad/Proton/Nord/PIA/etc. (WireGuard or OpenVPN)
+  with a kill-switch, via `spooky-vpn`.
 
 Contributions welcome — see [`../CONTRIBUTING.md`](../CONTRIBUTING.md).
