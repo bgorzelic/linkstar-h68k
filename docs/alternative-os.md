@@ -50,10 +50,26 @@ Community Armbian images target `rk3568-opc-h68k` and ship a modern kernel, so t
 - **Flash:** it's a raw sysupgrade image — `dd`/Etcher to SD, or flash to eMMC via RKDevTool.
 - **Access:** LuCI web UI; default mapping `eth0` = WAN, the rest LAN; login `root` / `password`.
 
-## Android 11 — media / TV box
+## Android — media / TV box (and the Wi-Fi reality)
 
-Vendor Android (R22.11.17) flashes to **eMMC** via RKDevTool — see
-[flash-emmc-windows.md](flash-emmc-windows.md). Best for HDMI media-player use.
+The vendor ships **Android 11** (R22.11.17), flashed to **eMMC** via RKDevTool — see
+[flash-emmc-windows.md](flash-emmc-windows.md). Good for an HDMI media-player / TV box.
+
+**Internal Wi-Fi does not work on it.** Vendor Android 11 runs the **4.19 vendor kernel**,
+which has no MT7921 driver (`mt7921e` landed upstream in kernel 5.12) — the same wall as the
+vendor Ubuntu (see [known-issues.md](known-issues.md), "Wi-Fi & Access Point").
+
+**"What's the latest Android with working internal Wi-Fi?"** — the most-asked question here's
+the honest answer:
+
+- RK3568 as a chip supports up to **Android 14** (Rockchip's Android 13/14 SDKs use kernel
+  5.10, which *can* carry a back-ported MT7921 driver).
+- But there is **no published, turnkey H68K Android image with confirmed internal Wi-Fi.**
+  Getting it means **building Android 13/14 from the Rockchip RK3568 SDK** with the MT7921
+  driver enabled and the H68K device tree — real work, and unverified on this exact board.
+- **If you want Wi-Fi + everything working, don't pick Android — pick OpenWRT (router/AP) or
+  Armbian (general Linux).** Both ship a kernel new enough for the MT7921 driver. Internal
+  Wi-Fi is a *kernel-version* limit, not something the OS userland can fix.
 
 ## How to flash a raw image (the simple path)
 

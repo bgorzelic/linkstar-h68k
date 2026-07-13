@@ -44,6 +44,9 @@ Open an extra `--allow-port` for each app you expose (e.g. `8096` for Jellyfin).
 - As a NAS/media box, CasaOS benefits from the **2.5 GbE** ports — but those need a
   mainline kernel (the vendor 4.19 kernel has the driver bug). On the stock image you may
   be limited to the 1 GbE ports; the [Armbian route](alternative-os.md) gets 2.5 G working.
+- **No internal Wi-Fi.** CasaOS runs on our Ubuntu (the vendor **4.19** kernel), which has no
+  MT7921 driver — so it's **wired-only**. For CasaOS *with* Wi-Fi, install it on an **Armbian
+  mainline** base (kernel ≥ 5.12). See [known-issues.md](known-issues.md).
 
 ## Uninstall / revert
 
