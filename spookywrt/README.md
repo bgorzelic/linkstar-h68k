@@ -51,7 +51,7 @@ promptly. No Wi-Fi radio (e.g. a no-Wi-Fi H68K SKU)? Use a LAN cable to `192.168
 | `spooky-setup` | An on-device onboarding wizard (POSIX/ash): Express or Advanced, every network change under a **rollback timer** so you can't lock yourself out. |
 | `spooky-capture` | Dead-simple packet capture (`tcpdump` wrapper) — auto-saves to a USB stick or a RAM ring buffer, prints the retrieval line. |
 | `spooky-vpn` | Import **any** VPN provider (WireGuard *or* OpenVPN — NordLynx/Mullvad/Proton/PIA/Express…) into a firewall zone with a one-command kill-switch. `spooky vpn` delegates to it. |
-| `spooky-agent` | **Lightweight Claude Code for the router** (`--profile ai`) — an LLM agent with 8 read-only tools that inspect real device state. `spooky chat` (REPL) or `spooky ai ask "…"` (one-shot). Pure stdlib. |
+| `spooky-agent` | **Lightweight Claude Code for the router** (core — in every edition) — an LLM agent with 8 read-only tools that inspect real device state. `spooky chat` (REPL) or `spooky ai ask "…"` (one-shot). Pure stdlib. |
 | `setup-ap.sh` | First-boot onboarding: raises the open `SpookyWrt-Setup` Wi-Fi AP so you can configure the box with no cable; self-retires after setup. |
 | `wifi-audit/firstboot.sh` | The `wifi-audit` variant's consent gate + boot-safety (services-off). |
 | `luci-theme-spooky/` | The **SpookyJuice-branded LuCI theme** — repaints the on-device OpenWRT web UI (slime-green on near-black). Installed to `/www/luci-static/spooky/` by first-boot; LuCI points at it automatically. |
@@ -90,43 +90,55 @@ python3 spookywrt/build.py        # prints the image URL + SHA256 when done
 
 Then flash the downloaded `*-squashfs-sysupgrade.img.gz` to a microSD (`dd`/Etcher) and boot.
 
-### Build variants
+### Editions — one core, four flavors
+
+SpookyWrt ships in **editions** (it's an energy drink 👻): one shared core — LuCI + the
+SpookyJuice theme, the `spooky` control shell, `spooky-vpn`/`spooky-capture`, the on-device
+`spooky-agent`, hardening defaults — with a per-edition package delta and UI mode.
 
 ```bash
-python3 spookywrt/build.py                        # flagship (default, lean)
-python3 spookywrt/build.py --profile wifi-audit   # + monitor/injection drivers + audit tools
-python3 spookywrt/build.py --profile vpn          # + OpenVPN + ZeroTier (on top of WG/Tailscale)
-python3 spookywrt/build.py --profile ai           # + python3 + spooky-agent (router LLM)
+python3 spookywrt/build.py                          # poltergeist (Pro, default)
+python3 spookywrt/build.py --profile casper         # Basic  — lean appliance, Basic mode
+python3 spookywrt/build.py --profile poltergeist    # Pro    — full console + VPN/capture (alias: pro, flagship)
+python3 spookywrt/build.py --profile reaper         # Hacker — injection+audit, SEPARATE image (alias: wifi-audit)
+python3 spookywrt/build.py --profile seance         # Dev    — Pro + dev tools, agent as coding buddy
+python3 spookywrt/build.py --help                   # list editions
 ```
 
-The **`wifi-audit`** variant adds a monitor-mode/injection driver zoo (mt76 / ath9k / rt2800),
-audit tooling (aircrack-ng, hcxdumptool, reaver, horst), best-of-flavor extras (multi-WAN,
-band-steering, travelmate, DoH, DDNS, bandwidth graphs) and the 6 GHz-capable `wpad-mbedtls`.
-It's **opt-in on purpose** — kept out of the default image so the flagship stays lean and the
-attack surface is a deliberate choice.
+| Edition (flavor) | Audience | Adds over core | UI mode |
+|------------------|----------|----------------|---------|
+| **Basic — "Casper"** | anyone; appliance | *(core only — drops NAS/AdGuard/SQM heavy apps)* | Basic |
+| **Pro — "Poltergeist"** *(default)* | prosumer / net engineer | Samba, AdGuard, SQM, banIP, full VPN engines, multi-WAN, statistics, profiler-ready | Advanced |
+| **Hacker — "Reaper"** *(separate image)* | authorized audit / CTF | injection driver zoo + aircrack-ng/hcxdumptool/reaver/horst + 6 GHz `wpad-mbedtls` | Advanced |
+| **Dev — "Séance"** | builders / tinkerers | Pro + `git` + on-device coding-buddy agent | Advanced |
+
+The agent is **core** — every edition can be driven in plain English; on **Casper** it's the
+primary interface. Names are themeable variables (see
+[`../proposals/spookywrt-editions-spec.md`](../proposals/spookywrt-editions-spec.md)).
 
 > [!IMPORTANT]
-> **Consent gate.** Because this image ships packet-injection tooling, the offensive tools are
-> **fail-closed**: they're only reachable via `spooky-audit <tool>`, which refuses to run until
-> the operator records authorization + a regulatory domain with `spooky-audit-consent`
+> **Reaper is a separate image, consent-gated.** Because it ships packet-injection tooling, the
+> offensive tools are **fail-closed**: reachable only via `spooky-audit <tool>`, which refuses to
+> run until the operator records authorization + a regulatory domain with `spooky-audit-consent`
 > (scope + `I ACCEPT`, persisted to `/etc/spookywrt/audit-consent.json`, every run logged).
 > Implemented in [`wifi-audit/firstboot.sh`](wifi-audit/firstboot.sh). **Authorized use only.**
 
 <!-- -->
 
 > [!NOTE]
-> The audit variant ships its extra daemons (`mwan3`, `collectd`, `travelmate`, `dawn`,
-> `watchcat`…) **disabled by default** — they stall a fresh image's first boot. Enable the ones
-> you configure (`/etc/init.d/<svc> enable`). If a build ever won't boot, the
+> Reaper ships its extra daemons (`mwan3`, `travelmate`, `dawn`, `watchcat`…) **disabled by
+> default** — they stall a fresh image's first boot. Enable the ones you configure
+> (`/etc/init.d/<svc> enable`). If a build ever won't boot, the
 > [USB serial console](../docs/serial-console.md) shows the stalling service.
 
 Verified chipset/adapter matrix and the 6 GHz reality: [`../docs/wireless-support.md`](../docs/wireless-support.md).
 First boot applies the branding, topology, and (deferred) secured Wi-Fi AP; log in over SSH
 and run `spooky-setup` to finish provisioning.
 
-> Target: `rockchip/armv8` · profile `hinlink_h68k` · rootfs 1 GB (flagship package set).
-> See [`build.py`](build.py) for the full package list (LuCI, Samba, WireGuard, AdGuard,
-> SQM, banIP, mt7921/mt7925u Wi-Fi, kmod-r8125 for 2.5 G, and the toolkit).
+> Target: `rockchip/armv8` · profile `hinlink_h68k` · rootfs 1 GB. The on-device tools +
+> theme ship as a **gzip+base64 self-extracting overlay** in the uci-defaults string (raw
+> inlining exceeded ASU's 40960-char cap). See [`build.py`](build.py) for each edition's
+> package set.
 
 ## Why the Wi-Fi setup is deferred
 

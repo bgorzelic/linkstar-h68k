@@ -130,7 +130,7 @@ menu(){
       7) vpn_menu;;
       8) command -v spooky-setup >/dev/null && spooky-setup || bad "spooky-setup not installed";;
       9) bundle;;
-      c) command -v spooky-agent >/dev/null && { title; spooky-agent; } || bad "spooky-agent not installed (build with --profile ai)";;
+      c) command -v spooky-agent >/dev/null && { title; spooky-agent; } || bad "spooky-agent not installed (it is core to every SpookyWrt edition)";;
       r) yes "reboot now?" && reboot;;
       q|"") clear 2>/dev/null; exit 0;;
     esac

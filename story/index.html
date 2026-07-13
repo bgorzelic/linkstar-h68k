@@ -345,18 +345,18 @@
     <h2>Build log</h2>
     <p>This teardown is a <strong>living document</strong> — updated as we build. Newest first.</p>
     <div class="tl">
+      <div class="ev"><div class="h">Four editions, wired — Casper · Poltergeist · Reaper · Séance</div>
+        <div class="b"><span class="adv-only">The build system now emits four editions from one shared core via <code>build.py --profile</code>: <strong>Casper</strong> (Basic appliance), <strong>Poltergeist</strong> (Pro flagship, the default), <strong>Reaper</strong> (a <em>separate</em> consent-gated audit image), and <strong>Séance</strong> (Dev). En route we caught two live bugs stacked on each other: the on-device overlay had blown past the build server's 40 KB first-boot cap, <em>and</em> a stray <code>exit 0</code> was silently skipping half the install. The fix is the fun part — a gzip+base64 <strong>self-extracting overlay</strong> (56 KB → 28 KB) that places every file first, then runs each first-boot step as its own isolated process. Still offline, still no local toolchain.</span><span class="beg-only">Four flavors of the same box — a simple one, a powerful one, a hacker one, and a builder one — all built from one shared recipe. You pick the flavor; it builds itself, no tools to install.</span></div></div>
       <div class="ev"><div class="h">The control layer — <code>spooky</code>, an on-device operator</div>
         <div class="b">One command to run and troubleshoot the box over SSH or serial: status, network, Wi-Fi, diagnostics (that check every gotcha we hit), services, capture, VPN — plus a diagnostic-bundle collector. The single front door to everything below.</div></div>
       <div class="ev"><div class="h">VPN, done right — <code>spooky-vpn</code></div>
         <div class="b">Import <em>any</em> provider (WireGuard <em>or</em> OpenVPN — Nord/Mullvad/Proton/PIA/Express) into a masqueraded zone with a one-command kill-switch. The peer-section trap and a base64-key bug — both fixed so no one re-hits them.</div></div>
       <div class="ev"><div class="h">A router with a brain — <code>spooky-agent</code></div>
-        <div class="b">A lightweight LLM agent that lives on the box (the <code>ai</code> build variant): read-only tools that inspect real device state, so you can just ask it what's wrong. No cloud round-trip to see your own router.</div></div>
+        <div class="b">A lightweight LLM agent that lives on the box (now <strong>core to every edition</strong>): read-only tools that inspect real device state, so you can just ask it what's wrong. No cloud round-trip to see your own router.</div></div>
       <div class="ev"><div class="h">It has a face now — dashboard, configurator &amp; a branded LuCI theme</div>
         <div class="b">A ubus-powered live dashboard, a build-your-image configurator, and a SpookyJuice repaint of the OpenWrt admin UI. The box finally looks like the platform it became.</div></div>
       <div class="ev"><div class="h">Hardened by adversaries — the 3-agent security audit</div>
         <div class="b">Three AI reviewers with hostile lenses found 3 critical + 4 high issues under a green build. All remediated — including rewriting docs that over-promised a guarantee we couldn't keep.</div></div>
-      <div class="ev"><div class="h">Four editions, one core</div>
-        <div class="b">A shared base with per-edition package sets — a friendly appliance build, a prosumer flagship, a separate authorized-audit image, and a builder/dev edition. <span class="beg-only">Coming soon.</span><span class="adv-only">In design.</span></div></div>
     </div>
   </section>
 
