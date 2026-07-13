@@ -1,10 +1,15 @@
 # PROPOSAL — SpookyWrt `wifi-audit` build variant (DEFINITIVE spec)
 
-> **STATUS (CLI, 2026-07-13): integrated.** `build.py --profile wifi-audit` includes the full
-> verified delta incl. the 15 best-of-flavor packages (73 tokens = 70 + my 3 dashboard backend
-> pkgs). The §4 consent gate ships as `spookywrt/wifi-audit/firstboot.sh` (fail-closed
-> `spooky-audit` wrapper + `spooky-audit-consent` recorder + banner + regdom/rfkill preflight),
-> appended to first-boot when building the variant. Docs synced.
+> **STATUS (CLI, 2026-07-13): integrated + boot-fixed.** `build.py --profile wifi-audit` includes
+> the full verified delta incl. the 15 best-of-flavor packages (73 tokens). The §4 consent gate
+> ships as `spookywrt/wifi-audit/firstboot.sh` (consent+attestation+logging, tools relocated off
+> `$PATH`, allowlist, regdom/rfkill preflight — hardened per the security audit).
+>
+> **BOOT-HANG FIX (live finding):** the desktop flashed the variant and it hung on first boot —
+> the best-of-flavor daemons (`mwan3`, `collectd`/statistics, `travelmate`, `dawn`, `watchcat`…)
+> stall a fresh image waiting on config/connectivity. Fixed: the audit first-boot now ships those
+> **services disabled by default** (installed, not auto-started — opt-in when configured). See the
+> "BOOT SAFETY" block in `firstboot.sh`. Debug via [../docs/serial-console.md](../docs/serial-console.md).
 
 Status: **build-verified, shippable.** ASU SNAPSHOT, `rockchip/armv8`, profile `hinlink_h68k`, HTTP 200
 with images, `rootfs_size_mb: 1024` (no storage-exceed, zero missing, zero conflicts). 70 package tokens.

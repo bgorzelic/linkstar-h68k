@@ -75,6 +75,14 @@ attack surface is a deliberate choice.
 > (scope + `I ACCEPT`, persisted to `/etc/spookywrt/audit-consent.json`, every run logged).
 > Implemented in [`wifi-audit/firstboot.sh`](wifi-audit/firstboot.sh). **Authorized use only.**
 
+<!-- -->
+
+> [!NOTE]
+> The audit variant ships its extra daemons (`mwan3`, `collectd`, `travelmate`, `dawn`,
+> `watchcat`…) **disabled by default** — they stall a fresh image's first boot. Enable the ones
+> you configure (`/etc/init.d/<svc> enable`). If a build ever won't boot, the
+> [USB serial console](../docs/serial-console.md) shows the stalling service.
+
 Verified chipset/adapter matrix and the 6 GHz reality: [`../docs/wireless-support.md`](../docs/wireless-support.md).
 First boot applies the branding, topology, and (deferred) secured Wi-Fi AP; log in over SSH
 and run `spooky-setup` to finish provisioning.

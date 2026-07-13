@@ -55,6 +55,8 @@ either verified on real hardware or is clearly marked as unverified.
 - **[Boot optimization](boot-optimization.md)** — de-bloat to a ~9 s boot with an SSH-only surface.
 - **[Offline SD repair (debugfs)](offline-sd-repair-debugfs.md)** — diagnose/fix an unbootable
   rootfs from a Mac, no Linux box needed.
+- **[USB serial console](serial-console.md)** — see *why* it won't boot: wiring + macOS/Windows/Linux
+  setup at 1500000 baud, and how to capture a boot log.
 - **[OS images](os-images/)** — image matrix + the archived vendor release note.
 - **[Firmware downloads & checksums](../firmware/README.md)**
 

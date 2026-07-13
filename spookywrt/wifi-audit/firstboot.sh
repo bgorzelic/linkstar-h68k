@@ -28,6 +28,16 @@ uci -q set spookywrt.audit.regdom=''
 uci -q commit spookywrt
 mkdir -p /etc/spookywrt && chmod 700 /etc/spookywrt   # H-3: not world-readable
 
+# ---- BOOT SAFETY: services-off by default (the variant hung on first boot) ----
+# The best-of-flavor packages install boot-time daemons that block/stall a FRESH image
+# waiting on config or connectivity — verified: the wifi-audit variant hung on first boot
+# until these were disabled (flagship on the same card booted fine). They're INSTALLED but
+# NOT auto-started; enable deliberately once configured (e.g. `/etc/init.d/mwan3 enable`).
+# watchcat is the most dangerous (a misconfigured watchdog can reboot-loop the box).
+for svc in mwan3 travelmate dawn collectd luci_statistics nlbwmon ddns https-dns-proxy watchcat; do
+  [ -x "/etc/init.d/$svc" ] && /etc/init.d/$svc disable 2>/dev/null
+done
+
 # ---- relocate offensive tools off $PATH (real friction) ----
 mkdir -p "$AUDIT_DIR" && chmod 755 "$AUDIT_DIR"
 for t in $OFFENSIVE; do
