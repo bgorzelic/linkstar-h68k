@@ -70,5 +70,9 @@ either verified on real hardware or is clearly marked as unverified.
   boot, and firewall.
 - **[OpenWRT build brief](openwrt-superprompt.md)** — the v0.2.0 spec for a GL.iNet-class
   OpenWRT firmware (the path to a full Wi-Fi router / AP).
+- **[SpookyWrt quickstart](spookywrt-quickstart.md)** — build → flash → onboard, the H68K
+  port map, and the live-flash gotchas.
+- **[Wireless support](wireless-support.md)** — injection/monitor chipset matrix, the 6 GHz
+  reality, and which USB adapters actually work.
 
 Contributions welcome — see [`../CONTRIBUTING.md`](../CONTRIBUTING.md).

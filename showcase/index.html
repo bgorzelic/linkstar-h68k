@@ -3,176 +3,213 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="SpookyWrt — one identity across three engines for the LinkStar H68K (RK3568): Ubuntu, OpenWRT, and Android. Flash it your way.">
+<meta name="description" content="SpookyWrt — a free, cutting-edge OpenWrt firmware with a GL.iNet-class UI for any box that runs OpenWrt. Build your image, configure, and manage.">
 <meta property="og:title" content="SpookyWrt — LinkStar H68K">
-<meta property="og:description" content="One identity, three engines. Flash the RK3568 H68K your way.">
+<meta property="og:description" content="One identity, many engines. Flash any OpenWrt box your way.">
 <title>SpookyWrt — LinkStar H68K (RK3568)</title>
 </head>
 <body>
 <style>
   :root{
     color-scheme: dark;
-    --bg:#0a0711; --bg2:#0e0a18; --surface:#150f24; --surface2:#1d1533; --line:#2c2244;
-    --violet:#b15bff; --violet-dim:#8b3fe0; --cyan:#2ce6d6; --cyan-dim:#1aa89b;
-    --text:#ece7f6; --muted:#9a8fb8; --faint:#6b6086;
-    --good:#54e08a; --warn:#ffb454; --bad:#ff5c72;
-    --glow: 0 0 24px rgba(177,91,255,.35);
-    --mono: ui-monospace,"SF Mono","Cascadia Code","JetBrains Mono",Menlo,monospace;
-    --sans: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    /* SpookyJuice Gen-2 — energy-drink palette (committed dark) */
+    --ink:#09090b; --ink2:#0d0d10; --surf:#131316; --surf2:#1a1a20; --line:#27272e; --line2:#34343d;
+    --slime:#7cfc00; --slime-deep:#4d9e00; --toxic:#b6ff2e; --violet:#a855f7; --violet-deep:#7c3aed;
+    --fg:#f4f4f5; --muted:#a1a1aa; --faint:#71717a;
+    --warn:#f5a524; --bad:#ff5c5c;
+    --glow:0 0 26px rgba(124,252,0,.30);
+    --disp:'Anton','Haettenschweiler',Impact,'Arial Narrow',sans-serif;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,system-ui,sans-serif;
+    --mono:ui-monospace,'SF Mono','JetBrains Mono',Menlo,monospace;
   }
   *{box-sizing:border-box}
   body{margin:0}
-  .wrap{background:var(--bg); color:var(--text); font-family:var(--sans); line-height:1.6;
-    font-size:16px; overflow-x:hidden; position:relative;
+  .wrap{background:var(--ink); color:var(--fg); font-family:var(--sans); line-height:1.6; font-size:16px;
+    overflow-x:hidden; position:relative;
     background-image:
-      radial-gradient(1200px 600px at 80% -10%, rgba(177,91,255,.13), transparent 60%),
-      radial-gradient(900px 500px at 0% 10%, rgba(44,230,214,.08), transparent 55%);}
-  .grid-bg{position:absolute; inset:0; pointer-events:none; opacity:.5;
+      radial-gradient(1100px 560px at 82% -12%, rgba(124,252,0,.11), transparent 58%),
+      radial-gradient(820px 480px at -5% 8%, rgba(168,85,247,.10), transparent 55%);}
+  .grid-bg{position:absolute; inset:0; pointer-events:none; opacity:.42;
     background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
-    background-size:44px 44px; mask-image:linear-gradient(180deg,rgba(0,0,0,.6),transparent 40%);}
+    background-size:46px 46px; mask-image:linear-gradient(180deg,rgba(0,0,0,.55),transparent 42%);}
   .shell{max-width:1120px; margin:0 auto; padding:0 24px; position:relative; z-index:1}
-  a{color:var(--cyan); text-decoration:none}
-  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.24em; text-transform:uppercase;
-    color:var(--cyan); font-weight:600}
-  h1,h2,h3{text-wrap:balance; margin:0; font-weight:800; letter-spacing:-.01em}
-  section{padding:76px 0; border-top:1px solid var(--line)}
+  a{color:var(--slime); text-decoration:none}
+  .hazard{height:10px; background:repeating-linear-gradient(45deg,var(--slime) 0 15px,#0a0a0a 15px 30px)}
+  .eyebrow{display:inline-flex; align-items:center; gap:9px; font-family:var(--mono); font-size:11px;
+    letter-spacing:.26em; text-transform:uppercase; color:var(--slime); font-weight:700}
+  .eyebrow::before{content:""; width:22px; height:8px; background:repeating-linear-gradient(45deg,var(--slime) 0 5px,transparent 5px 10px)}
+  h1,h2,h3{margin:0}
+  .disp{font-family:var(--disp); font-weight:400; text-transform:uppercase; letter-spacing:.015em; line-height:.94}
+  section{padding:78px 0; border-top:1px solid var(--line)}
   .muted{color:var(--muted)}
 
-  /* ---------- hero ---------- */
-  .hero{padding:96px 0 72px; text-align:center; position:relative}
-  .brandmark{font-family:var(--mono); font-weight:800; letter-spacing:.06em;
-    font-size:clamp(44px,9vw,104px); line-height:.98;
-    background:linear-gradient(100deg,var(--violet),#e79bff 40%,var(--cyan));
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-    filter:drop-shadow(0 0 30px rgba(177,91,255,.35)); animation:flick 7s infinite}
-  @keyframes flick{0%,97%,100%{opacity:1}98%{opacity:.72}99%{opacity:.9}}
-  .tag{font-size:clamp(18px,2.4vw,24px); max-width:660px; margin:20px auto 0; color:#cfc6e6}
-  .tag b{color:var(--text)}
+  /* hero */
+  .hero{padding:92px 0 0; text-align:center; position:relative}
+  .wordmark{font-family:var(--disp); text-transform:uppercase; font-size:clamp(58px,13vw,150px); line-height:.86;
+    letter-spacing:.01em; color:var(--slime);
+    text-shadow:0 0 8px rgba(124,252,0,.55), 0 0 40px rgba(124,252,0,.30);
+    -webkit-text-stroke:1px rgba(182,255,46,.35)}
+  .kicker{font-family:var(--mono); font-size:12px; letter-spacing:.34em; text-transform:uppercase; color:var(--violet); margin-bottom:18px}
+  .tag{font-size:clamp(17px,2.3vw,23px); max-width:660px; margin:22px auto 0; color:#d4d4d8}
+  .tag b{color:var(--fg)}
   .cta-row{display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:30px}
-  .btn{font-family:var(--mono); font-size:14px; font-weight:600; letter-spacing:.02em;
-    padding:12px 20px; border-radius:10px; border:1px solid var(--line); cursor:pointer;
-    background:var(--surface); color:var(--text); transition:.18s}
-  .btn:hover{border-color:var(--violet); box-shadow:var(--glow); transform:translateY(-1px)}
-  .btn.primary{background:linear-gradient(100deg,var(--violet-dim),var(--violet)); border-color:transparent; color:#fff}
-  .btn:disabled{opacity:.4; cursor:not-allowed; box-shadow:none; transform:none}
-  .btn:focus-visible{outline:2px solid var(--cyan); outline-offset:2px}
-  .stats{display:flex; gap:34px; justify-content:center; flex-wrap:wrap; margin-top:46px}
-  .stat{font-family:var(--mono)}
-  .stat .n{font-size:30px; font-weight:800; color:var(--text)}
-  .stat .l{font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+  .btn{font-family:var(--mono); font-size:13px; font-weight:600; letter-spacing:.03em; text-transform:uppercase;
+    padding:13px 22px; border-radius:8px; border:1px solid var(--line2); cursor:pointer;
+    background:var(--surf); color:var(--fg); transition:.16s}
+  .btn:hover{border-color:var(--slime); box-shadow:var(--glow); transform:translateY(-1px)}
+  .btn.primary{background:var(--slime); border-color:var(--slime); color:#0a1400; font-weight:800}
+  .btn.primary:hover{background:var(--toxic); border-color:var(--toxic)}
+  .btn:disabled{opacity:.35; cursor:not-allowed; box-shadow:none; transform:none}
+  .btn:focus-visible{outline:2px solid var(--toxic); outline-offset:2px}
+  .stats{display:flex; gap:0; justify-content:center; flex-wrap:wrap; margin:48px auto 0; max-width:680px;
+    border:1px solid var(--line); border-radius:12px; overflow:hidden; background:var(--surf)}
+  .stat{flex:1 1 0; min-width:120px; padding:18px 20px; border-right:1px solid var(--line)}
+  .stat:last-child{border-right:0}
+  .stat .n{font-family:var(--disp); font-size:34px; color:var(--slime); line-height:1}
+  .stat .l{font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin-top:6px}
+  .hero-hazard{margin-top:56px}
 
-  h2.sec{font-size:clamp(26px,4vw,38px); margin:8px 0 8px}
-  .lede{color:var(--muted); max-width:640px; margin:0 0 34px; font-size:17px}
+  h2.sec{font-family:var(--disp); font-size:clamp(30px,5vw,50px); margin:10px 0 8px; color:var(--fg)}
+  h2.sec em{color:var(--slime); font-style:normal}
+  .lede{color:var(--muted); max-width:640px; margin:0 0 34px; font-size:16.5px}
 
-  /* ---------- ecosystem cards ---------- */
-  .three{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px}
-  .eco{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:26px; transition:.18s}
-  .eco:hover{transform:translateY(-3px); border-color:var(--violet); box-shadow:var(--glow)}
-  .eco .k{font-family:var(--mono); font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:var(--cyan)}
-  .eco h3{font-size:22px; margin:6px 0 8px}
-  .eco p{margin:0; color:var(--muted); font-size:15px}
-  .eco .ic{width:40px;height:40px;margin-bottom:14px}
+  /* ecosystem */
+  .three{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px}
+  .eco{background:var(--surf); border:1px solid var(--line); border-radius:14px; padding:26px; transition:.16s; position:relative; overflow:hidden}
+  .eco::before{content:""; position:absolute; top:0; left:0; right:0; height:3px; background:var(--ec,var(--slime))}
+  .eco:hover{transform:translateY(-3px); border-color:var(--line2)}
+  .eco .k{font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--ec,var(--slime))}
+  .eco h3{font-family:var(--disp); font-size:26px; margin:8px 0 8px; color:var(--fg)}
+  .eco p{margin:0; color:var(--muted); font-size:14.5px}
+  .eco .ic{width:38px;height:38px;margin-bottom:14px}
 
-  /* ---------- device grid ---------- */
-  .devs{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:16px}
-  .dev{background:linear-gradient(180deg,var(--surface),var(--bg2)); border:1px solid var(--line);
-    border-radius:14px; padding:20px; position:relative; overflow:hidden}
-  .dev svg.glyph{width:100%; height:78px; margin-bottom:12px}
-  .dev h3{font-size:17px}
-  .dev .spec{font-family:var(--mono); font-size:12px; color:var(--muted); margin-top:8px; line-height:1.7}
-  .flavor{font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase;
-    padding:3px 8px; border-radius:20px; border:1px solid var(--line); color:var(--cyan); display:inline-block; margin-top:12px}
+  /* devices */
+  .devs{display:grid; grid-template-columns:repeat(auto-fit,minmax(228px,1fr)); gap:15px}
+  .dev{background:var(--surf); border:1px solid var(--line); border-radius:12px; padding:18px; position:relative; overflow:hidden}
+  .dev svg.glyph{width:100%; height:74px; margin-bottom:10px}
+  .dev h3{font-family:var(--disp); font-size:19px; color:var(--fg); letter-spacing:.01em}
+  .dev .spec{font-family:var(--mono); font-size:11.5px; color:var(--muted); margin-top:7px; line-height:1.7}
+  .tagpill{font-family:var(--mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase;
+    padding:3px 8px; border-radius:4px; border:1px solid var(--line2); color:var(--muted); display:inline-block; margin-top:11px}
 
-  /* ---------- infographic ---------- */
-  .info{background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:8px}
+  /* infographic */
+  .info{background:var(--surf); border:1px solid var(--line); border-radius:14px; padding:8px}
 
-  /* ---------- builder / workflow ---------- */
-  .builder{display:grid; grid-template-columns:1.25fr .75fr; gap:22px; align-items:start}
-  .panel{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:24px; min-height:430px;
-    display:flex; flex-direction:column}
-  /* stepper */
-  .stepper{display:flex; align-items:center; margin-bottom:22px; gap:0}
+  /* builder */
+  .builder{display:grid; grid-template-columns:1.28fr .72fr; gap:20px; align-items:start}
+  .panel{background:var(--surf); border:1px solid var(--line); border-radius:14px; padding:24px; min-height:440px; display:flex; flex-direction:column}
+  .stepper{display:flex; align-items:center; margin-bottom:22px}
   .snode{display:flex; flex-direction:column; align-items:center; gap:7px; flex:0 0 auto; cursor:pointer; background:none; border:0; padding:0}
-  .snode .ball{width:32px; height:32px; border-radius:50%; display:grid; place-items:center;
-    font-family:var(--mono); font-size:13px; font-weight:700; border:1.5px solid var(--line);
-    background:var(--surface2); color:var(--faint); transition:.2s}
+  .snode .ball{width:34px; height:34px; border-radius:8px; display:grid; place-items:center;
+    font-family:var(--disp); font-size:17px; border:1.5px solid var(--line2); background:var(--surf2); color:var(--faint); transition:.2s}
   .snode .sl{font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); transition:.2s}
-  .snode[data-state="active"] .ball{border-color:var(--violet); color:#fff;
-    background:linear-gradient(120deg,var(--violet-dim),var(--violet)); box-shadow:var(--glow)}
-  .snode[data-state="active"] .sl{color:var(--text)}
-  .snode[data-state="done"] .ball{border-color:var(--cyan); color:var(--cyan); background:rgba(44,230,214,.1)}
+  .snode[data-state="active"] .ball{border-color:var(--slime); color:#0a1400; background:var(--slime); box-shadow:var(--glow)}
+  .snode[data-state="active"] .sl{color:var(--fg)}
+  .snode[data-state="done"] .ball{border-color:var(--slime-deep); color:var(--slime); background:rgba(124,252,0,.08)}
   .snode[data-state="done"] .sl{color:var(--muted)}
-  .snode:focus-visible .ball{outline:2px solid var(--cyan); outline-offset:2px}
-  .sbar{flex:1 1 auto; height:2px; background:var(--line); margin:0 6px; position:relative; top:-11px; border-radius:2px; overflow:hidden}
-  .sbar i{display:block; height:100%; width:0; background:linear-gradient(90deg,var(--violet),var(--cyan)); transition:width .3s}
+  .snode:focus-visible .ball{outline:2px solid var(--toxic); outline-offset:2px}
+  .sbar{flex:1 1 auto; height:2px; background:var(--line2); margin:0 6px; position:relative; top:-11px; overflow:hidden}
+  .sbar i{display:block; height:100%; width:0; background:var(--slime); transition:width .3s}
   .stage{flex:1 1 auto}
-  .stage h3{font-size:20px; margin-bottom:4px}
+  .stage h3{font-family:var(--disp); font-size:24px; color:var(--fg); margin-bottom:4px}
   .stage .sub{color:var(--muted); font-size:14px; margin-bottom:18px}
+  .stage code{font-family:var(--mono); font-size:12px; background:var(--surf2); padding:1px 5px; border-radius:4px; color:var(--toxic)}
   .opts{display:flex; flex-wrap:wrap; gap:10px}
-  .chip{font-family:var(--mono); font-size:13px; padding:9px 14px; border-radius:10px; border:1px solid var(--line);
-    background:var(--surface2); color:var(--muted); cursor:pointer; transition:.14s; user-select:none; text-align:left}
-  .chip:hover{border-color:var(--violet-dim); color:var(--text)}
-  .chip:focus-visible{outline:2px solid var(--cyan); outline-offset:2px}
-  .chip[aria-pressed="true"]{background:linear-gradient(100deg,rgba(177,91,255,.22),rgba(44,230,214,.12));
-    border-color:var(--violet); color:var(--text); box-shadow:inset 0 0 0 1px rgba(177,91,255,.3)}
-  .chip[aria-pressed="true"][data-hot="1"]{background:linear-gradient(100deg,rgba(255,92,114,.22),rgba(255,180,84,.14));
-    border-color:var(--bad); box-shadow:inset 0 0 0 1px rgba(255,92,114,.34)}
+  .chip{font-family:var(--mono); font-size:13px; padding:9px 14px; border-radius:8px; border:1px solid var(--line2);
+    background:var(--surf2); color:var(--muted); cursor:pointer; transition:.14s; user-select:none; text-align:left}
+  .chip:hover{border-color:var(--slime-deep); color:var(--fg)}
+  .chip:focus-visible{outline:2px solid var(--toxic); outline-offset:2px}
+  .chip[aria-pressed="true"]{background:rgba(124,252,0,.12); border-color:var(--slime); color:var(--fg); box-shadow:inset 0 0 0 1px rgba(124,252,0,.4)}
+  .chip[aria-pressed="true"][data-hot="1"]{background:rgba(245,165,36,.14); border-color:var(--warn); box-shadow:inset 0 0 0 1px rgba(245,165,36,.4)}
   .chip .d{display:block; font-size:10px; color:var(--faint); letter-spacing:0; text-transform:none; margin-top:2px}
-  .chip[aria-pressed="true"] .d{color:var(--cyan)}
+  .chip[aria-pressed="true"] .d{color:var(--slime)}
   .chip[aria-pressed="true"][data-hot="1"] .d{color:var(--warn)}
-  .callout{border-left:2px solid var(--violet); padding:2px 0 2px 16px; margin-top:20px; color:var(--muted); font-size:13.5px}
-  .callout.hot{border-color:var(--bad)}
+  .callout{border-left:2px solid var(--slime); padding:3px 0 3px 15px; margin-top:20px; color:var(--muted); font-size:13.5px}
+  .callout.hot{border-color:var(--warn)}
+  .callout.hot.decoy{border-color:var(--bad)}
   .nav{display:flex; justify-content:space-between; gap:12px; margin-top:22px; padding-top:18px; border-top:1px solid var(--line)}
 
-  /* live manifest rail */
-  .rail{background:var(--surface); border:1px solid var(--line); border-radius:16px; overflow:hidden; position:sticky; top:16px}
-  .rail-hd{padding:13px 16px; border-bottom:1px solid var(--line); background:var(--bg2);
-    font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); display:flex; justify-content:space-between; align-items:center}
-  .rail-hd .live{color:var(--good); font-size:10px; display:flex; align-items:center; gap:5px}
-  .rail-hd .live::before{content:""; width:6px; height:6px; border-radius:50%; background:var(--good); box-shadow:0 0 6px var(--good); animation:pulse 1.8s infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-  .rail-bd{padding:16px}
-  .mrow{display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:9px 0; border-bottom:1px dashed var(--line); font-size:13px}
-  .mrow:last-child{border-bottom:0}
-  .mrow .k{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--faint)}
-  .mrow .v{font-family:var(--mono); text-align:right; color:var(--text)}
-  .pill{font-family:var(--mono); font-size:11px; padding:2px 8px; border-radius:20px; border:1px solid var(--line); display:inline-block}
-  .bignum{font-family:var(--mono); font-size:40px; font-weight:800; color:var(--text); line-height:1; text-align:center; padding:14px 0 2px}
-  .bignum small{display:block; font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin-top:6px}
-  .warnbox{margin-top:12px; padding:10px 12px; border-radius:10px; background:rgba(255,180,84,.09); border:1px solid rgba(255,180,84,.32); color:var(--warn); font-size:12px; font-family:var(--mono); line-height:1.55}
+  /* tool tabs (Build | Configure) */
+  .tooltabs{display:inline-flex; margin-bottom:22px; border:1px solid var(--line2); border-radius:9px; overflow:hidden; background:var(--surf)}
+  .tooltab{font-family:var(--mono); font-size:12px; letter-spacing:.06em; text-transform:uppercase; font-weight:700; padding:11px 22px; background:none; border:0; color:var(--muted); cursor:pointer; transition:.15s}
+  .tooltab[aria-selected="true"]{background:var(--slime); color:#0a1400}
+  .tooltab:focus-visible{outline:2px solid var(--toxic); outline-offset:-2px}
+  /* configure form */
+  .cfg{display:grid; grid-template-columns:1.05fr .95fr; gap:20px; align-items:start}
+  .cfgform{background:var(--surf); border:1px solid var(--line); border-radius:14px; padding:22px}
+  .fgroup{margin-bottom:20px}
+  .fgroup:last-child{margin-bottom:0}
+  .flab{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--slime); margin-bottom:10px; display:flex; align-items:center; gap:9px}
+  .flab::before{content:""; width:16px; height:7px; background:repeating-linear-gradient(45deg,var(--slime) 0 4px,transparent 4px 8px)}
+  .frow{display:flex; gap:14px; flex-wrap:wrap}
+  .fld{display:flex; flex-direction:column; gap:6px; flex:1 1 160px}
+  .fld label{font-size:11px; color:var(--muted); font-family:var(--mono)}
+  .inp{font-family:var(--mono); font-size:13px; padding:9px 12px; border-radius:8px; border:1px solid var(--line2); background:var(--surf2); color:var(--fg); width:100%}
+  .inp:focus{outline:0; border-color:var(--slime); box-shadow:0 0 0 1px var(--slime)}
+  select.inp{cursor:pointer}
+  .chk{display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:13px; color:var(--fg); cursor:pointer}
+  .chk input{accent-color:var(--slime); width:16px; height:16px}
+  .modechips{display:flex; flex-wrap:wrap; gap:8px}
+  .mchip{font-family:var(--mono); font-size:12px; padding:7px 12px; border-radius:8px; border:1px solid var(--line2); background:var(--surf2); color:var(--muted); cursor:pointer; transition:.14s}
+  .mchip[aria-pressed="true"]{background:rgba(124,252,0,.12); border-color:var(--slime); color:var(--fg)}
+  .mchip[aria-pressed="true"][data-hot="1"]{background:rgba(245,165,36,.14); border-color:var(--warn)}
 
-  /* terminal (deploy step) */
-  .term{background:#08060f; border:1px solid var(--line); border-radius:14px; overflow:hidden}
-  .term-bar{display:flex; align-items:center; gap:7px; padding:11px 15px; border-bottom:1px solid var(--line); background:var(--bg2)}
+  /* SUPPLEMENT FACTS manifest — energy-drink label */
+  .rail{background:#f4f4f5; color:#0a0a0a; border-radius:12px; overflow:hidden; position:sticky; top:16px;
+    border:2px solid #0a0a0a; box-shadow:0 0 0 4px rgba(124,252,0,.18)}
+  .rail-hd{background:#0a0a0a; color:var(--slime); padding:12px 16px; font-family:var(--disp); font-size:24px; letter-spacing:.02em;
+    display:flex; justify-content:space-between; align-items:center; border-bottom:6px solid #0a0a0a}
+  .rail-hd .live{font-family:var(--mono); font-size:10px; letter-spacing:.14em; color:var(--slime); display:flex; align-items:center; gap:5px}
+  .rail-hd .live::before{content:""; width:7px; height:7px; border-radius:50%; background:var(--slime); box-shadow:0 0 7px var(--slime); animation:pulse 1.7s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  .rail-bd{padding:2px 16px 14px}
+  .mrow{display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:9px 0; border-bottom:1px solid #0a0a0a; font-size:13px}
+  .mrow .k{font-weight:700; text-transform:uppercase; font-size:11px; letter-spacing:.04em; color:#18181b}
+  .mrow .v{font-family:var(--mono); text-align:right; color:#0a0a0a}
+  .mrow.thick{border-bottom-width:6px}
+  .mrow.head{border-bottom-width:6px; padding:6px 0}
+  .mrow.head .k{font-size:12px}
+  .pill{font-family:var(--mono); font-size:11px; font-weight:700; padding:2px 7px; border-radius:4px; display:inline-block; border:1.5px solid #0a0a0a}
+  .bignum{display:flex; justify-content:space-between; align-items:baseline; padding:10px 0 2px}
+  .bignum b{font-family:var(--disp); font-size:44px; line-height:.9; color:#0a0a0a}
+  .bignum small{font-weight:700; text-transform:uppercase; font-size:11px; letter-spacing:.06em; color:#18181b; text-align:right}
+  .warnbox{margin-top:10px; padding:9px 11px; border:2px solid #0a0a0a; background:var(--warn); color:#0a0a0a; font-size:11.5px; font-weight:600; line-height:1.45}
+
+  /* terminal (deploy) */
+  .term{background:#050506; border:1px solid var(--line); border-radius:12px; overflow:hidden}
+  .term-bar{display:flex; align-items:center; gap:7px; padding:11px 15px; border-bottom:1px solid var(--line); background:var(--ink2)}
   .dot{width:11px;height:11px;border-radius:50%}
   .term-title{font-family:var(--mono); font-size:12px; color:var(--muted); margin-left:8px}
-  .term-body{padding:16px; font-family:var(--mono); font-size:12.5px; line-height:1.7; color:#cbd5e1; white-space:pre-wrap; word-break:break-word}
+  .term-body{padding:16px; font-family:var(--mono); font-size:12.5px; line-height:1.7; color:#d4d4d8; white-space:pre-wrap; word-break:break-word}
   .term-body .cm{color:var(--faint)}
   .term-body .vi{color:var(--violet)}
-  .term-body .cy{color:var(--cyan)}
-  .term-body .gn{color:var(--good)}
+  .term-body .sl{color:var(--slime)}
+  .term-body .gn{color:var(--toxic)}
   .term-body .rd{color:var(--bad)}
   .pkgs{display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 6px}
-  .pk{font-family:var(--mono); font-size:11px; padding:3px 8px; border-radius:6px; background:var(--surface2); color:#c9c0e0; border:1px solid var(--line)}
-  .cmd{position:relative; background:#050308; border:1px solid var(--line); border-radius:10px; padding:12px 12px 12px; margin:10px 0; color:#d9d2ec; font-family:var(--mono); font-size:12px; white-space:pre-wrap; word-break:break-word; line-height:1.7}
-  .copy{position:absolute; top:8px; right:8px; font-family:var(--mono); font-size:11px; color:var(--cyan); cursor:pointer; border:1px solid var(--line); border-radius:6px; padding:2px 8px; background:var(--surface)}
-  .copy:hover{border-color:var(--cyan)}
-  .flabel{font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--cyan); margin:16px 0 4px}
+  .pk{font-family:var(--mono); font-size:11px; padding:3px 8px; border-radius:5px; background:var(--surf2); color:#d4d4d8; border:1px solid var(--line2)}
+  .flabel{font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--slime); margin:16px 0 4px}
+  .cmd{position:relative; background:#000; border:1px solid var(--line2); border-radius:8px; padding:12px; margin:8px 0; color:#e4e4e7; font-family:var(--mono); font-size:12px; white-space:pre-wrap; word-break:break-word; line-height:1.7}
+  .copy{position:absolute; top:8px; right:8px; font-family:var(--mono); font-size:11px; color:#0a1400; cursor:pointer; border:0; border-radius:5px; padding:3px 9px; background:var(--slime); font-weight:700}
+  .copy:hover{background:var(--toxic)}
 
-  footer{padding:48px 0 60px; border-top:1px solid var(--line); text-align:center; color:var(--faint); font-family:var(--mono); font-size:12px}
-  @media (max-width:860px){ .builder{grid-template-columns:1fr} .rail{position:static} .snode .sl{display:none} }
-  @media (prefers-reduced-motion:reduce){ .brandmark,.rail-hd .live::before{animation:none} * {transition:none!important} }
+  footer{padding:0 0 56px; text-align:center; color:var(--faint); font-family:var(--mono); font-size:12px}
+  footer .hazard{margin-bottom:40px}
+  @media (max-width:860px){ .builder{grid-template-columns:1fr} .rail{position:static} .snode .sl{display:none} .stat{min-width:50%} }
+  @media (prefers-reduced-motion:reduce){ .rail-hd .live::before{animation:none} * {transition:none!important} }
 </style>
 
 <div class="wrap">
   <div class="grid-bg"></div>
 
   <header class="shell hero">
-    <div class="eyebrow">SpookyJuice · free &amp; open firmware</div>
-    <div class="brandmark">SPOOKYWRT</div>
-    <p class="tag">A <b>free, cutting-edge OpenWrt firmware</b> with a GL.iNet-class UI — for any box that runs OpenWrt. From a $15 thrift-store router to an x86 VM, <b>one identity, one workflow</b>.</p>
+    <div class="kicker">SpookyJuice · free &amp; open firmware</div>
+    <div class="wordmark">SpookyWrt</div>
+    <p class="tag">A <b>free, professional-grade OpenWrt firmware</b> with a GL.iNet-class UI — for any box that runs OpenWrt. From a $15 thrift-store router to an x86 VM: <b>one identity, one workflow</b>.</p>
     <div class="cta-row">
       <button class="btn primary" onclick="document.getElementById('builder').scrollIntoView({behavior:'smooth'})">Build your image ↓</button>
+      <a class="btn" href="https://bgorzelic.github.io/linkstar-h68k/spookywrt/webui/" target="_blank" rel="noopener">Device dashboard ↗</a>
+      <a class="btn" href="https://bgorzelic.github.io/linkstar-h68k/webui/" target="_blank" rel="noopener">Configure ↗</a>
       <a class="btn" href="https://github.com/bgorzelic/linkstar-h68k" target="_blank" rel="noopener">View the repo</a>
     </div>
     <div class="stats">
@@ -182,24 +219,25 @@
       <div class="stat"><div class="n">$0</div><div class="l">forever</div></div>
     </div>
   </header>
+  <div class="hazard hero-hazard"></div>
 
   <section class="shell">
     <div class="eyebrow">the ecosystem</div>
-    <h2 class="sec">One identity, three engines</h2>
-    <p class="lede">The trick that keeps "many tools on many boards" from becoming twenty forks: a shared look + a shared tool suite, with the right base OS chosen per role.</p>
+    <h2 class="sec">One identity, <em>three engines</em></h2>
+    <p class="lede">The trick that keeps "many tools on many boards" from becoming twenty forks: a shared look and a shared tool suite, with the right base OS chosen per role.</p>
     <div class="three">
-      <div class="eco">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#b15bff" stroke-width="1.6"><rect x="2" y="7" width="20" height="10" rx="2"/><path d="M6 11h.01M10 11h.01M6 14h6"/></svg>
+      <div class="eco" style="--ec:var(--slime)">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#7cfc00" stroke-width="1.7"><rect x="2" y="7" width="20" height="10" rx="2"/><path d="M6 11h.01M10 11h.01M6 14h6"/></svg>
         <div class="k">routers</div><h3>SpookyWrt</h3>
-        <p>OpenWrt image-builder flow. Router / AP / travel / NAS / hacker / honeypot across any OpenWrt target. LuCI underneath, GL.iNet-class UI on top.</p>
+        <p>OpenWrt image-builder flow. Router / AP / travel / NAS / hacker / honeypot on any OpenWrt target. LuCI underneath, GL.iNet-class UI on top.</p>
       </div>
-      <div class="eco">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#2ce6d6" stroke-width="1.6"><path d="M3 12h4l2 6 4-14 2 8h6"/></svg>
+      <div class="eco" style="--ec:var(--violet)">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="1.7"><path d="M3 12h4l2 6 4-14 2 8h6"/></svg>
         <div class="k">diagnostics</div><h3>SpookyProbe</h3>
         <p>Plug-in "network doctor in a box" for field techs. Debian + a containerized tool suite. Auto-sweep, pcap to NVMe, hand-off report.</p>
       </div>
-      <div class="eco">
-        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#ffb454" stroke-width="1.6"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+      <div class="eco" style="--ec:var(--warn)">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="#f5a524" stroke-width="1.7"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
         <div class="k">security · authorized</div><h3>SpookyLab</h3>
         <p>Home-lab / CTF / authorized-audit toolkit. Monitor-mode Wi-Fi, IDS, isolated lab VLAN, consent-gated. Your gear, your rules.</p>
       </div>
@@ -208,61 +246,96 @@
 
   <section class="shell">
     <div class="eyebrow">supported hardware</div>
-    <h2 class="sec">Any box that runs OpenWrt</h2>
+    <h2 class="sec">Any box that runs <em>OpenWrt</em></h2>
     <p class="lede">Four architectures, one identity — the UI and the workflow are identical whether it's an arm64 SBC, an x86 VM, or a $15 MIPS router. Adding a board is a thin driver + form-factor layer, not a rewrite.</p>
     <div class="devs" id="devgrid"></div>
   </section>
 
   <section class="shell">
     <div class="eyebrow">architecture</div>
-    <h2 class="sec">Three decoupled layers</h2>
+    <h2 class="sec">Three <em>decoupled layers</em></h2>
     <p class="lede">Write the tools once, choose an OS by role, keep hardware differences to a thin edge.</p>
     <div class="info">
-      <svg viewBox="0 0 900 300" style="width:100%;height:auto" font-family="var(--mono)">
-        <defs>
-          <linearGradient id="l1" x1="0" x2="1"><stop offset="0" stop-color="#b15bff" stop-opacity=".22"/><stop offset="1" stop-color="#2ce6d6" stop-opacity=".12"/></linearGradient>
-        </defs>
-        <g>
-          <rect x="40" y="24" width="820" height="66" rx="12" fill="url(#l1)" stroke="#b15bff" stroke-opacity=".5"/>
-          <text x="60" y="52" fill="#ece7f6" font-size="16" font-weight="700">TOOL SUITE — portable, containerized (write once)</text>
-          <text x="60" y="76" fill="#9a8fb8" font-size="12.5">probe · wifi · capture · collector (Influx+Grafana) · analyze · the SpookyJuice UI</text>
-
-          <rect x="40" y="106" width="820" height="66" rx="12" fill="#150f24" stroke="#2c2244"/>
-          <text x="60" y="134" fill="#ece7f6" font-size="16" font-weight="700">BASE OS — chosen by ROLE, not by board</text>
-          <text x="60" y="158" fill="#9a8fb8" font-size="12.5">Router → OpenWrt (image builder)   ·   Diagnostics/Security → Debian + containers</text>
-
-          <rect x="40" y="188" width="820" height="66" rx="12" fill="#150f24" stroke="#2c2244"/>
-          <text x="60" y="216" fill="#ece7f6" font-size="16" font-weight="700">HARDWARE FLAVOR — thin per-board layer</text>
-          <text x="60" y="240" fill="#9a8fb8" font-size="12.5">drivers + form factor: NICs · Wi-Fi · NVMe · OLED / HDMI console</text>
-          <text x="450" y="286" fill="#6b6086" font-size="11" text-anchor="middle">adding a new board ≈ a day, not a rewrite</text>
-        </g>
+      <svg viewBox="0 0 900 300" style="width:100%;height:auto">
+        <defs><linearGradient id="l1" x1="0" x2="1"><stop offset="0" stop-color="#7cfc00" stop-opacity=".22"/><stop offset="1" stop-color="#a855f7" stop-opacity=".14"/></linearGradient></defs>
+        <rect x="40" y="24" width="820" height="66" rx="10" fill="url(#l1)" stroke="#7cfc00" stroke-opacity=".55"/>
+        <text x="60" y="52" fill="#f4f4f5" font-size="16" font-weight="700" font-family="Impact,sans-serif" letter-spacing=".5">TOOL SUITE — portable, containerized (write once)</text>
+        <text x="60" y="76" fill="#a1a1aa" font-size="12.5" font-family="monospace">probe · wifi · capture · collector (Influx+Grafana) · analyze · the SpookyJuice UI</text>
+        <rect x="40" y="106" width="820" height="66" rx="10" fill="#131316" stroke="#27272e"/>
+        <text x="60" y="134" fill="#f4f4f5" font-size="16" font-weight="700" font-family="Impact,sans-serif" letter-spacing=".5">BASE OS — chosen by ROLE, not by board</text>
+        <text x="60" y="158" fill="#a1a1aa" font-size="12.5" font-family="monospace">Router → OpenWrt (image builder)   ·   Diagnostics/Security → Debian + containers</text>
+        <rect x="40" y="188" width="820" height="66" rx="10" fill="#131316" stroke="#27272e"/>
+        <text x="60" y="216" fill="#f4f4f5" font-size="16" font-weight="700" font-family="Impact,sans-serif" letter-spacing=".5">HARDWARE FLAVOR — thin per-board layer</text>
+        <text x="60" y="240" fill="#a1a1aa" font-size="12.5" font-family="monospace">drivers + form factor: NICs · Wi-Fi · NVMe · OLED / HDMI console</text>
+        <text x="450" y="286" fill="#71717a" font-size="11" font-family="monospace" text-anchor="middle">adding a new board ≈ a day, not a rewrite</text>
       </svg>
     </div>
   </section>
 
   <section class="shell" id="builder">
     <div class="eyebrow">dynamic workflow</div>
-    <h2 class="sec">Build &amp; flash your image</h2>
-    <p class="lede">A guided, four-step workflow — pick a board, a role, and add-ons; the recipe and the exact build + flash commands write themselves as you go. The manifest on the right stays live the whole time.</p>
-    <div class="builder">
-      <div class="panel">
-        <div class="stepper" id="stepper"></div>
-        <div class="stage" id="stage"></div>
-        <div class="nav">
-          <button class="btn" id="back">← Back</button>
-          <button class="btn primary" id="next">Next →</button>
+    <h2 class="sec">Build, then <em>configure</em></h2>
+    <p class="lede">Two point-and-click tools: assemble a custom image, then generate its first-boot config. Everything writes itself — copy, paste, done.</p>
+    <div class="tooltabs" role="tablist">
+      <button class="tooltab" role="tab" id="tab-build" aria-selected="true" aria-controls="tool-build">① Build image</button>
+      <button class="tooltab" role="tab" id="tab-config" aria-selected="false" aria-controls="tool-config">② Configure box</button>
+    </div>
+
+    <div id="tool-build">
+      <div class="builder">
+        <div class="panel">
+          <div class="stepper" id="stepper"></div>
+          <div class="stage" id="stage"></div>
+          <div class="nav">
+            <button class="btn" id="back">← Back</button>
+            <button class="btn primary" id="next">Next →</button>
+          </div>
+        </div>
+        <div class="rail" aria-label="live build manifest">
+          <div class="rail-hd"><span>Build Facts</span><span class="live">live</span></div>
+          <div class="rail-bd" id="manifest"></div>
         </div>
       </div>
-      <div class="rail" aria-label="live build manifest">
-        <div class="rail-hd"><span>build manifest</span><span class="live">live</span></div>
-        <div class="rail-bd" id="manifest"></div>
+    </div>
+
+    <div id="tool-config" hidden>
+      <div class="cfg">
+        <div class="cfgform">
+          <div class="fgroup"><div class="flab">identity</div>
+            <div class="frow">
+              <div class="fld"><label for="c-host">hostname</label><input class="inp" id="c-host" value="SpookyWrt" spellcheck="false"></div>
+              <div class="fld"><label for="c-tz">timezone</label><select class="inp" id="c-tz"></select></div>
+            </div>
+          </div>
+          <div class="fgroup"><div class="flab">network</div>
+            <div class="frow">
+              <div class="fld"><label for="c-wan">WAN port</label><select class="inp" id="c-wan"><option value="eth0">eth0 (1 GbE)</option><option value="eth1">eth1 (1 GbE)</option></select></div>
+              <div class="fld"><label for="c-lan">LAN IP</label><input class="inp" id="c-lan" value="192.168.1.1" spellcheck="false"></div>
+            </div>
+          </div>
+          <div class="fgroup"><div class="flab">wi-fi</div>
+            <label class="chk" style="margin-bottom:10px"><input type="checkbox" id="c-wifi" checked> broadcast an access point</label>
+            <div class="frow">
+              <div class="fld"><label for="c-ssid">SSID</label><input class="inp" id="c-ssid" value="SpookyWrt-H68K" spellcheck="false"></div>
+              <div class="fld"><label for="c-key">password (8+)</label><input class="inp" id="c-key" value="spooky-h68k-2026" spellcheck="false"></div>
+            </div>
+          </div>
+          <div class="fgroup"><div class="flab">operating mode</div>
+            <div class="modechips" id="c-mode"></div>
+          </div>
+        </div>
+        <div class="term" aria-label="generated setup script">
+          <div class="term-bar"><span class="dot" style="background:#ff5c5c"></span><span class="dot" style="background:#f5a524"></span><span class="dot" style="background:#7cfc00"></span><span class="term-title">ssh root@192.168.1.1 — first-boot config</span></div>
+          <div class="term-body" id="cfgout"></div>
+        </div>
       </div>
     </div>
   </section>
 
-  <footer class="shell">
-    SpookyWrt · part of the SpookyJuice ecosystem · free &amp; open · MIT<br>
-    github.com/bgorzelic/linkstar-h68k · built with OpenWrt + the Attended-Sysupgrade build server
+  <footer>
+    <div class="hazard"></div>
+    <div class="shell">SpookyWrt · part of the SpookyJuice ecosystem · free &amp; open · MIT<br>
+    github.com/bgorzelic/linkstar-h68k · built with OpenWrt + the Attended-Sysupgrade build server</div>
   </footer>
 </div>
 
@@ -277,19 +350,19 @@
     glmt1300:{name:"GL-MT1300 Beryl",arch:"mipsel",target:"ramips/mt7621",profile:"glinet_gl-mt1300",base:[],spec:"MT7621 · Wi-Fi 5 · pocket",flavor:"travel router",small:1,disk:"mtd"},
     archerc7:{name:"TP-Link Archer C7",arch:"mips",target:"ath79/generic",profile:"tplink_archer-c7-v5",base:[],spec:"QCA9563 · Wi-Fi 5 · ~16MB flash",flavor:"$15 router revival",small:2,disk:"mtd"}
   };
-  var ARCHC={aarch64:"#b15bff",x86_64:"#2ce6d6",mipsel:"#ffb454",mips:"#54e08a"};
+  var ARCHC={aarch64:"#7cfc00",x86_64:"#a855f7",mipsel:"#b6ff2e",mips:"#f5a524"};
   var MODE={
-    router:{name:"Router",pkgs:[],d:"gateway + DHCP + NAT",ac:"var(--cyan)"},
-    ap:{name:"Access Point",pkgs:[],d:"bridge & extend",ac:"var(--cyan)"},
-    nas:{name:"NAS",pkgs:["block-mount","kmod-usb-storage","kmod-fs-ext4","kmod-fs-exfat","luci-app-samba4","samba4-server"],d:"SMB shares",ac:"var(--good)"},
-    travel:{name:"Travel",pkgs:["luci-app-wireguard","wireguard-tools","kmod-wireguard"],d:"VPN always-on",ac:"var(--violet)"},
-    hacker:{name:"Hacker / Lab",pkgs:["tcpdump","nmap","kmod-usb-net","mtr","arp-scan"],d:"authorized audit",ac:"var(--warn)",hot:1},
-    honeypot:{name:"Honeypot",pkgs:["banip","luci-app-banip","socat","tcpdump"],d:"decoy ports + trap log",ac:"var(--bad)",hot:1,decoy:1}
+    router:{name:"Router",pkgs:[],d:"gateway + DHCP + NAT",ac:"#7cfc00"},
+    ap:{name:"Access Point",pkgs:[],d:"bridge & extend",ac:"#7cfc00"},
+    nas:{name:"NAS",pkgs:["block-mount","kmod-usb-storage","kmod-fs-ext4","kmod-fs-exfat","luci-app-samba4","samba4-server"],d:"SMB shares",ac:"#a855f7"},
+    travel:{name:"Travel",pkgs:["wireguard-tools","kmod-wireguard","luci-proto-wireguard"],d:"VPN always-on",ac:"#b6ff2e"},
+    hacker:{name:"Hacker / Lab",pkgs:["tcpdump","nmap","kmod-usb-net","mtr","arp-scan"],d:"authorized audit",ac:"#f5a524",hot:1},
+    honeypot:{name:"Honeypot",pkgs:["banip","luci-app-banip","socat","tcpdump"],d:"decoy ports + trap log",ac:"#ff5c5c",hot:1,decoy:1}
   };
   var FEAT={
     wifi:{name:"Wi-Fi AP",pkgs:["wpad-basic-mbedtls"],d:"MT7921 access point"},
     be6500:{name:"BE6500 USB",pkgs:["kmod-mt7925u"],d:"Netgear Wi-Fi 7 adapter"},
-    vpn:{name:"WireGuard",pkgs:["luci-app-wireguard","wireguard-tools","kmod-wireguard"],d:"VPN client+server"},
+    vpn:{name:"WireGuard",pkgs:["wireguard-tools","kmod-wireguard","luci-proto-wireguard"],d:"VPN client+server"},
     adguard:{name:"AdGuard",pkgs:["adguardhome"],d:"DNS ad-block"},
     tools:{name:"Toolkit",pkgs:["htop","nano","tcpdump","mtr","curl"],d:"admin niceties"}
   };
@@ -300,7 +373,6 @@
   function esc(s){return String(s).replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
   function attr(s){return esc(s).replace(/"/g,'&quot;')}
   function chip(id,o,pressed){return '<button class="chip" aria-pressed="'+(pressed?'true':'false')+'"'+(o.hot?' data-hot="1"':'')+' data-id="'+id+'">'+esc(o.name)+'<span class="d">'+esc(o.d)+'</span></button>'}
-
   function pkgSet(){
     var s=[].concat(BASE_UI, DEV[state.dev].base, MODE[state.mode].pkgs);
     Object.keys(state.feat).forEach(function(f){ if(state.feat[f]) s=s.concat(FEAT[f].pkgs); });
@@ -308,112 +380,156 @@
   }
   function featList(){return Object.keys(state.feat).filter(function(f){return state.feat[f]}).map(function(f){return FEAT[f].name})}
 
-  // ---------- device grid (static) ----------
   function renderGrid(){
     var g=document.getElementById('devgrid'); if(g.dataset.done) return;
-    var glyph='<svg class="glyph" viewBox="0 0 200 60"><rect x="6" y="12" width="188" height="36" rx="5" fill="#150f24" stroke="#2c2244"/><rect x="14" y="22" width="26" height="16" rx="2" fill="#1d1533" stroke="#b15bff" stroke-opacity=".5"/><rect x="46" y="22" width="26" height="16" rx="2" fill="#1d1533" stroke="#2ce6d6" stroke-opacity=".5"/><rect x="78" y="22" width="26" height="16" rx="2" fill="#1d1533" stroke="#2c2244"/><rect x="110" y="22" width="26" height="16" rx="2" fill="#1d1533" stroke="#2c2244"/><circle cx="168" cy="30" r="7" fill="none" stroke="#b15bff" stroke-opacity=".6"/></svg>';
-    g.innerHTML=Object.keys(DEV).map(function(k){var d=DEV[k]; var ac=ARCHC[d.arch]||'#9a8fb8';
+    var glyph='<svg class="glyph" viewBox="0 0 200 60"><rect x="6" y="12" width="188" height="36" rx="4" fill="#0d0d10" stroke="#27272e"/><rect x="14" y="22" width="26" height="16" rx="2" fill="#1a1a20" stroke="#7cfc00" stroke-opacity=".55"/><rect x="46" y="22" width="26" height="16" rx="2" fill="#1a1a20" stroke="#a855f7" stroke-opacity=".55"/><rect x="78" y="22" width="26" height="16" rx="2" fill="#1a1a20" stroke="#27272e"/><rect x="110" y="22" width="26" height="16" rx="2" fill="#1a1a20" stroke="#27272e"/><circle cx="168" cy="30" r="7" fill="none" stroke="#7cfc00" stroke-opacity=".6"/></svg>';
+    g.innerHTML=Object.keys(DEV).map(function(k){var d=DEV[k]; var ac=ARCHC[d.arch]||'#a1a1aa';
       return '<div class="dev">'+glyph+'<h3>'+esc(d.name)+'</h3><div class="spec">'+esc(d.spec)+'</div>'+
-        '<span class="flavor" style="border-color:'+ac+'55;color:'+ac+'">'+d.arch+'</span> '+
-        '<span class="flavor">'+esc(d.flavor)+'</span></div>';}).join('');
+        '<span class="tagpill" style="border-color:'+ac+'66;color:'+ac+'">'+d.arch+'</span> '+
+        '<span class="tagpill">'+esc(d.flavor)+'</span></div>';}).join('');
     g.dataset.done="1";
   }
 
-  // ---------- stepper ----------
   function renderStepper(){
     var h="";
     STEPS.forEach(function(s,i){
       var st=i===state.step?"active":(i<state.step?"done":"todo");
       h+='<button class="snode" data-step="'+i+'" data-state="'+st+'"><span class="ball">'+(i<state.step?"✓":(i+1))+'</span><span class="sl">'+s.l+'</span></button>';
-      if(i<STEPS.length-1){var fill=i<state.step?100:0; h+='<span class="sbar"><i style="width:'+fill+'%"></i></span>';}
+      if(i<STEPS.length-1){h+='<span class="sbar"><i style="width:'+(i<state.step?100:0)+'%"></i></span>';}
     });
     var el=document.getElementById('stepper'); el.innerHTML=h;
     el.querySelectorAll('.snode').forEach(function(n){n.onclick=function(){state.step=+n.dataset.step; render()}});
   }
 
-  // ---------- stage (per-step body) ----------
   function renderStage(){
-    var el=document.getElementById('stage'), d=DEV[state.dev];
+    var el=document.getElementById('stage');
     if(state.step===0){
-      el.innerHTML='<h3>Pick your device</h3><div class="sub">Any OpenWrt target — the UI and workflow are identical across all four architectures.</div>'+
-        '<div class="opts" id="pick"></div>';
+      el.innerHTML='<h3>Pick your device</h3><div class="sub">Any OpenWrt target — the UI and workflow are identical across all four architectures.</div><div class="opts" id="pick"></div>';
       fill('pick',Object.keys(DEV).map(function(k){return chip(k,{name:DEV[k].name,d:DEV[k].arch+" · "+DEV[k].profile,hot:0},state.dev===k)}).join(''),function(id){state.dev=id});
     }else if(state.step===1){
-      el.innerHTML='<h3>Choose a mode</h3><div class="sub">One switch reconfigures netifd, firewall and services — each transition is rollback-timer protected so it can\'t lock you out.</div>'+
-        '<div class="opts" id="pick"></div>'+
+      el.innerHTML='<h3>Choose a mode</h3><div class="sub">One switch reconfigures netifd, firewall and services — each transition is rollback-timer protected so it can\'t lock you out.</div><div class="opts" id="pick"></div>'+
         (MODE[state.mode].decoy
-          ? '<div class="callout hot">🍯 <b>Honeypot</b> arms decoy listeners on <code>:21 / :23 / :2323</code>, logs every touch, captures the attacker\'s packets, and auto-bans repeat offenders via <code>banip</code>. Deception only — use on networks you own.</div>'
+          ? '<div class="callout hot decoy">🍯 <b>Honeypot</b> arms decoy listeners on <code>:21 / :23 / :2323 / :8080</code>, logs every touch, captures the attacker\'s packets, and auto-bans repeat offenders via <code>banip</code>. Deception only — networks you own.</div>'
           : (MODE[state.mode].hot
             ? '<div class="callout hot">⚠ <b>Hacker / Lab</b> bundles active tools (nmap, arp-scan, tcpdump). Authorized networks only.</div>'
-            : '<div class="callout">Modes are additive with the add-ons in the next step — e.g. NAS + Wi-Fi + AdGuard.</div>'));
+            : '<div class="callout">Modes stack with the add-ons in the next step — e.g. NAS + Wi-Fi + AdGuard.</div>'));
       fill('pick',Object.keys(MODE).map(function(k){return chip(k,MODE[k],state.mode===k)}).join(''),function(id){state.mode=id});
     }else if(state.step===2){
-      el.innerHTML='<h3>Add-ons</h3><div class="sub">Optional capabilities — each toggles its exact package set into the recipe. Toggle Wi-Fi and the <code>wpad</code> daemon is baked in automatically (the exact thing that bit us installing after the fact).</div>'+
-        '<div class="opts" id="pick"></div>';
+      el.innerHTML='<h3>Add-ons</h3><div class="sub">Optional capabilities — each toggles its exact package set in. Toggle Wi-Fi and the <code>wpad</code> daemon is baked in automatically.</div><div class="opts" id="pick"></div>';
       fill('pick',Object.keys(FEAT).map(function(k){return chip(k,FEAT[k],!!state.feat[k])}).join(''),function(id){state.feat[id]=!state.feat[id]},true);
-    }else{
-      renderDeploy(el);
-    }
+    }else{ renderDeploy(el); }
   }
-  function fill(id,html,onpick,toggle){
+  function fill(id,html,onpick){
     var c=document.getElementById(id); c.innerHTML=html;
-    c.querySelectorAll('.chip').forEach(function(ch){ch.onclick=function(){onpick(ch.dataset.id); if(toggle){render();}else{render();}}});
+    c.querySelectorAll('.chip').forEach(function(ch){ch.onclick=function(){onpick(ch.dataset.id); render()}});
   }
 
-  // ---------- deploy step (build + flash workflow) ----------
   function renderDeploy(el){
     var d=DEV[state.dev], pk=pkgSet();
     var buildJson=JSON.stringify({version:"SNAPSHOT",target:d.target,profile:d.profile,packages:pk,defaults:"# SpookyWrt first-boot: banner + Material theme"+(state.feat.wifi?" + Wi-Fi AP":"")+(MODE[state.mode].decoy?" + honeypot decoys":"")},null,0);
     var buildCmd='curl -s https://sysupgrade.openwrt.org/api/v1/build \\\n  -d \''+buildJson+'\' | tee build.json\nIMG=$(grep -o \'https[^"]*sysupgrade[^"]*\\.img\\.gz\' build.json | head -1)';
-    var flashCard = (d.disk==='mtd')
-      ? '# GL.iNet / consumer router → LuCI ▸ System ▸ Backup/Flash, upload the image\n# or via SSH (keeps nothing — clean install):\nscp *.img.gz root@192.168.1.1:/tmp/\nssh root@192.168.1.1 \'sysupgrade -n /tmp/*.img.gz\''
+    var flashCard=(d.disk==='mtd')
+      ? '# GL.iNet / consumer router → LuCI ▸ System ▸ Backup/Flash, upload the image\n# or over SSH (clean install):\nscp *.img.gz root@192.168.1.1:/tmp/\nssh root@192.168.1.1 \'sysupgrade -n /tmp/*.img.gz\''
       : (d.arch==='x86_64'
-        ? '# x86: for a BLANK disk use the -combined- image, not sysupgrade:\nIMG=$(grep -o \'https[^"]*combined[^"]*\\.img\\.gz\' build.json | head -1); curl -sLO "$IMG"\ngunzip -c *combined*.img.gz | sudo dd of=/dev/'+d.disk+' bs=4M status=progress\n# already running? in-place:  sysupgrade -F *.img.gz'
+        ? '# x86: for a BLANK disk use the -combined- image, not sysupgrade:\nIMG=$(grep -o \'https[^"]*combined[^"]*\\.img\\.gz\' build.json | head -1); curl -sLO "$IMG"\ngunzip -c *combined*.img.gz | sudo dd of=/dev/'+d.disk+' bs=4M status=progress'
         : '# fresh SD / eMMC (writes the whole card):\ngunzip -c *.img.gz | sudo dd of=/dev/'+d.disk+' bs=4M status=progress\n# already running SpookyWrt? upgrade in place instead:\nscp *.img.gz root@192.168.1.1:/tmp/ && ssh root@192.168.1.1 \'sysupgrade -F /tmp/*.img.gz\'');
     var chips=pk.map(function(p){return '<span class="pk">'+esc(p)+'</span>'}).join(' ');
-    var warn=(d.small && pk.length>8)?'<div class="term-body" style="padding-top:0"><span class="rd">⚠ '+esc(d.name)+' has ~'+(d.small===2?'16MB':'32MB')+' flash</span> <span class="cm">— trim add-ons or use USB extroot for the heavy ones.</span></div>':'';
+    var warn=(d.small && pk.length>8)?'<div class="term-body" style="padding-top:0"><span class="rd">⚠ '+esc(d.name)+' has ~'+(d.small===2?'16MB':'32MB')+' flash</span> <span class="cm">— trim add-ons or use USB extroot.</span></div>':'';
     el.innerHTML='<h3>Build &amp; flash</h3><div class="sub">Three commands: compile on OpenWrt\'s free build server, verify, then write. No toolchain, no account.</div>'+
-      '<div class="term"><div class="term-bar"><span class="dot" style="background:#ff5c72"></span><span class="dot" style="background:#ffb454"></span><span class="dot" style="background:#54e08a"></span><span class="term-title">~/spookywrt — '+esc(d.profile)+'</span></div>'+
+      '<div class="term"><div class="term-bar"><span class="dot" style="background:#ff5c5c"></span><span class="dot" style="background:#f5a524"></span><span class="dot" style="background:#7cfc00"></span><span class="term-title">~/spookywrt — '+esc(d.profile)+'</span></div>'+
       '<div class="term-body">'+
-        '<span class="cm"># '+pk.length+' packages for <span class="cy">'+esc(d.name)+'</span> · <span class="vi">'+esc(d.target)+'</span></span>'+
+        '<span class="cm"># '+pk.length+' packages for <span class="sl">'+esc(d.name)+'</span> · <span class="vi">'+esc(d.target)+'</span></span>'+
         '<div class="pkgs">'+chips+'</div>'+
-        '<div class="flabel">1 · compile (~30s)</div>'+
-        '<div class="cmd"><span class="copy" data-cmd="'+attr(buildCmd)+'">copy</span>'+esc(buildCmd)+'</div>'+
-        '<div class="flabel">2 · download + verify</div>'+
-        '<div class="cmd"><span class="copy" data-cmd="'+attr('curl -sLO "$IMG" && gunzip -t *.img.gz && echo "integrity OK"')+'">copy</span>curl -sLO "$IMG" &amp;&amp; gunzip -t *.img.gz &amp;&amp; echo "integrity OK"</div>'+
-        '<div class="flabel">3 · flash — '+esc(d.name)+'</div>'+
-        '<div class="cmd"><span class="copy" data-cmd="'+attr(flashCard)+'">copy</span>'+esc(flashCard)+'</div>'+
+        '<div class="flabel">1 · compile (~30s)</div><div class="cmd"><span class="copy" data-cmd="'+attr(buildCmd)+'">copy</span>'+esc(buildCmd)+'</div>'+
+        '<div class="flabel">2 · download + verify</div><div class="cmd"><span class="copy" data-cmd="'+attr('curl -sLO "$IMG" && gunzip -t *.img.gz && echo "integrity OK"')+'">copy</span>curl -sLO "$IMG" &amp;&amp; gunzip -t *.img.gz &amp;&amp; echo "integrity OK"</div>'+
+        '<div class="flabel">3 · flash — '+esc(d.name)+'</div><div class="cmd"><span class="copy" data-cmd="'+attr(flashCard)+'">copy</span>'+esc(flashCard)+'</div>'+
         warn+
-        '<span class="gn">✓</span> <span class="cm">boots to a branded SPOOKY console, Material LuCI at <span class="cy">http://192.168.1.1</span>'+
-        (state.feat.wifi?', a live Wi-Fi AP':'')+(MODE[state.mode].decoy?', decoys armed':'')+' — every driver baked in, no post-install.</span>'+
+        '<span class="gn">✓</span> <span class="cm">boots to a branded SPOOKY console, Material LuCI at <span class="sl">http://192.168.1.1</span>'+(state.feat.wifi?', a live Wi-Fi AP':'')+(MODE[state.mode].decoy?', decoys armed':'')+' — every driver baked in.</span>'+
       '</div></div>';
     el.querySelectorAll('.copy').forEach(function(cp){cp.onclick=function(){navigator.clipboard&&navigator.clipboard.writeText(cp.dataset.cmd);var t=cp.textContent;cp.textContent='copied';setTimeout(function(){cp.textContent=t},1200)}});
   }
 
-  // ---------- live manifest rail ----------
   function renderManifest(){
     var d=DEV[state.dev], m=MODE[state.mode], pk=pkgSet(), fl=featList(), ac=ARCHC[d.arch];
-    var warn=(d.small && pk.length>8)?'<div class="warnbox">⚠ ~'+(d.small===2?'16MB':'32MB')+' flash — this recipe ('+pk.length+' pkgs) likely needs USB extroot. Trim add-ons to fit.</div>':'';
+    var warn=(d.small && pk.length>8)?'<div class="warnbox">⚠ ~'+(d.small===2?'16MB':'32MB')+' flash — this recipe ('+pk.length+' pkgs) likely needs USB extroot.</div>':'';
     document.getElementById('manifest').innerHTML=
-      '<div class="mrow"><span class="k">device</span><span class="v">'+esc(d.name)+'</span></div>'+
-      '<div class="mrow"><span class="k">arch</span><span class="v"><span class="pill" style="border-color:'+ac+'66;color:'+ac+'">'+d.arch+'</span></span></div>'+
-      '<div class="mrow"><span class="k">profile</span><span class="v">'+esc(d.profile)+'</span></div>'+
-      '<div class="mrow"><span class="k">mode</span><span class="v"><span class="pill" style="border-color:'+m.ac+';color:'+m.ac+'">'+esc(m.name)+'</span></span></div>'+
-      '<div class="mrow"><span class="k">add-ons</span><span class="v">'+(fl.length?esc(fl.join(' · ')):'<span style="color:var(--faint)">none</span>')+'</span></div>'+
-      '<div class="bignum">'+pk.length+'<small>packages baked in</small></div>'+
+      '<div class="mrow head"><span class="k">Per firmware image</span></div>'+
+      '<div class="mrow"><span class="k">Device</span><span class="v">'+esc(d.name)+'</span></div>'+
+      '<div class="mrow"><span class="k">Architecture</span><span class="v"><span class="pill" style="background:'+ac+'22;color:#0a0a0a;border-color:'+ac+'">'+d.arch+'</span></span></div>'+
+      '<div class="mrow"><span class="k">Profile</span><span class="v">'+esc(d.profile)+'</span></div>'+
+      '<div class="mrow thick"><span class="k">Mode</span><span class="v"><span class="pill" style="background:'+m.ac+'22;color:#0a0a0a;border-color:'+m.ac+'">'+esc(m.name)+'</span></span></div>'+
+      '<div class="mrow"><span class="k">Add-ons</span><span class="v">'+(fl.length?esc(fl.join(' · ')):'—')+'</span></div>'+
+      '<div class="bignum"><b>'+pk.length+'</b><small>packages<br>baked in</small></div>'+
       warn;
   }
+
+  // ---------- configure tool ----------
+  var TZ=[["UTC","UTC","UTC"],["Pacific","America/Los_Angeles","PST8PDT,M3.2.0,M11.1.0"],["Mountain","America/Denver","MST7MDT,M3.2.0,M11.1.0"],["Central","America/Chicago","CST6CDT,M3.2.0,M11.1.0"],["Eastern","America/New_York","EST5EDT,M3.2.0,M11.1.0"],["London","Europe/London","GMT0BST,M3.5.0/1,M10.5.0"]];
+  var cfg={mode:"router"};
+  function cfgInit(){
+    document.getElementById('c-tz').innerHTML=TZ.map(function(t,i){return '<option value="'+i+'">'+t[0]+'</option>'}).join('');
+    var mc=document.getElementById('c-mode');
+    mc.innerHTML=Object.keys(MODE).map(function(k){return '<button class="mchip" data-id="'+k+'" aria-pressed="'+(cfg.mode===k?'true':'false')+'"'+(MODE[k].hot?' data-hot="1"':'')+'>'+MODE[k].name+'</button>'}).join('');
+    mc.querySelectorAll('.mchip').forEach(function(m){m.onclick=function(){cfg.mode=m.dataset.id; cfgInit();}});
+    ['c-host','c-tz','c-wan','c-lan','c-wifi','c-ssid','c-key'].forEach(function(id){var e=document.getElementById(id); e.oninput=cfgGen; e.onchange=cfgGen;});
+    cfgGen();
+  }
+  function cfgGen(){
+    var host=document.getElementById('c-host').value||'SpookyWrt';
+    var tz=TZ[+document.getElementById('c-tz').value||0];
+    var wan=document.getElementById('c-wan').value;
+    var lan=document.getElementById('c-lan').value||'192.168.1.1';
+    var wifiOn=document.getElementById('c-wifi').checked;
+    var ssid=document.getElementById('c-ssid').value||'SpookyWrt';
+    var key=document.getElementById('c-key').value||'changeme123';
+    var lanPorts=['eth0','eth1','eth2','eth3'].filter(function(p){return p!==wan});
+    var svc={nas:"/etc/init.d/samba4 enable; /etc/init.d/samba4 start",
+             honeypot:"/etc/init.d/banip enable; /etc/init.d/banip start   # run spooky-setup to arm decoys",
+             travel:"# WireGuard ready — import a tunnel in LuCI",
+             hacker:"# CLI toolkit ready: nmap arp-scan mtr tcpdump",
+             ap:"# AP mode: run spooky-setup > Advanced > Network for the dumb-AP transform",
+             router:"/etc/init.d/dnsmasq enable; /etc/init.d/firewall enable"}[cfg.mode];
+    var s='# SpookyWrt first-boot config - paste over SSH\n';
+    s+='# identity\n';
+    s+="uci set system.@system[0].hostname='"+host+"'\n";
+    s+="uci set system.@system[0].zonename='"+tz[1]+"'; uci set system.@system[0].timezone='"+tz[2]+"'\n";
+    s+="uci set system.ntp.enabled='1'; uci set luci.main.mediaurlbase='/luci-static/material'\n";
+    s+='# network - WAN='+wan+', LAN bridge='+lanPorts.join('+')+'\n';
+    s+='BR=$(uci show network | sed -n "s/^network\\.\\([^.]*\\)\\.name=.br-lan.*/\\1/p" | head -1)\n';
+    s+='for p in eth0 eth1 eth2 eth3; do uci -q del_list network.$BR.ports="$p"; done\n';
+    s+=lanPorts.map(function(p){return 'uci add_list network.$BR.ports="'+p+'"'}).join('\n')+'\n';
+    s+="uci set network.wan.device='"+wan+"'; uci set network.wan6.device='"+wan+"'\n";
+    s+="uci set network.lan.ipaddr='"+lan+"'\n";
+    if(wifiOn){
+      s+='# wi-fi AP\n';
+      s+="uci set wireless.radio0.disabled='0'; uci set wireless.radio0.country='US'\n";
+      s+="uci set wireless.default_radio0.ssid='"+ssid+"'\n";
+      s+="uci set wireless.default_radio0.encryption='psk2'; uci set wireless.default_radio0.key='"+key+"'\n";
+    } else { s+="# wi-fi off\nuci set wireless.radio0.disabled='1'\n"; }
+    s+='# mode: '+MODE[cfg.mode].name+'\n'+svc+'\n';
+    s+='uci commit; reload_config; wifi reload\n';
+    var out=document.getElementById('cfgout');
+    out.innerHTML='<span class="cm"># fill the form &rarr; copy &rarr; paste into the box. Or run <span class="sl">spooky-setup</span> on the box for the same, interactively.</span>\n'+
+      '<div class="cmd"><span class="copy" data-cmd="'+attr(s)+'">copy</span>'+esc(s)+'</div>';
+    var cp=out.querySelector('.copy'); if(cp) cp.onclick=function(){navigator.clipboard&&navigator.clipboard.writeText(cp.dataset.cmd); cp.textContent='copied'; setTimeout(function(){cp.textContent='copy'},1200);};
+  }
+  function selTab(b){
+    document.getElementById('tab-build').setAttribute('aria-selected',b?'true':'false');
+    document.getElementById('tab-config').setAttribute('aria-selected',b?'false':'true');
+    document.getElementById('tool-build').hidden=!b;
+    document.getElementById('tool-config').hidden=b;
+  }
+  document.getElementById('tab-build').onclick=function(){selTab(true)};
+  document.getElementById('tab-config').onclick=function(){selTab(false)};
 
   function render(){
     renderGrid(); renderStepper(); renderStage(); renderManifest();
     document.getElementById('back').disabled = state.step===0;
-    var nx=document.getElementById('next');
-    if(state.step===STEPS.length-1){ nx.textContent='↻ Start over'; }
-    else { nx.textContent='Next →'; }
+    document.getElementById('next').textContent = state.step===STEPS.length-1 ? '↻ Start over' : 'Next →';
   }
   document.getElementById('back').onclick=function(){ if(state.step>0){state.step--; render();} };
-  document.getElementById('next').onclick=function(){ if(state.step<STEPS.length-1){state.step++;} else {state.step=0;} render(); };
-  render();
+  document.getElementById('next').onclick=function(){ state.step = state.step<STEPS.length-1 ? state.step+1 : 0; render(); };
+  render(); cfgInit();
 })();
 </script>
 </body>
