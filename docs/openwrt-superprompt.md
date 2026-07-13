@@ -192,6 +192,72 @@ Deliver into `linkstar-h68k`:
 
 ---
 
+## 9b. Multi-platform — SpookyWrt is a DISTRO, not one image
+
+The UI, config, banner/MOTD, and modes are **target-agnostic**. Structure the project so one shared
+core builds for many boards; each device is just a profile + its NIC/Wi-Fi drivers.
+
+```text
+spookywrt/
+├── common/                 # shared across ALL devices
+│   ├── packages.txt        # wpad, luci, luci-theme-material, block-mount, USB/NAS, tools
+│   ├── files/              # /etc/banner, /etc/profile.d dynamic MOTD, uci-defaults (wifi AP, theme)
+│   └── ui/                 # the GL.iNet-style Vue SPA + rpcd plugins + mode switcher
+├── devices/
+│   ├── linkstar-h68k/  # rockchip/armv8 · hinlink_h68k · +kmod-r8125 +kmod-mt7921e   (serial console)
+│   ├── rpi-5/          # bcm27xx/bcm2712 · rpi-5 · +USB/PCIe 2.5G NICs                (HDMI console ✓)
+│   ├── rpi-4/          # bcm27xx/bcm2711 · rpi-4                                       (HDMI console ✓)
+│   ├── rpi-3/          # bcm27xx/bcm2710                                               (HDMI console ✓)
+│   └── gl-*/           # GL.iNet: ramips/mt7621, mediatek/filogic, ipq807x  (see below)
+└── build.sh <device>       # picks the matching OpenWrt Image Builder, merges common/ + device recipe
+```
+
+**Build method (all targets):** official OpenWrt **Image Builder** per target (no source compile) →
+consistent, no snapshot skew (the `libubus` conflict that blocks post-hoc `apk add`). `build.sh`
+downloads the right Image Builder, applies `common/packages.txt` + device packages + `files/`, emits a
+flashable image + SHA256. Pin the snapshot/release revision for reproducibility.
+
+**Per-board notes (VERIFIED / researched):**
+
+- **LinkStar H68K** — `hinlink_h68k` profile (Hinlink OEM = Seeed rebrand). All 4 ports + MT7921 Wi-Fi
+  work with `kmod-r8125`+`kmod-mt7921e` on kernel 6.12. **No HDMI console** (rockchip DRM not packaged;
+  needs a custom kernel + DTB fix). Serial (`ttyS2,1500000`) + SSH only.
+- **Raspberry Pi 5/4/3** (`bcm27xx`) — **HDMI framebuffer console works OOTB** → the branded boot
+  splash + local status screen the H68K can't do. Pi 5 has PCIe (NVMe NAS or 2.5G NIC HAT) + 1 GbE;
+  add USB 2.5G NICs for a multi-port router. Broadcom Wi-Fi does AP (limited) — or a USB adapter.
+- **GL.iNet devices** — they *are* OpenWrt, and many are mainline-supported → same Image Builder flow.
+  Putting SpookyWrt on GL hardware = replacing GL's UI with our GL-inspired one (full circle).
+  - ramips/mt7621: GL-MT1300 (Beryl), GL-AR750S (Slate), GL-MT300N-V2, GL-SFT1200
+  - mediatek/filogic: GL-MT3000 (Beryl AX), GL-MT6000 (Flint 2), GL-MT2500 (Brume 2)
+  - ipq40xx/ipq807x: GL-B1300, GL-AXT1800 (Slate AX), GL-AX1800 (Flint)
+  - **Un-brickable:** GL devices ship a **U-Boot web-failsafe** (hold reset → recovery at 192.168.1.1),
+    so custom-image experimentation is safe. A few models need GL's own build for cellular/proprietary
+    bits — target the mainline-supported ones first.
+
+## 9c. Operating modes (the mode switcher — a first-class UI feature)
+
+One visual chooser that safely reconfigures netifd + firewall + services (each transition uses the
+rollback-timer so it can't lock the user out):
+
+| Mode | Behavior |
+|------|----------|
+| **Router** | Full gateway: WAN + LAN bridge + DHCP + NAT + firewall (default) |
+| **Access Point** | Bridge into an existing LAN; extend Wi-Fi |
+| **Repeater / WISP** | Join an upstream Wi-Fi, rebroadcast |
+| **Travel Router** | VPN-always-on, MAC clone, captive-portal handling |
+| **NAS / Server** | Storage-first (Samba/ksmbd/NFS), minimal routing |
+| **Hacker / Lab** | Security-tooling profile — **authorized/own-network/CTF/education only** |
+
+**Hacker / Lab mode** is a legitimate home-lab/CTF/authorized-pentest toolkit (spirit of Kali / Wi-Fi
+Pineapple on *your own* gear), scoped with guardrails — an isolated lab VLAN, an on-entry consent/scope
+notice, monitor mode limited to the user's own radios. Toolkit (installed on entering the mode, which
+is why USB/NAS storage is baked in): recon (`nmap`, `tcpdump`/`tshark`, `arp-scan`), Wi-Fi audit
+(`aircrack-ng`, `kismet`, monitor mode on MT7921/USB), **defensive IDS** (`suricata`/`snort`), privacy
+(Tor transparent proxy, WireGuard, DoH, AdGuard), and a capture/alerts dashboard in the UI. **Never**
+frame or build for attacking third parties; keep it audit/defense/learning-oriented.
+
+---
+
 ## 10. Success criteria (definition of done)
 
 1. Fresh flash to microSD → boots → **first-setup wizard** on `http://192.168.8.1` (and via mDNS name).
