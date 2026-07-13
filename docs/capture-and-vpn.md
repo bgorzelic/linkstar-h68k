@@ -72,12 +72,72 @@ tailscale up --advertise-routes=192.168.1.0/24 --accept-routes
 
 Add `--advertise-exit-node` to use the H68K as an exit node. It just works behind NAT (no port-forward).
 
-### A commercial VPN via WireGuard (Mullvad / Proton / NordLynx / IVPN)
+### A commercial VPN via WireGuard (NordLynx / Mullvad / Proton / IVPN)
 
-Providers hand you a WireGuard config. Import it as a LuCI interface (`luci-proto-wireguard`, in flagship):
-LuCI ▸ Network ▸ Interfaces ▸ Add ▸ protocol **WireGuard**, paste the key/peer/endpoint, set the WAN
-firewall zone. Then **route only what you want** through it with `pbr` (e.g. "the TV goes through Mullvad,
-everything else direct").
+Providers hand you a WireGuard config (Nord calls its WireGuard **NordLynx**). SpookyWrt ships the
+whole WireGuard stack in the flagship, so no extra packages.
+
+> [!TIP]
+> **One command:** on the box, run `spooky vpn` → *NordLynx/WireGuard setup*. It prompts for the
+> three values below and applies the correct config + firewall for you (and verifies the handshake).
+> The manual steps below are the same thing, spelled out.
+
+<!-- -->
+
+> [!IMPORTANT]
+> **The #1 gotcha — why a WireGuard tunnel "won't build":** in OpenWRT a peer must be its **own
+> `config wireguard_<iface>` section**, *never* an inline `option peers`/`list peers` on the interface.
+> A stray peer option makes netifd silently refuse to create the device — no interface, no handshake,
+> IP unchanged. Structure it exactly as below.
+
+**You need three values:** your **client private key**, and the server's **public key** + **endpoint IP**.
+
+```sh
+# NordLynx client private key — from a machine running the NordVPN app on nordlynx:
+nordvpn set technology nordlynx && nordvpn connect
+wg show nordlynx private-key          # → CLIENT_PRIVATE_KEY
+# A server + its WireGuard public key + IP (Nord's public API):
+curl -s "https://api.nordvpn.com/v1/servers/recommendations?limit=1&filters[servers_technologies][identifier]=wireguard_udp" \
+ | jq -r '.[0] | .station, (.technologies[]|select(.identifier=="wireguard_udp")|.metadata[0].value)'
+# → SERVER_IP  then  SERVER_PUBLIC_KEY
+```
+
+Apply the tunnel (interface + **separate peer section**) and a masqueraded VPN firewall zone:
+
+```sh
+uci set network.vpn=interface
+uci set network.vpn.proto='wireguard'
+uci set network.vpn.private_key='CLIENT_PRIVATE_KEY'
+uci add_list network.vpn.addresses='10.5.0.2/32'
+
+uci set network.vpnpeer=wireguard_vpn          # peer = its own section (the gotcha)
+uci set network.vpnpeer.public_key='SERVER_PUBLIC_KEY'
+uci set network.vpnpeer.endpoint_host='SERVER_IP'   # IP, not hostname
+uci set network.vpnpeer.endpoint_port='51820'
+uci add_list network.vpnpeer.allowed_ips='0.0.0.0/0'
+uci set network.vpnpeer.route_allowed_ips='1'
+uci set network.vpnpeer.persistent_keepalive='25'
+uci commit network
+
+uci add firewall zone
+uci set firewall.@zone[-1].name='vpn'; uci set firewall.@zone[-1].masq='1'; uci set firewall.@zone[-1].mtu_fix='1'
+uci set firewall.@zone[-1].input='REJECT'; uci set firewall.@zone[-1].output='ACCEPT'; uci set firewall.@zone[-1].forward='REJECT'
+uci add_list firewall.@zone[-1].network='vpn'
+uci add firewall forwarding; uci set firewall.@forwarding[-1].src='lan'; uci set firewall.@forwarding[-1].dest='vpn'
+uci commit firewall
+/etc/init.d/network restart && /etc/init.d/firewall restart
+```
+
+Verify — you want a recent handshake and your public IP to flip to the VPN server's:
+
+```sh
+wg show                       # look for "latest handshake" + rx/tx > 0
+curl -s https://ipinfo.io/ip  # now the Nord server's IP, not your ISP's
+```
+
+No handshake? Re-check the peer is a `wireguard_vpn` **section** (not an option), `endpoint_host`
+is the **IP** (not hostname), and `kmod-wireguard` is loaded. Then **route only what you want**
+through it with `pbr` (below) — e.g. "the TV goes through Nord, everything else direct."
 
 ### Split-tunnel with PBR
 
