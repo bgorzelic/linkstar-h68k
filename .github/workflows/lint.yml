@@ -15,6 +15,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y shellcheck
       - name: Lint scripts
         run: shellcheck --severity=warning scripts/*.sh scripts/lib/*.sh firstboot/*.sh flavors/*.sh
+      - name: Lint SpookyWrt scripts (OpenWRT ash — local is supported, so exclude SC3043)
+        run: shellcheck -s sh --severity=warning --exclude=SC3043 spookywrt/first-boot.sh spookywrt/first-boot-full.sh spookywrt/spooky-setup
 
   markdownlint:
     name: markdownlint

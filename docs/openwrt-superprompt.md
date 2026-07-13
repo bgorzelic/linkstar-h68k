@@ -294,6 +294,32 @@ data stays local, and the UI states plainly that this is detection/deception, no
 parties. Great paired with an isolated VLAN so the honeypot sees lateral movement without exposing real
 hosts.
 
+## 9d. First-run onboarding — `spooky-setup` (really simple OR really complex)
+
+Provisioning must meet the user where they are: a **60-second Express path** for someone who just wants
+it working, and a **full Advanced path** for someone who wants every knob. Ship both in one wizard,
+`spooky-setup` (`/usr/bin/spooky-setup`), baked into the image and hinted in the banner ("First time?
+run: spooky-setup"). It runs over SSH **and** the serial console (pure POSIX/ash, no deps).
+
+- **Express** — root password → hostname → timezone (menu) → Wi-Fi SSID/key → operating mode
+  (router/ap/nas/travel/hacker/honeypot) → optional LAN IP → review → apply. Everything else takes a
+  sane default. Mode selection wires the matching services on (NAS→samba, honeypot→decoys+banip, …).
+- **Advanced** — a sectioned menu: **System** (hostname/tz/password), **Wi-Fi** (SSID/key/channel),
+  **Network** (LAN IP, DHCP pool, WAN-port reassignment), **Services/modes** (NAS, AdGuard, SQM,
+  Honeypot toggles). Each section applies independently.
+- **Rollback safety (non-negotiable):** any network-affecting apply snapshots `/etc/config`, applies,
+  then starts a background timer — if the admin doesn't confirm within 90s (because they just locked
+  themselves out), it auto-reverts and restarts networking. This is the CLI equivalent of LuCI's
+  "apply unchecked / rollback." Non-network changes commit immediately.
+- **Honeypot enable** writes `/usr/bin/spooky-decoy` (a forking `socat` listener that logs every touch
+  to `/tmp/honeypot.log`) + an `/etc/init.d/spooky-honeypot` procd service (decoys on :21/:23/:2323/:8080
+  - a SYN-capture `tcpdump`) and turns on `banip`. Own-network only.
+- The **web UI** should eventually mirror this exact flow (Express vs Advanced) as the first-boot wizard;
+  `spooky-setup` is the CLI source of truth for the provisioning logic to port.
+
+The reference implementation lives in the repo at `scripts/spooky-setup` and is embedded into the H68K
+flagship image's first-boot `uci-defaults` (see `scripts/build-perfect.py` + `scripts/perfect-defaults*.sh`).
+
 ---
 
 ## 10. Success criteria (definition of done)
