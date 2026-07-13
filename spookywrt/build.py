@@ -44,13 +44,22 @@ WIFI_DRIVERS = [
 WIFI_AUDIT = [
     "aircrack-ng", "hcxdumptool", "hcxtools", "reaver", "horst", "iw", "iwinfo",
 ]
+# Best-of-flavor extras, folded into the audit variant per the swarm's build-verified
+# manifest (fa654c6100f8): multi-WAN, band steering, travel, bandwidth, DDNS, DoH,
+# uplink watchdog, RRD graphs. All resolve on rockchip/armv8 SNAPSHOT.
+WIFI_FLAVOR_EXTRA = [
+    "mwan3", "luci-app-mwan3", "dawn", "luci-app-dawn",
+    "travelmate", "luci-app-travelmate", "nlbwmon", "luci-app-nlbwmon",
+    "ddns-scripts", "luci-app-ddns", "https-dns-proxy", "luci-app-https-dns-proxy",
+    "watchcat", "luci-app-watchcat", "luci-app-statistics",
+]
 PROFILES = ("flagship", "wifi-audit")
 
 def build_packages(variant):
     """Return the package list for a build variant. Default flagship stays lean."""
     pkgs = list(PACKAGES)
     if variant == "wifi-audit":
-        pkgs += WIFI_DRIVERS + WIFI_AUDIT
+        pkgs += WIFI_DRIVERS + WIFI_AUDIT + WIFI_FLAVOR_EXTRA
         # 6 GHz / WPA3-SAE needs the full supplicant; wpad-basic can't do SAE on 6 GHz.
         pkgs = [p for p in pkgs if p != "wpad-basic-mbedtls"]
         pkgs += ["-wpad-basic-mbedtls", "wpad-mbedtls"]
@@ -80,6 +89,11 @@ def main():
         sys.exit(1)
     packages = build_packages(variant)
     defaults = (WORK / "first-boot-full.sh").read_text()
+    if variant == "wifi-audit":
+        # append the fail-closed consent gate (spookywrt/wifi-audit/firstboot.sh)
+        gate = Path(__file__).parent / "wifi-audit" / "firstboot.sh"
+        if gate.exists():
+            defaults += "\n\n# ---- wifi-audit consent gate ----\n" + gate.read_text()
     body = {
         "version": "SNAPSHOT",
         "target": "rockchip/armv8",

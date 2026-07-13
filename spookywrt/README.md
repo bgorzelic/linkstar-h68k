@@ -62,11 +62,20 @@ python3 spookywrt/build.py                        # flagship (default, lean — 
 python3 spookywrt/build.py --profile wifi-audit   # + monitor/injection drivers + audit tools
 ```
 
-The **`wifi-audit`** variant adds a monitor-mode/injection driver zoo (mt76 / ath9k / rt2800)
-and audit tooling (aircrack-ng, hcxdumptool, reaver, horst) plus the 6 GHz-capable
-`wpad-mbedtls`. It's **opt-in on purpose** — kept out of the default image so the flagship
-stays lean and the attack surface is a deliberate choice (authorized use only). Verified
-chipset/adapter matrix: [`../docs/wireless-support.md`](../docs/wireless-support.md).
+The **`wifi-audit`** variant adds a monitor-mode/injection driver zoo (mt76 / ath9k / rt2800),
+audit tooling (aircrack-ng, hcxdumptool, reaver, horst), best-of-flavor extras (multi-WAN,
+band-steering, travelmate, DoH, DDNS, bandwidth graphs) and the 6 GHz-capable `wpad-mbedtls`.
+It's **opt-in on purpose** — kept out of the default image so the flagship stays lean and the
+attack surface is a deliberate choice.
+
+> [!IMPORTANT]
+> **Consent gate.** Because this image ships packet-injection tooling, the offensive tools are
+> **fail-closed**: they're only reachable via `spooky-audit <tool>`, which refuses to run until
+> the operator records authorization + a regulatory domain with `spooky-audit-consent`
+> (scope + `I ACCEPT`, persisted to `/etc/spookywrt/audit-consent.json`, every run logged).
+> Implemented in [`wifi-audit/firstboot.sh`](wifi-audit/firstboot.sh). **Authorized use only.**
+
+Verified chipset/adapter matrix and the 6 GHz reality: [`../docs/wireless-support.md`](../docs/wireless-support.md).
 First boot applies the branding, topology, and (deferred) secured Wi-Fi AP; log in over SSH
 and run `spooky-setup` to finish provisioning.
 
