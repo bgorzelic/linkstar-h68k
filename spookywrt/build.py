@@ -121,6 +121,12 @@ def main():
             defaults += (f"\n\n# ---- install /usr/bin/{tool} ----\n"
                          f"cat > /usr/bin/{tool} <<'{d}'\n{tp.read_text()}\n{d}\n"
                          f"chmod 0755 /usr/bin/{tool}\n")
+    # SpookyJuice LuCI theme: inline the cascade CSS into its installer fragment
+    theme = Path(__file__).parent / "luci-theme-spooky"
+    css, inst = theme / "cascade.css", theme / "install.sh"
+    if css.exists() and inst.exists():
+        defaults += ("\n\n# ---- SpookyJuice LuCI theme ----\n"
+                     + inst.read_text().replace("__CASCADE_CSS__", css.read_text()))
     if variant == "wifi-audit":
         # append the fail-closed consent gate (spookywrt/wifi-audit/firstboot.sh)
         gate = Path(__file__).parent / "wifi-audit" / "firstboot.sh"

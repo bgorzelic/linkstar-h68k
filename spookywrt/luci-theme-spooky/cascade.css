@@ -1,0 +1,117 @@
+/* ============================================================================
+   SpookyWrt — SpookyJuice-branded LuCI theme (override on top of material).
+   Imports the material base, then repaints LuCI with the SpookyJuice identity:
+   slime-green on near-black, sharp panels, glow accents. Additive — anything not
+   restyled here keeps material's behavior. Ships to /www/luci-static/spooky/.
+   ============================================================================ */
+@import url("/luci-static/material/cascade.css");
+
+:root{
+  --sj-ink:#0a0e07;        /* near-black, faint green cast */
+  --sj-ink2:#0f150b;
+  --sj-panel:#131b0d;
+  --sj-panel2:#1a2412;
+  --sj-line:#25361a;
+  --sj-line2:#33471f;
+  --sj-slime:#7cfc00;      /* SpookyJuice primary */
+  --sj-slime-dim:#5bbd00;
+  --sj-toxic:#b6ff2e;      /* brighter accent */
+  --sj-text:#e9f5df;
+  --sj-muted:#9fb389;
+  --sj-faint:#6f8557;
+  --sj-good:#7cfc00; --sj-warn:#ffcc33; --sj-bad:#ff5470;
+  --sj-glow:0 0 18px rgba(124,252,0,.30);
+  --sj-mono:"JetBrains Mono","SF Mono",ui-monospace,Menlo,monospace;
+}
+
+/* ---------- canvas ---------- */
+body,.main{
+  background:var(--sj-ink) !important; color:var(--sj-text) !important;
+  background-image:
+    radial-gradient(900px 500px at 88% -10%, rgba(124,252,0,.07), transparent 60%),
+    linear-gradient(rgba(37,54,26,.5) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37,54,26,.5) 1px, transparent 1px) !important;
+  background-size:auto, 46px 46px, 46px 46px !important;
+}
+#maincontent{background:transparent !important}
+a,a:link,a:visited{color:var(--sj-slime) !important}
+a:hover{color:var(--sj-toxic) !important}
+
+/* ---------- top header ---------- */
+header,.header,#header,.main-header{
+  background:linear-gradient(180deg, var(--sj-panel), var(--sj-ink2)) !important;
+  border-bottom:1px solid var(--sj-slime-dim) !important; box-shadow:0 1px 24px rgba(124,252,0,.10) !important;
+}
+header .brand,.header .brand,#header .fill h1,header a.brand{
+  font-family:var(--sj-mono) !important; font-weight:700 !important; letter-spacing:.06em !important;
+  color:var(--sj-slime) !important; text-shadow:0 0 14px rgba(124,252,0,.5) !important;
+}
+.hostname,.distversion{color:var(--sj-muted) !important}
+
+/* ---------- left navigation / menu ---------- */
+.main-left,#mainmenu,.nav,ul.dropdowns{
+  background:linear-gradient(180deg,var(--sj-panel),var(--sj-ink2)) !important;
+  border-right:1px solid var(--sj-line) !important;
+}
+.main-left a,.nav a,#mainmenu a,.slide .menu{color:var(--sj-muted) !important; border:0 !important}
+.main-left a:hover,.nav a:hover,.slide:hover .menu{
+  background:rgba(124,252,0,.08) !important; color:var(--sj-text) !important;
+}
+.main-left .active,.nav > .active > a,li.active > a,.slide.active > .menu{
+  background:linear-gradient(90deg, rgba(124,252,0,.18), transparent) !important;
+  color:var(--sj-slime) !important; border-left:3px solid var(--sj-slime) !important;
+}
+
+/* ---------- panels / sections / tables ---------- */
+.cbi-section,.cbi-map,.panel,fieldset,.Ndisplay,.table,.cbi-section-node{
+  background:linear-gradient(180deg,var(--sj-panel),var(--sj-ink2)) !important;
+  border:1px solid var(--sj-line) !important; border-radius:12px !important;
+}
+legend,.cbi-section h3,.panel-title,h2,h3{
+  color:var(--sj-text) !important; font-family:var(--sj-mono) !important; letter-spacing:.02em !important;
+}
+.cbi-section-descr,.cbi-value-description,.description{color:var(--sj-faint) !important}
+table th,.tr.table-titles,.th{
+  background:var(--sj-panel2) !important; color:var(--sj-faint) !important;
+  text-transform:uppercase !important; letter-spacing:.08em !important; font-size:11px !important;
+  border-bottom:1px solid var(--sj-line) !important;
+}
+table td,.td,.tr{border-color:var(--sj-line) !important; color:var(--sj-text) !important}
+.tr:hover,tr:hover{background:rgba(124,252,0,.05) !important}
+
+/* ---------- inputs ---------- */
+input,select,textarea,.cbi-input-text,.cbi-input-password{
+  background:var(--sj-ink2) !important; color:var(--sj-text) !important;
+  border:1px solid var(--sj-line) !important; border-radius:9px !important;
+}
+input:focus,select:focus,textarea:focus{
+  border-color:var(--sj-slime) !important; box-shadow:var(--sj-glow) !important; outline:none !important;
+}
+
+/* ---------- buttons ---------- */
+.btn,.cbi-button,button,input[type="submit"],input[type="button"]{
+  font-family:var(--sj-mono) !important; border-radius:9px !important;
+  border:1px solid var(--sj-line2) !important; background:var(--sj-panel2) !important; color:var(--sj-text) !important;
+  transition:.15s !important;
+}
+.btn:hover,.cbi-button:hover,button:hover{border-color:var(--sj-slime) !important; color:var(--sj-slime) !important}
+.cbi-button-apply,.cbi-button-save,.cbi-button-positive,.important,.btn.primary,input.cbi-button-apply{
+  background:linear-gradient(120deg,var(--sj-slime-dim),var(--sj-slime)) !important;
+  border-color:transparent !important; color:#0a0e07 !important; font-weight:600 !important; box-shadow:var(--sj-glow) !important;
+}
+.cbi-button-reset,.cbi-button-remove,.cbi-button-negative,.btn.danger{
+  border-color:var(--sj-bad) !important; color:var(--sj-bad) !important;
+}
+
+/* ---------- status pills / notices ---------- */
+.label,.badge,.ifacebadge{background:var(--sj-panel2) !important; color:var(--sj-slime) !important; border:1px solid var(--sj-line) !important; border-radius:20px !important}
+.alert-message.success,.notice{background:rgba(124,252,0,.08) !important; border:1px solid var(--sj-slime-dim) !important; color:var(--sj-text) !important}
+.alert-message.warning{background:rgba(255,204,51,.08) !important; border:1px solid var(--sj-warn) !important}
+.alert-message.danger,.error{background:rgba(255,84,112,.08) !important; border:1px solid var(--sj-bad) !important}
+
+/* ---------- login page ---------- */
+.login,body.login{background:var(--sj-ink) !important}
+.cbi-map .cbi-section:first-child legend{color:var(--sj-slime) !important}
+
+/* ---------- footer ---------- */
+footer,.footer{color:var(--sj-faint) !important; border-top:1px solid var(--sj-line) !important; font-family:var(--sj-mono) !important}
