@@ -11,6 +11,14 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 [![Platform: RK3568](https://img.shields.io/badge/SoC-Rockchip%20RK3568-blue.svg)](./docs/hardware.md)
 
+> **Part of the [SpookyWrt](https://github.com/bgorzelic/spookywrt) family.** The
+> H68K is one of SpookyWrt's boards — a SpookyJuice layer that turns an OpenWrt
+> router into a branded, self-describing agent node. This repo is the H68K's
+> **hardware guide, flashing/recovery, and firmware archive**; the canonical
+> SpookyWrt stack (config-as-code, A2A peer, branded console) lives in
+> **[`bgorzelic/spookywrt`](https://github.com/bgorzelic/spookywrt)** — same
+> project, different hardware (RK3568 here, IPQ5332 on the GL.iNet BE9300).
+
 Everything you need to run, reset, harden, and understand the **Seeed Studio
 LinkStar H68K** — the documentation the internet never gave you, plus a set of
 idempotent setup/hardening scripts and a checksummed archive of the official
